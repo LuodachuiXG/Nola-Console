@@ -1,49 +1,78 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Message } from "@arco-design/web-vue";
+import {onMounted, ref} from "vue";
+import {Message} from "@arco-design/web-vue";
 import {
   IconCaretRight,
   IconCaretLeft,
   IconHome,
   IconCalendar,
 } from "@arco-design/web-vue/es/icon";
+import {useRoute, useRouter} from 'vue-router';
+import {RouterViews} from "./router/RouterViews.ts";
 
+// 当前路由线路
+const route = useRoute();
+// 路由控制器
+const router = useRouter();
+
+document.body.setAttribute("arco-theme", "dark");
+
+onMounted(() => {
+
+});
+
+// 左边菜单栏是否收缩
 const collapsed = ref(false);
+
+/**
+ * 左侧菜单栏收缩/展开
+ */
 const onCollapse = () => {
   collapsed.value = !collapsed.value;
-  document.body.setAttribute("arco-theme", "dark");
 };
 
 const onClickMenuItem = (key: number) => {
-  Message.info({ content: `You select ${key}`, showIcon: true });
+  Message.info({content: `You select ${key}`, showIcon: true});
 };
 </script>
 
 <template>
   <a-layout class="layout-demo">
-    <a-layout-sider hide-trigger collapsible :collapsed="collapsed">
-      <div class="logo" />
+    <a-layout-sider v-if="route.name === RouterViews.MAIN" hide-trigger collapsible :collapsed="collapsed">
       <a-menu
-        :defaultOpenKeys="['1']"
-        :defaultSelectedKeys="['0_3']"
-        :style="{ width: '100%' }"
-        @menuItemClick="onClickMenuItem"
+          :defaultOpenKeys="['1']"
+          :defaultSelectedKeys="['0_3']"
+          :style="{ width: '100%' }"
+          @menuItemClick="onClickMenuItem"
       >
+        <div class="logo">
+          <a-avatar
+              shape="square"
+              style="background-color: rgba(255, 255, 255, 0);"
+              :size="34"
+          >
+            <img
+                alt="avatar"
+                src="./assets/nola.png"
+            />
+          </a-avatar>
+          <span class="menu-title">Nola</span>
+        </div>
         <a-menu-item key="0_1" disabled>
-          <IconHome />
+          <IconHome/>
           Menu 1
         </a-menu-item>
         <a-menu-item key="0_2">
-          <IconCalendar />
+          <IconCalendar/>
           Menu 2
         </a-menu-item>
         <a-menu-item key="0_3">
-          <IconCalendar />
+          <IconCalendar/>
           Menu 3
         </a-menu-item>
         <a-sub-menu key="1">
           <template #title>
-            <span><IconCalendar />Navigation 1</span>
+            <span><IconCalendar/>Navigation 1</span>
           </template>
           <a-menu-item key="1_1">Menu 1</a-menu-item>
           <a-menu-item key="1_2">Menu 2</a-menu-item>
@@ -59,7 +88,7 @@ const onClickMenuItem = (key: number) => {
         </a-sub-menu>
         <a-sub-menu key="4">
           <template #title>
-            <span><IconCalendar />Navigation 4</span>
+            <span><IconCalendar/>Navigation 4</span>
           </template>
           <a-menu-item key="4_1">Menu 1</a-menu-item>
           <a-menu-item key="4_2">Menu 2</a-menu-item>
@@ -68,15 +97,17 @@ const onClickMenuItem = (key: number) => {
       </a-menu>
     </a-layout-sider>
     <a-layout>
-      <a-layout-header style="padding-left: 20px">
+      <a-layout-header v-if="route.name === RouterViews.MAIN" style="padding-left: 20px">
         <a-button shape="round" @click="onCollapse">
-          <IconCaretRight v-if="collapsed" />
-          <IconCaretLeft v-else />
+          <IconCaretRight v-if="collapsed"/>
+          <IconCaretLeft v-else/>
         </a-button>
       </a-layout-header>
       <a-layout>
-        <a-layout-content>123123123</a-layout-content>
-        <a-layout-footer>Footer</a-layout-footer>
+        <a-layout-content>
+          <router-view/>
+        </a-layout-content>
+        <a-layout-footer v-if="route.name === RouterViews.MAIN">Footer</a-layout-footer>
       </a-layout>
     </a-layout>
   </a-layout>
@@ -89,12 +120,8 @@ const onClickMenuItem = (key: number) => {
 
 .layout-demo :deep(.arco-layout-sider) .logo {
   height: 32px;
-  margin: 12px 8px;
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.layout-demo :deep(.arco-layout-sider-light) .logo {
-  background: var(--color-fill-2);
+  line-height: 32px;
+  margin: 4px;
 }
 
 .layout-demo :deep(.arco-layout-header) {
