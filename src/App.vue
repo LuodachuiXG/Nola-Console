@@ -1,24 +1,36 @@
 <script setup lang="ts">
-import {onMounted, ref} from "vue";
+import {onMounted, ref, watch} from "vue";
 import {Message} from "@arco-design/web-vue";
 import {
   IconCaretRight,
   IconCaretLeft,
   IconHome,
   IconCalendar,
+  IconSun,
+  IconMoon
 } from "@arco-design/web-vue/es/icon";
-import {useRoute, useRouter} from 'vue-router';
+import {RouteLocationNormalizedLoaded, useRoute, useRouter} from 'vue-router';
 import {RouterViews} from "./router/RouterViews.ts";
+import {changeTheme, initTheme} from "./utils/MyUtils.ts";
+
+// 当前主题颜色
+const currentTheme = ref("light");
 
 // 当前路由线路
 const route = useRoute();
 // 路由控制器
 const router = useRouter();
 
-document.body.setAttribute("arco-theme", "dark");
+// 是否隐藏左侧菜单
+const hideSider = ref(true)
 
 onMounted(() => {
-
+  // 初始化主题颜色
+  currentTheme.value = initTheme();
+  watch(route, (e: RouteLocationNormalizedLoaded) => {
+    const hideViews = [RouterViews.LOGIN]
+    hideSider.value = hideViews.includes(e.name as RouterViews);
+  });
 });
 
 // 左边菜单栏是否收缩
@@ -34,11 +46,15 @@ const onCollapse = () => {
 const onClickMenuItem = (key: number) => {
   Message.info({content: `You select ${key}`, showIcon: true});
 };
+
+const onChangeTheme = () => {
+  currentTheme.value = changeTheme();
+}
 </script>
 
 <template>
-  <a-layout class="layout-demo">
-    <a-layout-sider v-if="route.name === RouterViews.MAIN" hide-trigger collapsible :collapsed="collapsed">
+  <a-layout class="layout-main">
+    <a-layout-sider v-if="!hideSider" hide-trigger collapsible :collapsed="collapsed">
       <a-menu
           :defaultOpenKeys="['1']"
           :defaultSelectedKeys="['0_3']"
@@ -97,62 +113,77 @@ const onClickMenuItem = (key: number) => {
       </a-menu>
     </a-layout-sider>
     <a-layout>
-      <a-layout-header v-if="route.name === RouterViews.MAIN" style="padding-left: 20px">
-        <a-button shape="round" @click="onCollapse">
-          <IconCaretRight v-if="collapsed"/>
-          <IconCaretLeft v-else/>
-        </a-button>
+      <a-layout-header>
+        <a-row>
+          <a-col :span="20">
+            <!-- 左侧菜单折叠按钮 -->
+            <div class="header-collapse" v-if="!hideSider">
+              <a-button shape="round" @click="onCollapse">
+                <IconCaretRight v-if="collapsed"/>
+                <IconCaretLeft v-else/>
+              </a-button>
+            </div>
+          </a-col>
+          <a-col :span="4">
+            <!-- 右侧操作按钮 -->
+            <div class="header-options">
+              <a-space>
+                <a-button shape="circle" @click="onChangeTheme">
+                  <IconSun v-if="currentTheme === 'light'"/>
+                  <IconMoon v-else />
+                </a-button>
+              </a-space>
+            </div>
+          </a-col>
+        </a-row>
+
+
       </a-layout-header>
-      <a-layout>
-        <a-layout-content>
-          <router-view/>
-        </a-layout-content>
-        <a-layout-footer v-if="route.name === RouterViews.MAIN">Footer</a-layout-footer>
-      </a-layout>
+      <a-layout-content>
+        <router-view/>
+      </a-layout-content>
     </a-layout>
   </a-layout>
 </template>
 
 <style scoped>
-.layout-demo {
+.layout-main {
   height: 100%;
 }
 
-.layout-demo :deep(.arco-layout-sider) .logo {
+.layout-main :deep(.arco-layout-sider) .logo {
   height: 32px;
   line-height: 32px;
   margin: 4px;
 }
 
-.layout-demo :deep(.arco-layout-header) {
+.layout-main :deep(.arco-layout-header) {
   height: 64px;
   line-height: 64px;
+  padding: 0 20px;
   background: var(--color-bg-3);
 }
 
-.layout-demo :deep(.arco-layout-footer) {
-  height: 48px;
-  color: var(--color-text-2);
-  font-weight: 400;
-  font-size: 14px;
-  line-height: 48px;
-  background: var(--color-bg-3);
-}
-
-.layout-demo :deep(.arco-layout-content) {
+.layout-main :deep(.arco-layout-content) {
   color: var(--color-text-2);
   font-weight: 400;
   font-size: 14px;
   background: var(--color-bg-3);
 }
 
-.layout-demo :deep(.arco-layout-footer),
-.layout-demo :deep(.arco-layout-content) {
+.layout-main :deep(.arco-layout-content) {
   display: flex;
   flex-direction: column;
   justify-content: center;
   font-size: 16px;
   font-stretch: condensed;
   text-align: center;
+}
+
+.header-options {
+  display: flex;
+  height: 64px;
+  line-height: 64px;
+  justify-content: end;
 }
 </style>

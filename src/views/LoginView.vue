@@ -34,7 +34,7 @@ const form = reactive({
   flex-direction: column;
   justify-content: start;
   align-items: center;
-  margin-top: 20vh;
+  margin-top: 5vh;
 }
 
 .login-card {
