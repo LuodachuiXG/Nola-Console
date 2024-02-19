@@ -65,6 +65,9 @@ const hideSider = ref(true);
 
 // 侧边栏是否折叠
 const isSiderCollapsed = ref(true);
+// 用户是否手动修改过侧边栏
+// 如果修改过，就不再根据窗口宽度自动折叠侧边栏
+const isManualUpdateSider = ref(false);
 
 // 菜单选项
 const menuOptions = [
@@ -272,13 +275,17 @@ onMounted(() => {
       user.value = null;
     }
   });
-  // 刷新当前登录用户
-  let _user = localStorage.getItem(StoreEnum.USER);
-  if (_user !== null) {
-    user.value = JSON.parse(_user) as User;
-  } else {
-    user.value = null;
-  }
+
+  // 添加窗口大小改变事件监听，动态修改侧边栏是否展开
+  // 因窗口大小改变导致的侧边栏改变，侧边栏配置不存储到本地
+  window.addEventListener('resize', () => {
+    let width = window.document.documentElement.clientWidth;
+    if (!isManualUpdateSider.value) {
+      // 如果用户之前没有手动修改过侧边栏
+      // 这里就根据窗口大小自动改变侧边栏状态
+      isSiderCollapsed.value = width < 768;
+    }
+  });
 });
 
 /**
@@ -305,8 +312,18 @@ const onSwitchTheme = () => {
  * 侧边栏折叠事件
  */
 const onSiderCollapsed = (collapsed: boolean) => {
+  let width = window.document.documentElement.clientWidth;
+  // 下面的代码简要来说，如果用户在小窗下展开侧边栏，或者，是在大窗下折叠侧边栏（反向操作）
+  // 则认为用户手动修改了侧边栏状态，即不再根据窗口大小自动折叠侧边栏。
+  // 如果用户在小窗下折叠侧边栏，大窗下展开侧边栏（正向操作），
+  // 则认为用户还是希望根据窗口大小修改侧边栏，所以设置 isManualUpdateSider = false，恢复侧边栏自适应。
+  if (width <= 768 && isManualUpdateSider.value && collapsed) {
+    isManualUpdateSider.value = false;
+  } else isManualUpdateSider.value = !(width > 768 && isManualUpdateSider.value && !collapsed);
+
+  // 修改侧边栏折叠状态
   isSiderCollapsed.value = collapsed;
-  // 将侧边栏折叠记录
+  // 将侧边栏折叠状态存储到本地
   localStorage.setItem(
     StoreEnum.SIDER_COLLAPSED,
     String(isSiderCollapsed.value)
