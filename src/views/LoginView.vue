@@ -40,6 +40,8 @@ const formLogin = reactive({
   username: '',
   password: ''
 });
+// 是否正在请求登录
+const isLogin = ref(false);
 
 // 初始化博客表单引用
 const formCreateBlogRef = ref<FormInst | null>(null);
@@ -48,6 +50,8 @@ const formCreateBlog = reactive({
   title: '',
   subtitle: ''
 });
+// 是否正在请求初始化博客
+const isCreateBlog = ref(false);
 
 // 创建管理员表单引用
 const formCreateAdminRef = ref<FormInst | null>(null);
@@ -59,6 +63,8 @@ const formCreateAdmin = reactive({
   password: '',
   passwordA: ''
 });
+// 是否正在请求创建管理员
+const isCreateAdmin = ref(false);
 
 onMounted(() => {
   // 刷新博客信息
@@ -96,15 +102,18 @@ const onFormCreateBlogSubmit = () => {
   formCreateBlogRef.value
     ?.validate((errors) => {
       if (!errors) {
+        isCreateBlog.value = true;
         // 初始化博客
         initBlogInfo(formCreateBlog.title, formCreateBlog.subtitle)
           .then(() => {
             // 初始化成功，刷新博客信息
             window.$message.success('博客初始化成功');
             refreshBlogInfo();
+            isCreateBlog.value = false;
           })
           .catch((err) => {
             window.$message.error(err);
+            isCreateBlog.value = false;
           });
       }
     })
@@ -119,6 +128,7 @@ const onFormCreateAdminSubmit = () => {
   formCreateAdminRef.value
     ?.validate((errors) => {
       if (!errors) {
+        isCreateAdmin.value = true;
         // 创建管理员
         createBlogAdmin(
           formCreateAdmin.username,
@@ -134,9 +144,11 @@ const onFormCreateAdminSubmit = () => {
             } else {
               window.$message.error('创建管理员失败，请查看后台日志');
             }
+            isCreateAdmin.value = false;
           })
           .catch((err) => {
             window.$message.error(err);
+            isCreateAdmin.value = false;
           });
       }
     })
@@ -152,6 +164,7 @@ const onFormLoginSubmit = (e: MouseEvent) => {
   formLoginRef.value
     ?.validate((errors) => {
       if (!errors) {
+        isLogin.value = true;
         // 登录
         login(formLogin.username, formLogin.password)
           .then((res) => {
@@ -160,10 +173,12 @@ const onFormLoginSubmit = (e: MouseEvent) => {
             localStorage.setItem(StoreEnum.USER, JSON.stringify(res.data));
             // 跳转控制台页面
             router.push(RouterViews.MAIN.name);
+            isLogin.value = false;
           })
           .catch((err) => {
             // 登录失败
             window.$message.error(err);
+            isLogin.value = false;
           });
       }
     })
@@ -215,7 +230,11 @@ const validatePasswordSame = (_: FormItemRule, value: string) => {
         />
       </n-form-item>
       <n-form-item>
-        <n-button type="primary" @click="onFormLoginSubmit" style="width: 100%"
+        <n-button
+          type="primary"
+          @click="onFormLoginSubmit"
+          style="width: 100%"
+          :loading="isLogin"
           >登录</n-button
         >
       </n-form-item>
@@ -255,6 +274,7 @@ const validatePasswordSame = (_: FormItemRule, value: string) => {
           type="primary"
           @click="onFormCreateBlogSubmit"
           style="width: 100%"
+          :loading="isCreateBlog"
         >
           初始化博客
         </n-button>
@@ -348,6 +368,7 @@ const validatePasswordSame = (_: FormItemRule, value: string) => {
           type="primary"
           @click="onFormCreateAdminSubmit"
           style="width: 100%"
+          :loading="isCreateAdmin"
         >
           创建管理员
         </n-button>

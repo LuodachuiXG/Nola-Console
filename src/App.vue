@@ -18,6 +18,8 @@ import {
   NConfigProvider,
   NButton,
   NImage,
+  NSpace,
+  NDropdown,
   darkTheme,
   zhCN,
   dateZhCN
@@ -35,7 +37,10 @@ import {
   MenuOutline as MenuIcon,
   SettingsOutline as SettingIcon,
   SaveOutline as BackUpIcon,
-  ServerOutline as SystemIcon
+  ServerOutline as SystemIcon,
+  PersonCircleOutline as PersonIcon,
+  ExitOutline as ExitIcon,
+  LockClosedOutline as LockIcon
 } from '@vicons/ionicons5';
 import themeOverrides from './theme/theme.ts';
 import type { BuiltInGlobalTheme } from 'naive-ui/es/themes/interface';
@@ -43,6 +48,11 @@ import { getCurrentTheme, setTheme } from './utils/MyUtils.ts';
 import AppProvider from './components/AppProvider/AppProvider.vue';
 import { StoreEnum } from './models/enum/StoreEnum.ts';
 import NolaIcon from './assets/nola.png';
+import { User } from './models/User.ts';
+import router from './router';
+
+// 当前登录用户
+const user = ref<User | null>(null);
 
 // 当前主题颜色
 const currentTheme = ref<BuiltInGlobalTheme | undefined>();
@@ -51,7 +61,7 @@ const currentTheme = ref<BuiltInGlobalTheme | undefined>();
 const route = useRoute();
 
 // 是否隐藏左侧菜单
-const hideSider = ref(false);
+const hideSider = ref(true);
 
 // 侧边栏是否折叠
 const isSiderCollapsed = ref(true);
@@ -220,6 +230,28 @@ const menuOptions = [
   }
 ];
 
+// 头像点击弹出菜单
+const avatarOptions = [
+  {
+    label: '管理员信息',
+    key: 'admin_info',
+    icon: renderIcon(PersonIcon)
+  },
+  {
+    label: '修改密码',
+    key: 'update_password',
+    icon: renderIcon(LockIcon)
+  },
+  {
+    type: 'divider'
+  },
+  {
+    label: '注销',
+    key: 'logout',
+    icon: renderIcon(ExitIcon)
+  }
+];
+
 onMounted(() => {
   // 获取之前设置的主题颜色
   currentTheme.value = getCurrentTheme() === 'dark' ? darkTheme : undefined;
@@ -231,7 +263,22 @@ onMounted(() => {
   watch(route, (e: RouteLocationNormalizedLoaded) => {
     // 如果当前是登录页面，就隐藏侧边菜单
     hideSider.value = e.name === RouterViews.LOGIN.name;
+
+    // 刷新当前登录用户
+    let _user = localStorage.getItem(StoreEnum.USER);
+    if (_user !== null) {
+      user.value = JSON.parse(_user) as User;
+    } else {
+      user.value = null;
+    }
   });
+  // 刷新当前登录用户
+  let _user = localStorage.getItem(StoreEnum.USER);
+  if (_user !== null) {
+    user.value = JSON.parse(_user) as User;
+  } else {
+    user.value = null;
+  }
 });
 
 /**
@@ -264,6 +311,27 @@ const onSiderCollapsed = (collapsed: boolean) => {
     StoreEnum.SIDER_COLLAPSED,
     String(isSiderCollapsed.value)
   );
+};
+
+/**
+ * 处理头像下拉菜单选择事件
+ */
+const onAvatarSelect = (key: string | number) => {
+  switch (key) {
+    case 'logout':
+      window.$dialog.info({
+        title: '注销',
+        content: '确定要注销登录吗',
+        positiveText: '确定',
+        onPositiveClick: () => {
+          // 删除登录用户信息
+          localStorage.removeItem(StoreEnum.USER);
+          // 跳转登录页
+          router.push(RouterViews.LOGIN.name);
+        }
+      });
+      break;
+  }
 };
 </script>
 
@@ -298,7 +366,7 @@ const onSiderCollapsed = (collapsed: boolean) => {
           >
             <n-image
               :src="NolaIcon"
-              :preview-disabled="true"
+              preview-disabled
               :width="!isSiderCollapsed ? 64 : 42"
               :height="!isSiderCollapsed ? 64 : 42"
               alt="Nola"
@@ -314,22 +382,44 @@ const onSiderCollapsed = (collapsed: boolean) => {
         <n-layout>
           <n-layout-header :bordered="!hideSider">
             <n-row>
-              <n-col :span="20">
+              <n-col :span="10">
                 <div class="header-title" v-if="!hideSider">
                   <span>{{ route.meta['displayName'] }}</span>
                 </div>
               </n-col>
-              <n-col :span="4">
+              <n-col :span="14">
                 <!-- 右侧操作按钮 -->
                 <div class="header-options">
-                  <n-button circle @click="onSwitchTheme" secondary>
-                    <template #icon>
-                      <n-icon>
-                        <SunIcon v-if="currentTheme === undefined" />
-                        <MoonIcon v-else />
-                      </n-icon>
-                    </template>
-                  </n-button>
+                  <n-space>
+                    <div v-if="!hideSider">
+                      <n-dropdown
+                        trigger="click"
+                        :options="avatarOptions"
+                        show-arrow
+                        @select="onAvatarSelect"
+                      >
+                        <n-button round class="btn-avatar" strong secondary>
+                          <n-image
+                            class="avatar"
+                            :src="user?.avatar"
+                            width="22"
+                            height="22"
+                            preview-disabled
+                          />
+                          {{ user?.displayName }}
+                        </n-button>
+                      </n-dropdown>
+                    </div>
+
+                    <n-button circle @click="onSwitchTheme" secondary>
+                      <template #icon>
+                        <n-icon>
+                          <SunIcon v-if="currentTheme === undefined" />
+                          <MoonIcon v-else />
+                        </n-icon>
+                      </template>
+                    </n-button>
+                  </n-space>
                 </div>
               </n-col>
             </n-row>
@@ -390,5 +480,17 @@ const onSiderCollapsed = (collapsed: boolean) => {
 
 .n-layout-content {
   min-height: calc(100% - 64px);
+}
+
+.btn-avatar {
+  padding-left: 6px;
+  padding-right: 12px;
+}
+
+.btn-avatar .avatar {
+  border-radius: 99px;
+  padding: 0;
+  margin-right: 10px;
+  border: 1px solid rgb(153, 153, 153, 0.1);
 }
 </style>
