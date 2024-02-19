@@ -1,189 +1,229 @@
 <script setup lang="ts">
-import {onMounted, ref, watch} from "vue";
-import {Message} from "@arco-design/web-vue";
+import { Component, onMounted, ref, watch, h } from 'vue';
+import { RouteLocationNormalizedLoaded, useRoute } from 'vue-router';
+import { RouterViews } from './router/RouterViews.ts';
 import {
-  IconCaretRight,
-  IconCaretLeft,
-  IconHome,
-  IconCalendar,
-  IconSun,
-  IconMoon
-} from "@arco-design/web-vue/es/icon";
-import {RouteLocationNormalizedLoaded, useRoute, useRouter} from 'vue-router';
-import {RouterViews} from "./router/RouterViews.ts";
-import {changeTheme, initTheme} from "./utils/MyUtils.ts";
+  NIcon,
+  NLayout,
+  NLayoutContent,
+  NLayoutHeader,
+  NLayoutSider,
+  NMenu,
+  NCol,
+  NRow,
+  NConfigProvider,
+  NButton,
+  darkTheme,
+  zhCN,
+  dateZhCN
+} from 'naive-ui';
+import {
+  BookOutline as BookIcon,
+  PersonOutline as PersonIcon,
+  WineOutline as WineIcon,
+  SunnyOutline as SunIcon,
+  MoonOutline as MoonIcon
+} from '@vicons/ionicons5';
+import themeOverrides from './theme/theme.ts';
+import type { BuiltInGlobalTheme } from 'naive-ui/es/themes/interface';
+import { getCurrentTheme, setTheme } from './utils/MyUtils.ts';
+import AppProvider from './components/AppProvider/AppProvider.vue';
 
 // 当前主题颜色
-const currentTheme = ref("light");
+const currentTheme = ref<BuiltInGlobalTheme | undefined>();
 
 // 当前路由线路
 const route = useRoute();
-// 路由控制器
-const router = useRouter();
 
 // 是否隐藏左侧菜单
-const hideSider = ref(true)
+const hideSider = ref(true);
+
+function renderIcon(icon: Component) {
+  return () => h(NIcon, null, { default: () => h(icon) });
+}
+
+const menuOptions = [
+  {
+    label: '且听风吟',
+    key: 'hear-the-wind-sing',
+    icon: renderIcon(BookIcon)
+  },
+  {
+    label: '1973年的弹珠玩具',
+    key: 'pinball-1973',
+    icon: renderIcon(BookIcon),
+    disabled: true,
+    children: [
+      {
+        label: '鼠',
+        key: 'rat'
+      }
+    ]
+  },
+  {
+    label: '寻羊冒险记',
+    key: 'a-wild-sheep-chase',
+    disabled: true,
+    icon: renderIcon(BookIcon)
+  },
+  {
+    label: '舞，舞，舞',
+    key: 'dance-dance-dance',
+    icon: renderIcon(BookIcon),
+    children: [
+      {
+        type: 'group',
+        label: '人物',
+        key: 'people',
+        children: [
+          {
+            label: '叙事者',
+            key: 'narrator',
+            icon: renderIcon(PersonIcon)
+          },
+          {
+            label: '羊男',
+            key: 'sheep-man',
+            icon: renderIcon(PersonIcon)
+          }
+        ]
+      },
+      {
+        label: '饮品',
+        key: 'beverage',
+        icon: renderIcon(WineIcon),
+        children: [
+          {
+            label: '威士忌',
+            key: 'whisky'
+          }
+        ]
+      },
+      {
+        label: '食物',
+        key: 'food',
+        children: [
+          {
+            label: '三明治',
+            key: 'sandwich'
+          }
+        ]
+      },
+      {
+        label: '过去增多，未来减少',
+        key: 'the-past-increases-the-future-recedes'
+      }
+    ]
+  }
+];
 
 onMounted(() => {
-  // 初始化主题颜色
-  currentTheme.value = initTheme();
+  // 获取之前设置的主题颜色
+  currentTheme.value = getCurrentTheme() === 'dark' ? darkTheme : undefined;
+
+  // 监听路由变化
   watch(route, (e: RouteLocationNormalizedLoaded) => {
-    const hideViews = [RouterViews.LOGIN]
+    const hideViews = [RouterViews.LOGIN];
+    // 当前路由在无需显示左侧菜单的页面
     hideSider.value = hideViews.includes(e.name as RouterViews);
   });
 });
 
-// 左边菜单栏是否收缩
-const collapsed = ref(false);
-
 /**
- * 左侧菜单栏收缩/展开
+ * 主题切换事件
  */
-const onCollapse = () => {
-  collapsed.value = !collapsed.value;
+const onSwitchTheme = () => {
+  if (currentTheme.value !== undefined) {
+    currentTheme.value = undefined;
+    setTheme('light');
+  } else {
+    currentTheme.value = darkTheme;
+    setTheme('dark');
+  }
 };
-
-const onClickMenuItem = (key: number) => {
-  Message.info({content: `You select ${key}`, showIcon: true});
-};
-
-const onChangeTheme = () => {
-  currentTheme.value = changeTheme();
-}
 </script>
 
 <template>
-  <a-layout class="layout-main">
-    <a-layout-sider v-if="!hideSider" hide-trigger collapsible :collapsed="collapsed">
-      <a-menu
-          :defaultOpenKeys="['1']"
-          :defaultSelectedKeys="['0_3']"
-          :style="{ width: '100%' }"
-          @menuItemClick="onClickMenuItem"
-      >
-        <div class="logo">
-          <a-avatar
-              shape="square"
-              style="background-color: rgba(255, 255, 255, 0);"
-              :size="34"
+  <n-config-provider
+    class="container"
+    :theme-overrides="themeOverrides"
+    :theme="currentTheme"
+    :locale="zhCN"
+    :date-locale="dateZhCN"
+  >
+    <AppProvider>
+      <n-layout class="main-layout" has-sider>
+        <n-layout-sider
+          v-if="!hideSider"
+          bordered
+          show-trigger
+          collapse-mode="width"
+          :collapsed-width="64"
+          :width="240"
+          :native-scrollbar="false"
+        >
+          <n-menu
+            :collapsed-width="64"
+            :collapsed-icon-size="22"
+            :options="menuOptions"
+          />
+        </n-layout-sider>
+        <n-layout>
+          <n-layout-header :bordered="!hideSider">
+            <n-row>
+              <n-col :span="20">
+                <div v-if="hideSider"></div>
+              </n-col>
+              <n-col :span="4">
+                <!-- 右侧操作按钮 -->
+                <div class="header-options">
+                  <n-button circle @click="onSwitchTheme" secondary>
+                    <template #icon>
+                      <n-icon>
+                        <SunIcon v-if="currentTheme === undefined" />
+                        <MoonIcon v-else />
+                      </n-icon>
+                    </template>
+                  </n-button>
+                </div>
+              </n-col>
+            </n-row>
+          </n-layout-header>
+          <n-layout-content
+            content-style="padding: 24px;"
+            content-class="content"
           >
-            <img
-                alt="avatar"
-                src="./assets/nola.png"
-            />
-          </a-avatar>
-          <span class="menu-title">Nola</span>
-        </div>
-        <a-menu-item key="0_1" disabled>
-          <IconHome/>
-          Menu 1
-        </a-menu-item>
-        <a-menu-item key="0_2">
-          <IconCalendar/>
-          Menu 2
-        </a-menu-item>
-        <a-menu-item key="0_3">
-          <IconCalendar/>
-          Menu 3
-        </a-menu-item>
-        <a-sub-menu key="1">
-          <template #title>
-            <span><IconCalendar/>Navigation 1</span>
-          </template>
-          <a-menu-item key="1_1">Menu 1</a-menu-item>
-          <a-menu-item key="1_2">Menu 2</a-menu-item>
-          <a-sub-menu key="2" title="Navigation 2">
-            <a-menu-item key="2_1">Menu 1</a-menu-item>
-            <a-menu-item key="2_2">Menu 2</a-menu-item>
-          </a-sub-menu>
-          <a-sub-menu key="3" title="Navigation 3">
-            <a-menu-item key="3_1">Menu 1</a-menu-item>
-            <a-menu-item key="3_2">Menu 2</a-menu-item>
-            <a-menu-item key="3_3">Menu 3</a-menu-item>
-          </a-sub-menu>
-        </a-sub-menu>
-        <a-sub-menu key="4">
-          <template #title>
-            <span><IconCalendar/>Navigation 4</span>
-          </template>
-          <a-menu-item key="4_1">Menu 1</a-menu-item>
-          <a-menu-item key="4_2">Menu 2</a-menu-item>
-          <a-menu-item key="4_3">Menu 3</a-menu-item>
-        </a-sub-menu>
-      </a-menu>
-    </a-layout-sider>
-    <a-layout>
-      <a-layout-header>
-        <a-row>
-          <a-col :span="20">
-            <!-- 左侧菜单折叠按钮 -->
-            <div class="header-collapse" v-if="!hideSider">
-              <a-button shape="round" @click="onCollapse">
-                <IconCaretRight v-if="collapsed"/>
-                <IconCaretLeft v-else/>
-              </a-button>
-            </div>
-          </a-col>
-          <a-col :span="4">
-            <!-- 右侧操作按钮 -->
-            <div class="header-options">
-              <a-space>
-                <a-button shape="circle" @click="onChangeTheme">
-                  <IconSun v-if="currentTheme === 'light'"/>
-                  <IconMoon v-else />
-                </a-button>
-              </a-space>
-            </div>
-          </a-col>
-        </a-row>
-
-
-      </a-layout-header>
-      <a-layout-content>
-        <router-view/>
-      </a-layout-content>
-    </a-layout>
-  </a-layout>
+            <router-view />
+          </n-layout-content>
+        </n-layout>
+      </n-layout>
+    </AppProvider>
+  </n-config-provider>
 </template>
 
 <style scoped>
-.layout-main {
+.container {
+  min-height: 100%;
   height: 100%;
 }
-
-.layout-main :deep(.arco-layout-sider) .logo {
-  height: 32px;
-  line-height: 32px;
-  margin: 4px;
+.main-layout {
+  min-height: 100%;
+  height: 100%;
 }
-
-.layout-main :deep(.arco-layout-header) {
+.n-layout-header {
   height: 64px;
-  line-height: 64px;
-  padding: 0 20px;
-  background: var(--color-bg-3);
-}
-
-.layout-main :deep(.arco-layout-content) {
-  color: var(--color-text-2);
-  font-weight: 400;
-  font-size: 14px;
-  background: var(--color-bg-3);
-}
-
-.layout-main :deep(.arco-layout-content) {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  font-size: 16px;
-  font-stretch: condensed;
-  text-align: center;
 }
 
 .header-options {
-  display: flex;
   height: 64px;
-  line-height: 64px;
-  justify-content: end;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: end;
+  padding: 0 20px;
+}
+
+.n-layout-content {
+  min-height: calc(100% - 64px);
 }
 </style>
