@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { Component, onMounted, ref, watch, h } from 'vue';
-import { RouteLocationNormalizedLoaded, useRoute } from 'vue-router';
+import {
+  RouteLocationNormalizedLoaded,
+  RouterLink,
+  useRoute
+} from 'vue-router';
 import { RouterViews } from './router/RouterViews.ts';
 import {
   NIcon,
@@ -13,21 +17,32 @@ import {
   NRow,
   NConfigProvider,
   NButton,
+  NImage,
   darkTheme,
   zhCN,
   dateZhCN
 } from 'naive-ui';
 import {
+  BarChartOutline as BarChartIcon,
+  LibraryOutline as CategoryIcon,
   BookOutline as BookIcon,
-  PersonOutline as PersonIcon,
-  WineOutline as WineIcon,
+  PricetagsOutline as TagIcon,
+  MoonOutline as MoonIcon,
   SunnyOutline as SunIcon,
-  MoonOutline as MoonIcon
+  ChatboxOutline as CommentIcon,
+  FileTrayFullOutline as FileIcon,
+  AtOutline as AtIcon,
+  MenuOutline as MenuIcon,
+  SettingsOutline as SettingIcon,
+  SaveOutline as BackUpIcon,
+  ServerOutline as SystemIcon
 } from '@vicons/ionicons5';
 import themeOverrides from './theme/theme.ts';
 import type { BuiltInGlobalTheme } from 'naive-ui/es/themes/interface';
 import { getCurrentTheme, setTheme } from './utils/MyUtils.ts';
 import AppProvider from './components/AppProvider/AppProvider.vue';
+import { StoreEnum } from './models/enum/StoreEnum.ts';
+import NolaIcon from './assets/nola.png';
 
 // 当前主题颜色
 const currentTheme = ref<BuiltInGlobalTheme | undefined>();
@@ -36,98 +51,195 @@ const currentTheme = ref<BuiltInGlobalTheme | undefined>();
 const route = useRoute();
 
 // 是否隐藏左侧菜单
-const hideSider = ref(true);
+const hideSider = ref(false);
 
-function renderIcon(icon: Component) {
-  return () => h(NIcon, null, { default: () => h(icon) });
-}
+// 侧边栏是否折叠
+const isSiderCollapsed = ref(true);
 
+// 菜单选项
 const menuOptions = [
   {
-    label: '且听风吟',
-    key: 'hear-the-wind-sing',
+    label: () =>
+      h(
+        RouterLink,
+        {
+          to: {
+            name: RouterViews.MAIN.name
+          }
+        },
+        { default: () => RouterViews.MAIN.menuName }
+      ),
+    key: RouterViews.MAIN.name,
+    icon: renderIcon(BarChartIcon)
+  },
+  {
+    type: 'divider'
+  },
+  {
+    label: () =>
+      h(
+        RouterLink,
+        {
+          to: {
+            name: RouterViews.POST.name
+          }
+        },
+        { default: () => RouterViews.POST.menuName }
+      ),
+    key: RouterViews.POST.name,
     icon: renderIcon(BookIcon)
   },
   {
-    label: '1973年的弹珠玩具',
-    key: 'pinball-1973',
-    icon: renderIcon(BookIcon),
-    disabled: true,
-    children: [
-      {
-        label: '鼠',
-        key: 'rat'
-      }
-    ]
+    label: () =>
+      h(
+        RouterLink,
+        {
+          to: {
+            name: RouterViews.TAG.name
+          }
+        },
+        { default: () => RouterViews.TAG.menuName }
+      ),
+    key: RouterViews.TAG.name,
+    icon: renderIcon(TagIcon)
   },
   {
-    label: '寻羊冒险记',
-    key: 'a-wild-sheep-chase',
-    disabled: true,
-    icon: renderIcon(BookIcon)
+    label: () =>
+      h(
+        RouterLink,
+        {
+          to: {
+            name: RouterViews.CATEGORY.name
+          }
+        },
+        { default: () => RouterViews.CATEGORY.menuName }
+      ),
+    key: RouterViews.CATEGORY.name,
+    icon: renderIcon(CategoryIcon)
   },
   {
-    label: '舞，舞，舞',
-    key: 'dance-dance-dance',
-    icon: renderIcon(BookIcon),
-    children: [
-      {
-        type: 'group',
-        label: '人物',
-        key: 'people',
-        children: [
-          {
-            label: '叙事者',
-            key: 'narrator',
-            icon: renderIcon(PersonIcon)
-          },
-          {
-            label: '羊男',
-            key: 'sheep-man',
-            icon: renderIcon(PersonIcon)
+    label: () =>
+      h(
+        RouterLink,
+        {
+          to: {
+            name: RouterViews.COMMENT.name
           }
-        ]
-      },
-      {
-        label: '饮品',
-        key: 'beverage',
-        icon: renderIcon(WineIcon),
-        children: [
-          {
-            label: '威士忌',
-            key: 'whisky'
+        },
+        { default: () => RouterViews.COMMENT.menuName }
+      ),
+    key: RouterViews.COMMENT.name,
+    icon: renderIcon(CommentIcon)
+  },
+  {
+    label: () =>
+      h(
+        RouterLink,
+        {
+          to: {
+            name: RouterViews.ATTACHMENT.name
           }
-        ]
-      },
-      {
-        label: '食物',
-        key: 'food',
-        children: [
-          {
-            label: '三明治',
-            key: 'sandwich'
+        },
+        { default: () => RouterViews.ATTACHMENT.menuName }
+      ),
+    key: RouterViews.ATTACHMENT.name,
+    icon: renderIcon(FileIcon)
+  },
+  {
+    label: () =>
+      h(
+        RouterLink,
+        {
+          to: {
+            name: RouterViews.LINK.name
           }
-        ]
-      },
-      {
-        label: '过去增多，未来减少',
-        key: 'the-past-increases-the-future-recedes'
-      }
-    ]
+        },
+        { default: () => RouterViews.LINK.menuName }
+      ),
+    key: RouterViews.LINK.name,
+    icon: renderIcon(AtIcon)
+  },
+  {
+    label: () =>
+      h(
+        RouterLink,
+        {
+          to: {
+            name: RouterViews.MENU.name
+          }
+        },
+        { default: () => RouterViews.MENU.menuName }
+      ),
+    key: RouterViews.MENU.name,
+    icon: renderIcon(MenuIcon)
+  },
+  {
+    type: 'divider'
+  },
+  {
+    label: () =>
+      h(
+        RouterLink,
+        {
+          to: {
+            name: RouterViews.SETTING.name
+          }
+        },
+        { default: () => RouterViews.SETTING.menuName }
+      ),
+    key: RouterViews.SETTING.name,
+    icon: renderIcon(SettingIcon)
+  },
+  {
+    label: () =>
+      h(
+        RouterLink,
+        {
+          to: {
+            name: RouterViews.BACKUP.name
+          }
+        },
+        { default: () => RouterViews.BACKUP.menuName }
+      ),
+    key: RouterViews.BACKUP.name,
+    icon: renderIcon(BackUpIcon)
+  },
+  {
+    label: () =>
+      h(
+        RouterLink,
+        {
+          to: {
+            name: RouterViews.SYSTEM.name
+          }
+        },
+        { default: () => RouterViews.SYSTEM.menuName }
+      ),
+    key: RouterViews.SYSTEM.name,
+    icon: renderIcon(SystemIcon)
   }
 ];
 
 onMounted(() => {
   // 获取之前设置的主题颜色
   currentTheme.value = getCurrentTheme() === 'dark' ? darkTheme : undefined;
+  // 获取之前侧边栏折叠状态
+  isSiderCollapsed.value =
+    localStorage.getItem(StoreEnum.SIDER_COLLAPSED) === 'true';
 
   // 监听路由变化
   watch(route, (e: RouteLocationNormalizedLoaded) => {
-    const hideViews = [RouterViews.LOGIN];
-    // 当前路由在无需显示左侧菜单的页面
-    hideSider.value = hideViews.includes(e.name as RouterViews);
+    // 如果当前是登录页面，就隐藏侧边菜单
+    hideSider.value = e.name === RouterViews.LOGIN.name;
   });
 });
+
+/**
+ * 渲染图标
+ */
+function renderIcon(icon: Component) {
+  return () => h(NIcon, null, { default: () => h(icon) });
+}
 
 /**
  * 主题切换事件
@@ -140,6 +252,18 @@ const onSwitchTheme = () => {
     currentTheme.value = darkTheme;
     setTheme('dark');
   }
+};
+
+/**
+ * 侧边栏折叠事件
+ */
+const onSiderCollapsed = (collapsed: boolean) => {
+  isSiderCollapsed.value = collapsed;
+  // 将侧边栏折叠记录
+  localStorage.setItem(
+    StoreEnum.SIDER_COLLAPSED,
+    String(isSiderCollapsed.value)
+  );
 };
 </script>
 
@@ -161,18 +285,39 @@ const onSwitchTheme = () => {
           :collapsed-width="64"
           :width="240"
           :native-scrollbar="false"
+          :on-update-collapsed="onSiderCollapsed"
+          :collapsed="isSiderCollapsed"
         >
+          <div
+            class="sider-logo transition"
+            :style="
+              !isSiderCollapsed
+                ? 'padding: 0 0 0 88px;margin-top: 5px;'
+                : 'padding: 0 0 0 12px; height: 48px;margin-top: 12px;'
+            "
+          >
+            <n-image
+              :src="NolaIcon"
+              :preview-disabled="true"
+              :width="!isSiderCollapsed ? 64 : 42"
+              :height="!isSiderCollapsed ? 64 : 42"
+              alt="Nola"
+            />
+          </div>
           <n-menu
             :collapsed-width="64"
             :collapsed-icon-size="22"
             :options="menuOptions"
+            :value="route.name"
           />
         </n-layout-sider>
         <n-layout>
           <n-layout-header :bordered="!hideSider">
             <n-row>
               <n-col :span="20">
-                <div v-if="hideSider"></div>
+                <div class="header-title" v-if="!hideSider">
+                  <span>{{ route.meta['displayName'] }}</span>
+                </div>
               </n-col>
               <n-col :span="4">
                 <!-- 右侧操作按钮 -->
@@ -221,6 +366,26 @@ const onSwitchTheme = () => {
   justify-content: center;
   align-items: end;
   padding: 0 20px;
+}
+
+.header-title {
+  height: 64px;
+  line-height: 64px;
+  padding: 0 20px;
+}
+
+.header-title span {
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+.sider-logo {
+  padding: 0;
+  height: 64px;
+}
+
+.transition :deep(img) {
+  transition: all 0.5s ease;
 }
 
 .n-layout-content {

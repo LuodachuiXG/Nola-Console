@@ -159,7 +159,7 @@ const onFormLoginSubmit = (e: MouseEvent) => {
             // 将返回的用户信息和 Token 令牌存储
             localStorage.setItem(StoreEnum.USER, JSON.stringify(res.data));
             // 跳转控制台页面
-            router.push(RouterViews.MAIN);
+            router.push(RouterViews.MAIN.name);
           })
           .catch((err) => {
             // 登录失败
