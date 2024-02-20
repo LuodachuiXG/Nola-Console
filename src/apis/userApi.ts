@@ -9,7 +9,7 @@ export function login(username: string, password: string) {
     method: 'POST',
     data: {
       username: username,
-      password: password,
-    },
+      password: password
+    }
   });
 }

@@ -6,7 +6,7 @@ import service from './index.ts';
 export function getBlogInfo() {
   return service({
     url: '/api/config/blog',
-    method: 'GET',
+    method: 'GET'
   });
 }
 
@@ -21,8 +21,8 @@ export function initBlogInfo(title: string, subtitle: string) {
     method: 'POST',
     data: {
       title: title,
-      subtitle: subtitle,
-    },
+      subtitle: subtitle
+    }
   });
 }
 
@@ -37,7 +37,7 @@ export function createBlogAdmin(
   username: string,
   displayName: string,
   email: string,
-  password: string,
+  password: string
 ) {
   return service({
     url: '/admin/config/blog/admin',
@@ -46,7 +46,7 @@ export function createBlogAdmin(
       username: username,
       displayName: displayName,
       email: email,
-      password: password,
-    },
+      password: password
+    }
   });
 }
