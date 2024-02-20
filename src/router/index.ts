@@ -72,6 +72,15 @@ export const router = createRouter({
       }
     },
     {
+      path: RouterViews.DAILY.path,
+      name: RouterViews.DAILY.name,
+      component: () => import('../views/DailyView.vue'),
+      meta: {
+        displayName: RouterViews.DAILY.displayName,
+        menuName: RouterViews.DAILY.menuName
+      }
+    },
+    {
       path: RouterViews.ATTACHMENT.path,
       name: RouterViews.ATTACHMENT.name,
       component: () => import('../views/AttachmentView.vue'),

@@ -2,7 +2,6 @@
 import { Component, onMounted, ref, watch, h } from 'vue';
 import {
   RouteLocationNormalizedLoaded,
-  RouterLink,
   useRoute
 } from 'vue-router';
 import { RouterViews } from './router/RouterViews.ts';
@@ -40,7 +39,8 @@ import {
   ServerOutline as SystemIcon,
   PersonCircleOutline as PersonIcon,
   ExitOutline as ExitIcon,
-  LockClosedOutline as LockIcon
+  LockClosedOutline as LockIcon,
+  LeafOutline as DailyIcon
 } from '@vicons/ionicons5';
 import themeOverrides from './theme/theme.ts';
 import type { BuiltInGlobalTheme } from 'naive-ui/es/themes/interface';
@@ -72,16 +72,7 @@ const isManualUpdateSider = ref(false);
 // 菜单选项
 const menuOptions = [
   {
-    label: () =>
-      h(
-        RouterLink,
-        {
-          to: {
-            name: RouterViews.MAIN.name
-          }
-        },
-        { default: () => RouterViews.MAIN.menuName }
-      ),
+    label: RouterViews.MAIN.menuName,
     key: RouterViews.MAIN.name,
     icon: renderIcon(BarChartIcon)
   },
@@ -89,100 +80,42 @@ const menuOptions = [
     type: 'divider'
   },
   {
-    label: () =>
-      h(
-        RouterLink,
-        {
-          to: {
-            name: RouterViews.POST.name
-          }
-        },
-        { default: () => RouterViews.POST.menuName }
-      ),
+    label: RouterViews.POST.menuName,
     key: RouterViews.POST.name,
     icon: renderIcon(BookIcon)
   },
   {
-    label: () =>
-      h(
-        RouterLink,
-        {
-          to: {
-            name: RouterViews.TAG.name
-          }
-        },
-        { default: () => RouterViews.TAG.menuName }
-      ),
+    label: RouterViews.TAG.menuName,
     key: RouterViews.TAG.name,
     icon: renderIcon(TagIcon)
   },
   {
-    label: () =>
-      h(
-        RouterLink,
-        {
-          to: {
-            name: RouterViews.CATEGORY.name
-          }
-        },
-        { default: () => RouterViews.CATEGORY.menuName }
-      ),
+    label: RouterViews.CATEGORY.menuName,
     key: RouterViews.CATEGORY.name,
     icon: renderIcon(CategoryIcon)
   },
   {
-    label: () =>
-      h(
-        RouterLink,
-        {
-          to: {
-            name: RouterViews.COMMENT.name
-          }
-        },
-        { default: () => RouterViews.COMMENT.menuName }
-      ),
+    label: RouterViews.COMMENT.menuName,
     key: RouterViews.COMMENT.name,
     icon: renderIcon(CommentIcon)
   },
   {
-    label: () =>
-      h(
-        RouterLink,
-        {
-          to: {
-            name: RouterViews.ATTACHMENT.name
-          }
-        },
-        { default: () => RouterViews.ATTACHMENT.menuName }
-      ),
+    label: RouterViews.DAILY.menuName,
+    key: RouterViews.DAILY.name,
+    icon: renderIcon(DailyIcon)
+  },
+  {
+    label: RouterViews.ATTACHMENT.menuName,
     key: RouterViews.ATTACHMENT.name,
     icon: renderIcon(FileIcon)
   },
   {
-    label: () =>
-      h(
-        RouterLink,
-        {
-          to: {
-            name: RouterViews.LINK.name
-          }
-        },
-        { default: () => RouterViews.LINK.menuName }
-      ),
+    label: RouterViews.LINK.menuName,
     key: RouterViews.LINK.name,
     icon: renderIcon(AtIcon)
   },
   {
-    label: () =>
-      h(
-        RouterLink,
-        {
-          to: {
-            name: RouterViews.MENU.name
-          }
-        },
-        { default: () => RouterViews.MENU.menuName }
-      ),
+    label: RouterViews.MENU.menuName,
     key: RouterViews.MENU.name,
     icon: renderIcon(MenuIcon)
   },
@@ -190,44 +123,17 @@ const menuOptions = [
     type: 'divider'
   },
   {
-    label: () =>
-      h(
-        RouterLink,
-        {
-          to: {
-            name: RouterViews.SETTING.name
-          }
-        },
-        { default: () => RouterViews.SETTING.menuName }
-      ),
+    label: RouterViews.SETTING.menuName,
     key: RouterViews.SETTING.name,
     icon: renderIcon(SettingIcon)
   },
   {
-    label: () =>
-      h(
-        RouterLink,
-        {
-          to: {
-            name: RouterViews.BACKUP.name
-          }
-        },
-        { default: () => RouterViews.BACKUP.menuName }
-      ),
+    label: RouterViews.BACKUP.menuName,
     key: RouterViews.BACKUP.name,
     icon: renderIcon(BackUpIcon)
   },
   {
-    label: () =>
-      h(
-        RouterLink,
-        {
-          to: {
-            name: RouterViews.SYSTEM.name
-          }
-        },
-        { default: () => RouterViews.SYSTEM.menuName }
-      ),
+    label: RouterViews.SYSTEM.menuName,
     key: RouterViews.SYSTEM.name,
     icon: renderIcon(SystemIcon)
   }
@@ -319,7 +225,12 @@ const onSiderCollapsed = (collapsed: boolean) => {
   // 则认为用户还是希望根据窗口大小修改侧边栏，所以设置 isManualUpdateSider = false，恢复侧边栏自适应。
   if (width <= 768 && isManualUpdateSider.value && collapsed) {
     isManualUpdateSider.value = false;
-  } else isManualUpdateSider.value = !(width > 768 && isManualUpdateSider.value && !collapsed);
+  } else
+    isManualUpdateSider.value = !(
+      width > 768 &&
+      isManualUpdateSider.value &&
+      !collapsed
+    );
 
   // 修改侧边栏折叠状态
   isSiderCollapsed.value = collapsed;
@@ -329,6 +240,14 @@ const onSiderCollapsed = (collapsed: boolean) => {
     String(isSiderCollapsed.value)
   );
 };
+
+/**
+ * 侧边栏菜单项改变事件
+ */
+const onSiderMenuUpdate = (key: string) => {
+  // 跳转页面
+  router.push(key);
+}
 
 /**
  * 处理头像下拉菜单选择事件
@@ -394,6 +313,7 @@ const onAvatarSelect = (key: string | number) => {
             :collapsed-icon-size="22"
             :options="menuOptions"
             :value="route.name"
+            @update-value="onSiderMenuUpdate"
           />
         </n-layout-sider>
         <n-layout>

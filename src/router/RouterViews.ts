@@ -20,7 +20,7 @@ export class RouterViews {
     name: 'login',
     path: '/',
     menuName: '',
-    displayName: ''
+    displayName: '登录'
   };
   static readonly MAIN: RouterItem = {
     name: 'main',
@@ -38,19 +38,25 @@ export class RouterViews {
     name: 'tag',
     path: '/tag',
     menuName: '标签',
-    displayName: '标签'
+    displayName: '文章标签'
   };
   static readonly CATEGORY: RouterItem = {
     name: 'category',
     path: '/category',
     menuName: '分类',
-    displayName: '分类'
+    displayName: '文章分类'
   };
   static readonly COMMENT: RouterItem = {
     name: 'comment',
     path: '/comment',
     menuName: '评论',
     displayName: '评论'
+  };
+  static readonly DAILY: RouterItem = {
+    name: 'daily',
+    path: '/daily',
+    menuName: '日常',
+    displayName: '日常'
   };
   static readonly ATTACHMENT: RouterItem = {
     name: 'attachment',
