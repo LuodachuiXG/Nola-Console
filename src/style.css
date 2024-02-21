@@ -1,12 +1,17 @@
 html,
 body,
 #app {
-    padding: 0;
-    margin: 0;
-    height: 100vh;
-    --color-primary: #306fff;
+  padding: 0;
+  margin: 0;
+  height: 100vh;
+  --color-primary: #306fff;
 }
 
 .transition {
-    transition: all .2s ease-in-out;
+  transition: all 0.2s ease-in-out;
+}
+
+/*对话框中的表单*/
+.dialog-form {
+  margin-top: 30px;
 }

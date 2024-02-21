@@ -85,6 +85,8 @@ const isManualUpdateSider = ref(false);
 // 标记当前是否是小窗（手机模式）
 const isSmallWindow = ref(false);
 
+// 重新登录对话框表单引用
+const formReLoginRef = ref<FormInst | null>(null);
 // 是否显示重新登录对话框，用于登录过期时快捷重新登录
 const visibleReLoginDialog = ref(false);
 // 重新登录对话框是否加载中
@@ -94,8 +96,6 @@ const formReLogin = reactive({
   username: '',
   password: ''
 });
-// 重新登录对话框表单引用
-const formReLoginRef = ref<FormInst | null>(null);
 
 // 左侧菜单选项
 const menuOptions = [
@@ -396,7 +396,7 @@ function onReLoginDialogLoginClick() {
         <template #default>
           <n-form
             ref="formReLoginRef"
-            class="reLogin-form"
+            class="dialog-form"
             :model="formReLogin"
             :show-label="false"
           >
@@ -611,9 +611,5 @@ function onReLoginDialogLoginClick() {
   border-radius: 999px;
   color: white;
   font-size: .8em;
-}
-
-.reLogin-form {
-  margin-top: 30px;
 }
 </style>
