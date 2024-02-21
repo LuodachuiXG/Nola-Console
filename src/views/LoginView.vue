@@ -14,6 +14,7 @@ import {
   FormInst,
   FormItemRule
 } from 'naive-ui';
+import { errorMsg, successMsg } from '../utils/Message.ts';
 
 /**
  * 标记当前模式的枚举类
@@ -90,7 +91,7 @@ const refreshBlogInfo = () => {
       }
     })
     .catch((err) => {
-      window.$message.error('获取博客信息失败，' + err);
+      errorMsg('获取博客信息失败，' + err);
     });
 };
 
@@ -107,12 +108,12 @@ const onFormCreateBlogSubmit = () => {
         initBlogInfo(formCreateBlog.title, formCreateBlog.subtitle)
           .then(() => {
             // 初始化成功，刷新博客信息
-            window.$message.success('博客初始化成功');
+            successMsg('博客初始化成功');
             refreshBlogInfo();
             isCreateBlog.value = false;
           })
           .catch((err) => {
-            window.$message.error(err);
+            errorMsg(err);
             isCreateBlog.value = false;
           });
       }
@@ -139,15 +140,15 @@ const onFormCreateAdminSubmit = () => {
           .then((res) => {
             if (res.data) {
               // 创建管理员成功，刷新博客信息
-              window.$message.success('管理员创建成功');
+              successMsg('管理员创建成功');
               refreshBlogInfo();
             } else {
-              window.$message.error('创建管理员失败，请查看后台日志');
+              errorMsg('创建管理员失败，请查看后台日志')
             }
             isCreateAdmin.value = false;
           })
           .catch((err) => {
-            window.$message.error(err);
+            errorMsg(err);
             isCreateAdmin.value = false;
           });
       }
@@ -177,7 +178,7 @@ const onFormLoginSubmit = (e: MouseEvent) => {
           })
           .catch((err) => {
             // 登录失败
-            window.$message.error(err);
+            errorMsg(err);
             isLogin.value = false;
           });
       }

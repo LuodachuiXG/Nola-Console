@@ -1,6 +1,7 @@
 import axios, { AxiosRequestHeaders } from 'axios';
 import { StoreEnum } from '../models/enum/StoreEnum.ts';
 import { User } from '../models/User.ts';
+import bus from '../utils/EventBus.ts';
 
 // 创建 axios 实例
 const service = axios.create({
@@ -49,9 +50,9 @@ service.interceptors.response.use(
         // Token 过期
         // 移除用户配置信息
         localStorage.removeItem(StoreEnum.USER);
-        // 弹出登录对话框
-
-        return Promise.reject('登录已经过期');
+        // 发送登录过期消息
+        bus.emit('loginExpired')
+        return Promise.reject('登录过期');
       }
       return Promise.reject(err.response.data.errMsg);
     }

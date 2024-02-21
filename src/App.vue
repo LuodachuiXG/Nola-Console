@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Component, onMounted, ref, watch, h } from 'vue';
+import { Component, onMounted, ref, watch, h, reactive } from 'vue';
 import { RouteLocationNormalizedLoaded, useRoute } from 'vue-router';
 import { RouterViews } from './router/RouterViews.ts';
 import {
@@ -16,9 +16,14 @@ import {
   NImage,
   NSpace,
   NDropdown,
+  NModal,
   darkTheme,
   zhCN,
-  dateZhCN
+  dateZhCN,
+  NForm,
+  NInput,
+  NFormItem,
+  FormInst
 } from 'naive-ui';
 import {
   BarChartOutline as BarChartIcon,
@@ -47,7 +52,9 @@ import { StoreEnum } from './models/enum/StoreEnum.ts';
 import NolaIcon from './assets/nola.png';
 import { User } from './models/User.ts';
 import router from './router';
-import { confirmDialog } from './utils/Message.ts';
+import { confirmDialog, errorMsg, successMsg } from './utils/Message.ts';
+import bus from './utils/EventBus.ts';
+import { login } from './apis/userApi.ts';
 
 // 当前登录用户
 const user = ref<User | null>(null);
@@ -70,7 +77,19 @@ const isManualUpdateSider = ref(false);
 // 标记当前是否是小窗（手机模式）
 const isSmallWindow = ref(false);
 
-// 菜单选项
+// 是否显示重新登录对话框，用于登录过期时快捷重新登录
+const visibleReLoginDialog = ref(false);
+// 重新登录对话框是否加载中
+const isReLoginLoading = ref(false);
+// 重新登录对话框表单
+const formReLogin = reactive({
+  username: '',
+  password: ''
+});
+// 重新登录对话框表单引用
+const formReLoginRef = ref<FormInst | null>(null);
+
+// 左侧菜单选项
 const menuOptions = [
   {
     label: RouterViews.MAIN.menuName,
@@ -189,8 +208,17 @@ onMounted(() => {
     selfAdaptionWidth();
   });
   selfAdaptionWidth();
+
+  // 监听事件总线中登录过期消息
+  bus.on('loginExpired', () => {
+    // 收到登录过期消息，显示重新登录对话框
+    visibleReLoginDialog.value = true;
+  });
 });
 
+/**
+ * 根据窗口宽度自适应设置环境变量
+ */
 const selfAdaptionWidth = () => {
   let width = window.document.documentElement.clientWidth;
   if (!isManualUpdateSider.value) {
@@ -272,6 +300,62 @@ const onAvatarSelect = (key: string | number) => {
       break;
   }
 };
+
+/**
+ * 清空重新登录对话框表单内容
+ */
+const clearReLoginForm = () => {
+  formReLogin.username = '';
+  formReLogin.password = '';
+};
+
+/**
+ * 重新登录对话框，返回登录页按钮点击事件
+ */
+const onReLoginDialogCancelClick = () => {
+  confirmDialog('确定要返回登录页吗？未保存的内容将丢失！', () => {
+    // 隐藏重新登录对话框
+    visibleReLoginDialog.value = false;
+    // 清空重新登录对话框表单内容
+    clearReLoginForm();
+    // 清空登录记录
+    localStorage.removeItem(StoreEnum.USER);
+    // 返回登录页
+    router.push(RouterViews.LOGIN.name);
+  });
+  return false;
+};
+
+function onReLoginDialogLoginClick() {
+  // 验证表单是否有错误
+  formReLoginRef.value
+    ?.validate((errors) => {
+      if (!errors) {
+        isReLoginLoading.value = true;
+        // 登录
+        login(formReLogin.username, formReLogin.password)
+          .then((res) => {
+            // 登录成功
+            // 将返回的用户信息和 Token 令牌存储
+            localStorage.setItem(StoreEnum.USER, JSON.stringify(res.data));
+            isReLoginLoading.value = false;
+            // 关闭重新登录对话框显示
+            visibleReLoginDialog.value = false;
+            // 清空重新登录对话框表单
+            clearReLoginForm();
+            successMsg('登录成功');
+          })
+          .catch((err) => {
+            // 登录失败
+            errorMsg(err);
+            isReLoginLoading.value = false;
+          });
+      }
+    })
+    .catch(() => {});
+
+  return false;
+}
 </script>
 
 <template>
@@ -283,6 +367,54 @@ const onAvatarSelect = (key: string | number) => {
     :date-locale="dateZhCN"
   >
     <AppProvider>
+      <!-- 重新登录模态框 -->
+      <n-modal
+        ref="reLoginDialog"
+        v-model:show="visibleReLoginDialog"
+        preset="dialog"
+        title="登录过期，重新登录"
+        positive-text="登录"
+        negative-text="返回登录页"
+        :mask-closable="false"
+        :close-on-esc="false"
+        :closable="false"
+        :loading="isReLoginLoading"
+        @positiveClick="onReLoginDialogLoginClick"
+        @negativeClick="onReLoginDialogCancelClick"
+      >
+        <template #default>
+          <n-form
+            ref="formReLoginRef"
+            class="reLogin-form"
+            :model="formReLogin"
+            :show-label="false"
+          >
+            <n-form-item
+              path="username"
+              :rule="{ required: true, message: '请输入用户名' }"
+            >
+              <n-input
+                v-model:value="formReLogin.username"
+                placeholder="用户名"
+                @keydown.enter.prevent
+              />
+            </n-form-item>
+            <n-form-item
+              path="password"
+              :rule="{ required: true, message: '请输入密码' }"
+            >
+              <n-input
+                v-model:value="formReLogin.password"
+                placeholder="密码"
+                type="password"
+                show-password-on="mousedown"
+                @keydown.enter.prevent
+              />
+            </n-form-item>
+          </n-form>
+        </template>
+      </n-modal>
+
       <n-layout class="main-layout" has-sider>
         <n-layout-sider
           v-if="!hideSider"
@@ -382,9 +514,6 @@ const onAvatarSelect = (key: string | number) => {
             </n-row>
           </n-layout-header>
           <n-layout-content class="layout-content">
-            <!--            <n-scrollbar style="max-height: calc(100vh - 84px)">-->
-            <!--              <router-view />-->
-            <!--            </n-scrollbar>-->
             <router-view />
           </n-layout-content>
         </n-layout>
@@ -448,5 +577,9 @@ const onAvatarSelect = (key: string | number) => {
   border-radius: 99px;
   padding: 0;
   border: 1px solid rgb(153, 153, 153, 0.1);
+}
+
+.reLogin-form {
+  margin-top: 30px;
 }
 </style>
