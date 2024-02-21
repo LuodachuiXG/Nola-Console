@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { Component, onMounted, ref, watch, h, reactive } from 'vue';
+import {
+  Component,
+  onMounted,
+  ref,
+  watch,
+  h,
+  reactive,
+  onUnmounted
+} from 'vue';
 import { RouteLocationNormalizedLoaded, useRoute } from 'vue-router';
 import { RouterViews } from './router/RouterViews.ts';
 import {
@@ -202,12 +210,9 @@ onMounted(() => {
     }
   });
 
-  // 添加窗口大小改变事件监听，动态修改侧边栏是否展开
-  // 因窗口大小改变导致的侧边栏改变，侧边栏配置不存储到本地
-  window.addEventListener('resize', () => {
-    selfAdaptionWidth();
-  });
-  selfAdaptionWidth();
+  // 添加窗口大小改变事件监听器，动态修改侧边栏是否展开
+  window.addEventListener('resize', handlerWindowResize);
+  handlerWindowResize();
 
   // 监听事件总线中登录过期消息
   bus.on('loginExpired', () => {
@@ -216,10 +221,16 @@ onMounted(() => {
   });
 });
 
+onUnmounted(() => {
+  // 移除窗口大小改变监听器
+  window.removeEventListener('resize', handlerWindowResize);
+});
+
 /**
- * 根据窗口宽度自适应设置环境变量
+ * 窗口大小改变监听器
+ * 因窗口大小改变导致的侧边栏改变，侧边栏折叠配置不存储到本地
  */
-const selfAdaptionWidth = () => {
+const handlerWindowResize = () => {
   let width = window.document.documentElement.clientWidth;
   if (!isManualUpdateSider.value) {
     // 如果用户之前没有手动修改过侧边栏
@@ -481,7 +492,9 @@ function onReLoginDialogLoginClick() {
                               (isSmallWindow ? '5px;' : '12px;')
                             "
                           >
+                            <!-- 用户头像不为空显示头像 -->
                             <n-image
+                              v-if="user?.avatar !== null"
                               class="avatar"
                               :src="user?.avatar"
                               width="22"
@@ -492,6 +505,17 @@ function onReLoginDialogLoginClick() {
                                 (isSmallWindow ? '0px;' : '6px;')
                               "
                             />
+                            <!-- 用户头像为空，显示名称第一个字 -->
+                            <div
+                              v-else
+                              class="avatar-text"
+                              :style="
+                                'margin-right: ' +
+                                (isSmallWindow ? '0px;' : '6px;')
+                              "
+                            >
+                              {{ user?.displayName[0] }}
+                            </div>
                             <span v-if="!isSmallWindow">{{
                               user?.displayName
                             }}</span>
@@ -577,6 +601,16 @@ function onReLoginDialogLoginClick() {
   border-radius: 99px;
   padding: 0;
   border: 1px solid rgb(153, 153, 153, 0.1);
+}
+
+.btn-avatar .avatar-text {
+  width: 22px;
+  height: 22px;
+  line-height: 22px;
+  background-color: var(--color-primary);
+  border-radius: 999px;
+  color: white;
+  font-size: .8em;
 }
 
 .reLogin-form {

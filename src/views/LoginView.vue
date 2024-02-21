@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue';
+import { onMounted, onUnmounted, reactive, ref } from 'vue';
 import { getBlogInfo, initBlogInfo, createBlogAdmin } from '../apis/blogApi.ts';
 import { login } from '../apis/userApi.ts';
 import { BlogInfo } from '../models/BlogInfo.ts';
@@ -70,7 +70,39 @@ const isCreateAdmin = ref(false);
 onMounted(() => {
   // 刷新博客信息
   refreshBlogInfo();
+  // 添加键盘监听器
+  document.addEventListener('keydown', handleKeyDown);
 });
+
+onUnmounted(() => {
+  // 移除键盘监听器
+  document.removeEventListener('keydown', handleKeyDown);
+});
+
+/**
+ * 按键监听事件
+ * @param event
+ */
+function handleKeyDown(event: KeyboardEvent) {
+  // 判断是否是回车
+  if (event.key === 'Enter') {
+    // 根据当前不同模式，触发不同事件
+    switch (currentMode.value) {
+      case Mode.LOGIN:
+        // 当前是登录模式
+        onFormLoginSubmit();
+        break;
+      case Mode.CREATE_ADMIN:
+        // 当前是创建管理员模式
+        onFormCreateAdminSubmit();
+        break;
+      case Mode.CREATE_BLOG:
+        // 当前是创建博客模式
+        onFormCreateBlogSubmit();
+        break;
+    }
+  }
+}
 
 /**
  * 刷新博客信息
@@ -143,7 +175,7 @@ const onFormCreateAdminSubmit = () => {
               successMsg('管理员创建成功');
               refreshBlogInfo();
             } else {
-              errorMsg('创建管理员失败，请查看后台日志')
+              errorMsg('创建管理员失败，请查看后台日志');
             }
             isCreateAdmin.value = false;
           })
@@ -159,8 +191,7 @@ const onFormCreateAdminSubmit = () => {
 /**
  * 登录表单登录事件
  */
-const onFormLoginSubmit = (e: MouseEvent) => {
-  e.preventDefault();
+const onFormLoginSubmit = () => {
   // 验证表单是否有错误
   formLoginRef.value
     ?.validate((errors) => {
