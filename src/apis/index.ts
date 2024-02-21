@@ -51,6 +51,7 @@ service.interceptors.response.use(
         localStorage.removeItem(StoreEnum.USER);
         // 弹出登录对话框
 
+        return Promise.reject('登录已经过期');
       }
       return Promise.reject(err.response.data.errMsg);
     }

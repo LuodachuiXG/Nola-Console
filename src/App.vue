@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import { Component, onMounted, ref, watch, h } from 'vue';
-import {
-  RouteLocationNormalizedLoaded,
-  useRoute
-} from 'vue-router';
+import { RouteLocationNormalizedLoaded, useRoute } from 'vue-router';
 import { RouterViews } from './router/RouterViews.ts';
 import {
   NIcon,
@@ -50,6 +47,7 @@ import { StoreEnum } from './models/enum/StoreEnum.ts';
 import NolaIcon from './assets/nola.png';
 import { User } from './models/User.ts';
 import router from './router';
+import { confirmDialog } from './utils/Message.ts';
 
 // 当前登录用户
 const user = ref<User | null>(null);
@@ -68,6 +66,9 @@ const isSiderCollapsed = ref(true);
 // 用户是否手动修改过侧边栏
 // 如果修改过，就不再根据窗口宽度自动折叠侧边栏
 const isManualUpdateSider = ref(false);
+
+// 标记当前是否是小窗（手机模式）
+const isSmallWindow = ref(false);
 
 // 菜单选项
 const menuOptions = [
@@ -185,14 +186,20 @@ onMounted(() => {
   // 添加窗口大小改变事件监听，动态修改侧边栏是否展开
   // 因窗口大小改变导致的侧边栏改变，侧边栏配置不存储到本地
   window.addEventListener('resize', () => {
-    let width = window.document.documentElement.clientWidth;
-    if (!isManualUpdateSider.value) {
-      // 如果用户之前没有手动修改过侧边栏
-      // 这里就根据窗口大小自动改变侧边栏状态
-      isSiderCollapsed.value = width < 768;
-    }
+    selfAdaptionWidth();
   });
+  selfAdaptionWidth();
 });
+
+const selfAdaptionWidth = () => {
+  let width = window.document.documentElement.clientWidth;
+  if (!isManualUpdateSider.value) {
+    // 如果用户之前没有手动修改过侧边栏
+    // 这里就根据窗口大小自动改变侧边栏状态
+    isSmallWindow.value = width < 768;
+    isSiderCollapsed.value = isSmallWindow.value;
+  }
+};
 
 /**
  * 渲染图标
@@ -247,7 +254,7 @@ const onSiderCollapsed = (collapsed: boolean) => {
 const onSiderMenuUpdate = (key: string) => {
   // 跳转页面
   router.push(key);
-}
+};
 
 /**
  * 处理头像下拉菜单选择事件
@@ -255,16 +262,12 @@ const onSiderMenuUpdate = (key: string) => {
 const onAvatarSelect = (key: string | number) => {
   switch (key) {
     case 'logout':
-      window.$dialog.info({
-        title: '注销',
-        content: '确定要注销登录吗',
-        positiveText: '确定',
-        onPositiveClick: () => {
-          // 删除登录用户信息
-          localStorage.removeItem(StoreEnum.USER);
-          // 跳转登录页
-          router.push(RouterViews.LOGIN.name);
-        }
+      // 弹出确认对话框
+      confirmDialog('确定要注销登录吗', () => {
+        // 删除登录用户信息
+        localStorage.removeItem(StoreEnum.USER);
+        // 跳转登录页
+        router.push(RouterViews.LOGIN.name);
       });
       break;
   }
@@ -317,7 +320,7 @@ const onAvatarSelect = (key: string | number) => {
           />
         </n-layout-sider>
         <n-layout>
-          <n-layout-header :bordered="!hideSider">
+          <n-layout-header :bordered="!hideSider" class="layout-header">
             <n-row>
               <n-col :span="10">
                 <div class="header-title" v-if="!hideSider">
@@ -335,16 +338,33 @@ const onAvatarSelect = (key: string | number) => {
                         show-arrow
                         @select="onAvatarSelect"
                       >
-                        <n-button round class="btn-avatar" strong secondary>
-                          <n-image
-                            class="avatar"
-                            :src="user?.avatar"
-                            width="22"
-                            height="22"
-                            preview-disabled
-                          />
-                          {{ user?.displayName }}
-                        </n-button>
+                        <div>
+                          <n-button
+                            round
+                            class="btn-avatar"
+                            strong
+                            secondary
+                            :style="
+                              'padding-right: ' +
+                              (isSmallWindow ? '5px;' : '12px;')
+                            "
+                          >
+                            <n-image
+                              class="avatar"
+                              :src="user?.avatar"
+                              width="22"
+                              height="22"
+                              preview-disabled
+                              :style="
+                                'margin-right: ' +
+                                (isSmallWindow ? '0px;' : '6px;')
+                              "
+                            />
+                            <span v-if="!isSmallWindow">{{
+                              user?.displayName
+                            }}</span>
+                          </n-button>
+                        </div>
                       </n-dropdown>
                     </div>
 
@@ -361,10 +381,10 @@ const onAvatarSelect = (key: string | number) => {
               </n-col>
             </n-row>
           </n-layout-header>
-          <n-layout-content
-            content-style="padding: 24px;"
-            content-class="content"
-          >
+          <n-layout-content class="layout-content">
+            <!--            <n-scrollbar style="max-height: calc(100vh - 84px)">-->
+            <!--              <router-view />-->
+            <!--            </n-scrollbar>-->
             <router-view />
           </n-layout-content>
         </n-layout>
@@ -382,7 +402,7 @@ const onAvatarSelect = (key: string | number) => {
   min-height: 100%;
   height: 100%;
 }
-.n-layout-header {
+.layout-header {
   height: 64px;
 }
 
@@ -415,19 +435,18 @@ const onAvatarSelect = (key: string | number) => {
   transition: all 0.5s ease;
 }
 
-.n-layout-content {
+.layout-content {
   min-height: calc(100% - 64px);
+  padding: 10px;
 }
 
 .btn-avatar {
   padding-left: 6px;
-  padding-right: 12px;
 }
 
 .btn-avatar .avatar {
   border-radius: 99px;
   padding: 0;
-  margin-right: 10px;
   border: 1px solid rgb(153, 153, 153, 0.1);
 }
 </style>

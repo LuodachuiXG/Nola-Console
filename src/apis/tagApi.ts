@@ -52,7 +52,7 @@ export function updateTag(tag: Tag) {
 /**
  * 获取所有标签
  */
-export function tags() {
+export function allTags() {
   return service({
     url: '/admin/tag',
     method: 'GET'

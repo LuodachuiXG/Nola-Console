@@ -38,13 +38,13 @@ export class RouterViews {
     name: 'tag',
     path: '/tag',
     menuName: '标签',
-    displayName: '文章标签'
+    displayName: '标签'
   };
   static readonly CATEGORY: RouterItem = {
     name: 'category',
     path: '/category',
     menuName: '分类',
-    displayName: '文章分类'
+    displayName: '分类'
   };
   static readonly COMMENT: RouterItem = {
     name: 'comment',
