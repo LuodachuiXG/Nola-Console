@@ -42,6 +42,7 @@ import { confirmDialog, errorMsg, successMsg } from '../utils/Message.ts';
 import { DialogFormMode } from '../models/enum/DialogFormMode.ts';
 import { StoreEnum } from '../models/enum/StoreEnum.ts';
 import { Pager } from '../models/Pager.ts';
+import MyPagination from '../components/MyPagination.vue';
 
 // 标记当前标签显示模式的枚举类
 enum TagMode {
@@ -581,22 +582,14 @@ const onPaginationSizeUpdate = (size: number) => {
           </n-col>
           <n-col :span="18">
             <div class="pagination-div" v-if="currentTagMode === TagMode.LIST">
-              <n-pagination
-                v-model:page="currentPage"
-                :page-count="totalPageCount"
-                v-model:on-update-page="onPaginationUpdate"
-                style="margin-right: 10px"
-              />
-              <!-- 上面的分页组件自带的每页大小选项器有问题，所以用下面的弹出选择替代 -->
-              <n-popselect
-                v-model:value="pageSize"
-                :options="pageSizes"
-                trigger="click"
-                size="small"
-                v-model:on-update:value="onPaginationSizeUpdate"
+              <MyPagination
+                :current-page="currentPage"
+                :page-size="pageSize"
+                :total-page="totalPageCount"
+                @on-page-change="onPaginationUpdate"
+                @on-page-size-change="onPaginationSizeUpdate"
               >
-                <n-button size="small">{{ pageSize + '/页' }}</n-button>
-              </n-popselect>
+              </MyPagination>
             </div>
           </n-col>
         </n-row>
