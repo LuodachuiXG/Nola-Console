@@ -458,7 +458,7 @@ function onReLoginDialogLoginClick() {
             :collapsed-width="64"
             :collapsed-icon-size="22"
             :options="menuOptions"
-            :value="route.name"
+            :value="route.name?.toString()"
             @update-value="onSiderMenuUpdate"
           />
         </n-layout-sider>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {
   FormInst,
+  NPagination,
   NButton,
   NCard,
   NColorPicker,
@@ -13,21 +14,84 @@ import {
   NScrollbar,
   NSpace,
   NTag,
-  NPopover
+  NPopover,
+  NList,
+  NListItem,
+  NThing,
+  NRow,
+  NCol,
+  NPopselect
 } from 'naive-ui';
 import {
   BookOutline as BookIcon,
   BrushOutline as EditIcon,
-  TrashOutline as TrashIcon
+  TrashOutline as TrashIcon,
+  AppsOutline as BlockIcon,
+  ListOutline as ListIcon
 } from '@vicons/ionicons5';
 import { Component, h, onMounted, reactive, ref } from 'vue';
-import { addTag, allTags, delTagByIds, updateTag } from '../apis/tagApi.ts';
+import {
+  addTag,
+  allTags,
+  delTagByIds,
+  tagsByPage,
+  updateTag
+} from '../apis/tagApi.ts';
 import { Tag } from '../models/Tag.ts';
 import { confirmDialog, errorMsg, successMsg } from '../utils/Message.ts';
 import { DialogFormMode } from '../models/enum/DialogFormMode.ts';
+import { StoreEnum } from '../models/enum/StoreEnum.ts';
+import { Pager } from '../models/Pager.ts';
+
+// 标记当前标签显示模式的枚举类
+enum TagMode {
+  // 列表模式
+  LIST,
+  // 块模式
+  BLOCK
+}
+
+// 当前标签显示模式
+const currentTagMode = ref(TagMode.BLOCK);
 
 // 标签集合
 const tags = ref<Array<Tag> | null>(null);
+
+// 当前页
+const currentPage = ref(1);
+// 每页条数
+const pageSize = ref(10);
+// 总标签数
+const totalTagCount = ref(0);
+// 总页数
+const totalPageCount = ref(0);
+// 分页大小
+const pageSizes = [
+  {
+    label: '10 / 页',
+    value: 10
+  },
+  {
+    label: '20 / 页',
+    value: 20
+  },
+  {
+    label: '30 / 页',
+    value: 30
+  },
+  {
+    label: '60 / 页',
+    value: 60
+  },
+  {
+    label: '90 / 页',
+    value: 90
+  },
+  {
+    label: '120 / 页',
+    value: 120
+  }
+];
 
 // 当前点击的菜单索引
 const currentClickMenuIndex = ref(-1);
@@ -73,6 +137,14 @@ const formAddEdit = reactive({
 const currentMouseEnterTagIndex = ref(-1);
 
 onMounted(() => {
+  // 读取以前是否设置过标签显示模式
+  currentTagMode.value = Number(
+    localStorage.getItem(StoreEnum.TAG_MODE) ?? TagMode.BLOCK
+  );
+
+  // 读取以前是否设置过每页大小
+  pageSize.value = Number(localStorage.getItem(StoreEnum.TAG_PAGE_SIZE) ?? 10);
+
   // 刷新标签数据
   refreshTags();
 });
@@ -81,15 +153,45 @@ onMounted(() => {
  * 刷新标签数据
  */
 const refreshTags = () => {
-  allTags()
+  if (currentTagMode.value === TagMode.BLOCK) {
+    // 当前标签显示模式是块，获取所有标签
+    allTags()
+      .then((res) => {
+        tags.value = res.data;
+        // 设置总标签数
+        totalTagCount.value = tags.value?.length ?? 0;
+      })
+      .catch((err) => {
+        errorMsg(err);
+      });
+  } else {
+    // 当前标签显示模式是列表，分页获取标签
+    getTagsByPage();
+  }
+};
+
+/**
+ * 分页获取标签
+ */
+const getTagsByPage = () => {
+  tagsByPage(currentPage.value, pageSize.value)
     .then((res) => {
-      tags.value = res.data;
+      let pager = res.data as Pager<Tag>;
+      if (pager.data?.length === 0 && pager.totalData !== 0) {
+        // 当前页数量为空，并且总标签数不为空
+        // 将当前页改为第一页，然后重新获取标签
+        currentPage.value = 1;
+        getTagsByPage();
+        return;
+      }
+      tags.value = pager.data;
+      totalTagCount.value = pager.totalData;
+      totalPageCount.value = pager.totalPage;
     })
     .catch((err) => {
       errorMsg(err);
     });
 };
-
 /**
  * 渲染图标
  */
@@ -252,6 +354,40 @@ const onTagMouseLeave = () => {
   // 将当前标签的索引清空
   currentMouseEnterTagIndex.value = -1;
 };
+
+/**
+ * 标签显示模式改变事件
+ * @param mode 标签模式
+ */
+const onTagModeChange = (mode: TagMode) => {
+  currentTagMode.value = mode;
+  // 刷新标签
+  refreshTags();
+  // 将标签模式存储
+  localStorage.setItem(StoreEnum.TAG_MODE, mode.toString());
+};
+
+/**
+ * 分页组件当前页改变事件
+ * @param page 当前页
+ */
+const onPaginationUpdate = (page: number) => {
+  currentPage.value = page;
+  // 刷新标签
+  refreshTags();
+};
+
+/**
+ * 分页组件每页大小改变事件
+ * @param size 每页大小
+ */
+const onPaginationSizeUpdate = (size: number) => {
+  pageSize.value = size;
+  // 将每页大小存储
+  localStorage.setItem(StoreEnum.TAG_PAGE_SIZE, size.toString());
+  // 刷新标签
+  refreshTags();
+};
 </script>
 
 <template>
@@ -260,8 +396,8 @@ const onTagMouseLeave = () => {
     <n-modal
       v-model:show="visibleAddEditDialog"
       preset="dialog"
-      :title="addEditMode == DialogFormMode.ADD ? '添加标签' : '修改标签'"
-      :positive-text="addEditMode == DialogFormMode.ADD ? '添加' : '修改'"
+      :title="addEditMode == DialogFormMode.ADD ? '添加标签' : '编辑标签'"
+      :positive-text="addEditMode == DialogFormMode.ADD ? '添加' : '编辑'"
       negative-text="取消"
       :loading="isAddEditDialogLoading"
       @positiveClick="onAddEditDialogSubmit"
@@ -306,7 +442,14 @@ const onTagMouseLeave = () => {
     </n-modal>
 
     <n-card
-      :title="(tags?.length ?? '0') + ' 个标签'"
+      :title="
+        '共 ' +
+        totalTagCount +
+        ' 个标签' +
+        (currentTagMode === TagMode.LIST
+          ? '，当前页 ' + tags?.length + ' 个'
+          : '')
+      "
       :segmented="{
         content: true
       }"
@@ -317,8 +460,9 @@ const onTagMouseLeave = () => {
         <n-button type="primary" @click="onAddTagClick">添加标签</n-button>
       </template>
       <template #default>
-        <n-scrollbar style="max-height: calc(100vh - 184px)">
-          <div style="padding: 10px">
+        <n-scrollbar style="max-height: calc(100vh - 196px)">
+          <!-- 标签块 -->
+          <div style="padding: 10px" v-if="currentTagMode === TagMode.BLOCK">
             <n-space>
               <div
                 v-for="(tag, index) in tags"
@@ -365,9 +509,98 @@ const onTagMouseLeave = () => {
               </div>
             </n-space>
           </div>
+          <!-- 标签列表 -->
+          <div v-if="currentTagMode === TagMode.LIST">
+            <n-list hoverable>
+              <n-list-item
+                v-for="(tag, index) in tags"
+                @mouseenter="onTagMouseEnter(index)"
+                @mouseleave="onTagMouseLeave"
+              >
+                <n-thing title-extra="extra">
+                  <template #header>
+                    <n-tag
+                      class="tag transition"
+                      size="small"
+                      :color="
+                        tag.color !== null &&
+                        tag.color !== '' &&
+                        currentMouseEnterTagIndex !== index
+                          ? { textColor: tag.color, borderColor: tag.color }
+                          : {}
+                      "
+                    >
+                      <span
+                        :class="
+                          tag.color !== null &&
+                          tag.color !== '' &&
+                          currentMouseEnterTagIndex !== index
+                            ? 'tag-text-shadow'
+                            : ''
+                        "
+                        >{{ tag.displayName }}</span
+                      >
+                    </n-tag>
+                  </template>
+                  <template #description>
+                    {{ tag.slug }}
+                  </template>
+                </n-thing>
+              </n-list-item>
+            </n-list>
+          </div>
         </n-scrollbar>
       </template>
-      <template #action>所有标签</template>
+      <template #action>
+        <n-row style="margin-bottom: -4px">
+          <n-col :span="6">
+            <n-space>
+              <n-button
+                class="btn-switch-mode"
+                circle
+                size="small"
+                :secondary="currentTagMode === TagMode.BLOCK"
+                @click="onTagModeChange(TagMode.BLOCK)"
+              >
+                <template #icon>
+                  <BlockIcon />
+                </template>
+              </n-button>
+              <n-button
+                class="btn-switch-mode"
+                circle
+                size="small"
+                :secondary="currentTagMode === TagMode.LIST"
+                @click="onTagModeChange(TagMode.LIST)"
+              >
+                <template #icon>
+                  <ListIcon />
+                </template>
+              </n-button>
+            </n-space>
+          </n-col>
+          <n-col :span="18">
+            <div class="pagination-div" v-if="currentTagMode === TagMode.LIST">
+              <n-pagination
+                v-model:page="currentPage"
+                :page-count="totalPageCount"
+                v-model:on-update-page="onPaginationUpdate"
+                style="margin-right: 10px"
+              />
+              <!-- 上面的分页组件自带的每页大小选项器有问题，所以用下面的弹出选择替代 -->
+              <n-popselect
+                v-model:value="pageSize"
+                :options="pageSizes"
+                trigger="click"
+                size="small"
+                v-model:on-update:value="onPaginationSizeUpdate"
+              >
+                <n-button size="small">{{ pageSize + '/页' }}</n-button>
+              </n-popselect>
+            </div>
+          </n-col>
+        </n-row>
+      </template>
     </n-card>
   </div>
 </template>
@@ -378,5 +611,9 @@ const onTagMouseLeave = () => {
 }
 .tag-text-shadow {
   text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2);
+}
+.pagination-div {
+  display: flex;
+  justify-content: end;
 }
 </style>
