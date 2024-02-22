@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import {
   FormInst,
-  NPagination,
   NButton,
+  NButtonGroup,
   NCard,
   NColorPicker,
   NDropdown,
@@ -20,7 +20,7 @@ import {
   NThing,
   NRow,
   NCol,
-  NPopselect
+  NResult
 } from 'naive-ui';
 import {
   BookOutline as BookIcon,
@@ -66,33 +66,6 @@ const pageSize = ref(10);
 const totalTagCount = ref(0);
 // 总页数
 const totalPageCount = ref(0);
-// 分页大小
-const pageSizes = [
-  {
-    label: '10 / 页',
-    value: 10
-  },
-  {
-    label: '20 / 页',
-    value: 20
-  },
-  {
-    label: '30 / 页',
-    value: 30
-  },
-  {
-    label: '60 / 页',
-    value: 60
-  },
-  {
-    label: '90 / 页',
-    value: 90
-  },
-  {
-    label: '120 / 页',
-    value: 120
-  }
-];
 
 // 当前点击的菜单索引
 const currentClickMenuIndex = ref(-1);
@@ -209,38 +182,54 @@ const onTagMenuSelect = (key: string) => {
   switch (key) {
     case 'delete':
       // 删除标签
-      confirmDialog(
-        '确定要删除标签 [' + currentTag?.displayName + '] 吗？此操作不可逆。',
-        () => {
-          // 删除标签
-          delTagByIds([currentTag?.tagId!!])
-            .then(() => {
-              // 删除成功
-              successMsg('删除成功');
-              // 刷新标签列表
-              refreshTags();
-            })
-            .catch((err) => {
-              errorMsg(err);
-            });
-        }
-      );
+      onDeleteTag(currentTag);
       break;
     case 'edit':
       // 编辑标签
-      // 清空添加修改标签对话框表单
-      clearAddEditForm();
-      // 将选择的标签数据加入对话框表单
-      formAddEdit.tagId = currentTag.tagId!!;
-      formAddEdit.displayName = currentTag.displayName;
-      formAddEdit.slug = currentTag.slug;
-      formAddEdit.color = currentTag.color ?? '';
-      // 设置当前为编辑模式
-      addEditMode.value = DialogFormMode.EDIT;
-      // 显示对话框
-      visibleAddEditDialog.value = true;
+      onEditTag(currentTag);
       break;
   }
+};
+
+/**
+ * 删除标签事件
+ * @param tag 要删除的标签
+ */
+const onDeleteTag = (tag: Tag) => {
+  confirmDialog(
+    '确定要删除标签 [' + tag?.displayName + '] 吗？此操作不可逆。',
+    () => {
+      // 删除标签
+      delTagByIds([tag?.tagId!!])
+        .then(() => {
+          // 删除成功
+          successMsg('删除成功');
+          // 刷新标签列表
+          refreshTags();
+        })
+        .catch((err) => {
+          errorMsg(err);
+        });
+    }
+  );
+};
+
+/**
+ * 编辑标签事件
+ * @param tag 要编辑的标签
+ */
+const onEditTag = (tag: Tag) => {
+  // 清空添加修改标签对话框表单
+  clearAddEditForm();
+  // 将选择的标签数据加入对话框表单
+  formAddEdit.tagId = tag.tagId!!;
+  formAddEdit.displayName = tag.displayName;
+  formAddEdit.slug = tag.slug;
+  formAddEdit.color = tag.color ?? '';
+  // 设置当前为编辑模式
+  addEditMode.value = DialogFormMode.EDIT;
+  // 显示对话框
+  visibleAddEditDialog.value = true;
 };
 
 /**
@@ -462,6 +451,13 @@ const onPaginationSizeUpdate = (size: number) => {
       </template>
       <template #default>
         <n-scrollbar style="max-height: calc(100vh - 196px)">
+          <n-result
+            v-if="tags === null || tags.length === 0"
+            style="margin-top: 40px"
+            status="500"
+            title="这里什么都没有"
+            description="快去添加几个标签吧！"
+          />
           <!-- 标签块 -->
           <div style="padding: 10px" v-if="currentTagMode === TagMode.BLOCK">
             <n-space>
@@ -482,7 +478,7 @@ const onPaginationSizeUpdate = (size: number) => {
                           @mouseenter="onTagMouseEnter(index)"
                           @mouseleave="onTagMouseLeave"
                           class="tag transition"
-                          size="small"
+                          size="medium"
                           :color="
                             tag.color !== null &&
                             tag.color !== '' &&
@@ -518,11 +514,11 @@ const onPaginationSizeUpdate = (size: number) => {
                 @mouseenter="onTagMouseEnter(index)"
                 @mouseleave="onTagMouseLeave"
               >
-                <n-thing title-extra="extra">
+                <n-thing>
                   <template #header>
                     <n-tag
                       class="tag transition"
-                      size="small"
+                      size="medium"
                       :color="
                         tag.color !== null &&
                         tag.color !== '' &&
@@ -545,6 +541,22 @@ const onPaginationSizeUpdate = (size: number) => {
                   </template>
                   <template #description>
                     {{ tag.slug }}
+                  </template>
+                  <template #header-extra>
+                    <n-button-group size="small">
+                      <n-button type="default" tertiary @click="onEditTag(tag)">
+                        <template #icon>
+                          <n-icon><EditIcon /></n-icon>
+                        </template>
+                        编辑
+                      </n-button>
+                      <n-button type="error" tertiary @click="onDeleteTag(tag)">
+                        <template #icon>
+                          <n-icon><TrashIcon /></n-icon>
+                        </template>
+                        删除
+                      </n-button>
+                    </n-button-group>
                   </template>
                 </n-thing>
               </n-list-item>
@@ -588,8 +600,7 @@ const onPaginationSizeUpdate = (size: number) => {
                 :total-page="totalPageCount"
                 @on-page-change="onPaginationUpdate"
                 @on-page-size-change="onPaginationSizeUpdate"
-              >
-              </MyPagination>
+              />
             </div>
           </n-col>
         </n-row>
