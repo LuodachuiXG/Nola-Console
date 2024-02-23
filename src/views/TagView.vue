@@ -33,7 +33,7 @@ import { Component, h, onMounted, reactive, ref } from 'vue';
 import {
   addTag,
   allTags,
-  delTagByIds,
+  delTagsByIds,
   tagsByPage,
   updateTag
 } from '../apis/tagApi.ts';
@@ -43,6 +43,7 @@ import { DialogFormMode } from '../models/enum/DialogFormMode.ts';
 import { StoreEnum } from '../models/enum/StoreEnum.ts';
 import { Pager } from '../models/Pager.ts';
 import MyPagination from '../components/MyPagination.vue';
+import { displayNameToSlug } from '../utils/MyUtils.ts';
 
 // 标记当前标签显示模式的枚举类
 enum TagMode {
@@ -63,9 +64,9 @@ const currentPage = ref(1);
 // 每页条数
 const pageSize = ref(10);
 // 总标签数
-const totalTagCount = ref(0);
+const totalTags = ref(0);
 // 总页数
-const totalPageCount = ref(0);
+const totalPages = ref(0);
 
 // 当前点击的菜单索引
 const currentClickMenuIndex = ref(-1);
@@ -133,7 +134,7 @@ const refreshTags = () => {
       .then((res) => {
         tags.value = res.data;
         // 设置总标签数
-        totalTagCount.value = tags.value?.length ?? 0;
+        totalTags.value = tags.value?.length ?? 0;
       })
       .catch((err) => {
         errorMsg(err);
@@ -159,8 +160,8 @@ const getTagsByPage = () => {
         return;
       }
       tags.value = pager.data;
-      totalTagCount.value = pager.totalData;
-      totalPageCount.value = pager.totalPage;
+      totalTags.value = pager.totalData;
+      totalPages.value = pager.totalPages;
     })
     .catch((err) => {
       errorMsg(err);
@@ -200,7 +201,7 @@ const onDeleteTag = (tag: Tag) => {
     '确定要删除标签 [' + tag?.displayName + '] 吗？此操作不可逆。',
     () => {
       // 删除标签
-      delTagByIds([tag?.tagId!!])
+      delTagsByIds([tag?.tagId!!])
         .then(() => {
           // 删除成功
           successMsg('删除成功');
@@ -257,7 +258,7 @@ const onAddEditDialogSubmit = () => {
         let tag: Tag = {
           tagId: formAddEdit.tagId,
           displayName: formAddEdit.displayName,
-          slug: formAddEdit.slug,
+          slug: encodeURIComponent(formAddEdit.slug),
           color: formAddEdit.color
         };
         if (addEditMode.value === DialogFormMode.ADD) {
@@ -322,9 +323,10 @@ const clearAddEditForm = () => {
  */
 const onAddEditDialogDisplayNameUpdate = (value: string) => {
   formAddEdit.displayName = value;
+  // 只有在添加模式，才同步修改别名
   if (addEditMode.value === DialogFormMode.ADD) {
-    // 只有在添加模式，才同步修改别名
-    formAddEdit.slug = value.toLowerCase();
+    // 将显示名称转别名
+    formAddEdit.slug = displayNameToSlug(value);
   }
 };
 
@@ -434,10 +436,10 @@ const onPaginationSizeUpdate = (size: number) => {
     <n-card
       :title="
         '共 ' +
-        totalTagCount +
+        totalTags +
         ' 个标签' +
         (currentTagMode === TagMode.LIST
-          ? '，当前页 ' + tags?.length + ' 个'
+          ? '，当前页 ' + (tags?.length ?? 0) + ' 个'
           : '')
       "
       :segmented="{
@@ -453,7 +455,7 @@ const onPaginationSizeUpdate = (size: number) => {
         <n-scrollbar style="max-height: calc(100vh - 196px)">
           <n-result
             v-if="tags === null || tags.length === 0"
-            style="margin-top: 40px"
+            style="margin: 40px 0"
             status="500"
             title="这里什么都没有"
             description="快去添加几个标签吧！"
@@ -540,7 +542,7 @@ const onPaginationSizeUpdate = (size: number) => {
                     </n-tag>
                   </template>
                   <template #description>
-                    {{ tag.slug }}
+                    <n-button text text-color="#999">{{ tag.slug }}</n-button>
                   </template>
                   <template #header-extra>
                     <n-button-group size="small">
@@ -597,7 +599,7 @@ const onPaginationSizeUpdate = (size: number) => {
               <MyPagination
                 :current-page="currentPage"
                 :page-size="pageSize"
-                :total-page="totalPageCount"
+                :total-page="totalPages"
                 @on-page-change="onPaginationUpdate"
                 @on-page-size-change="onPaginationSizeUpdate"
               />

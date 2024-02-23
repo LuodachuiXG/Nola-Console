@@ -8,18 +8,14 @@ export function addTag(tag: Tag) {
   return service({
     url: '/admin/tag',
     method: 'POST',
-    data: {
-      displayName: tag.displayName,
-      slug: tag.slug,
-      color: tag.color
-    }
+    data: tag
   });
 }
 
 /**
  * 根据标签 ID 数组删除标签
  */
-export function delTagByIds(ids: Array<number>) {
+export function delTagsByIds(ids: Array<number>) {
   return service({
     url: '/admin/tag',
     method: 'DELETE',
@@ -30,7 +26,7 @@ export function delTagByIds(ids: Array<number>) {
 /**
  * 根据标签别名数组删除标签
  */
-export function delTagBySlugs(slugs: Array<String>) {
+export function delTagsBySlugs(slugs: Array<String>) {
   return service({
     url: '/admin/tag/slug',
     method: 'DELETE',

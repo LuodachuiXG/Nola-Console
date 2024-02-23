@@ -11,5 +11,5 @@ export interface Pager<T> {
   /** 总条数 **/
   totalData: number,
   /** 总页数 **/
-  totalPage: number
+  totalPages: number
 }
