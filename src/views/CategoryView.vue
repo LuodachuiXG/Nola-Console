@@ -26,7 +26,7 @@ import { onMounted, reactive, ref } from 'vue';
 import {
   addCategory,
   delCategoriesByIds,
-  categoriesByPage,
+  categories as getCategories,
   updateCategory
 } from '../apis/categoryApi.ts';
 import { Category } from '../models/Category.ts';
@@ -36,6 +36,7 @@ import { StoreEnum } from '../models/enum/StoreEnum.ts';
 import { Pager } from '../models/Pager.ts';
 import MyPagination from '../components/MyPagination.vue';
 import { displayNameToSlug } from '../utils/MyUtils.ts';
+import MyNumberAnimation from '../components/MyNumberAnimation.vue';
 
 // 分类集合
 const categories = ref<Array<Category> | null>(null);
@@ -81,7 +82,7 @@ onMounted(() => {
  */
 const refreshCategories = () => {
   // 分页获取分类
-  categoriesByPage(currentPage.value, pageSize.value)
+  getCategories(currentPage.value, pageSize.value)
     .then((res) => {
       let pager = res.data as Pager<Category>;
       if (pager.data?.length === 0 && pager.totalData !== 0) {
@@ -328,43 +329,47 @@ const onPaginationSizeUpdate = (size: number) => {
     </n-modal>
 
     <n-card
-      :title="
-        '共 ' +
-        totalCategories +
-        ' 个分类，当前页 ' +
-        (categories?.length ?? 0) +
-        ' 个'
-      "
+      embedded
       :segmented="{
         content: true
       }"
       content-style="padding: 0;"
       size="small"
     >
+      <template #header>
+        共
+        <MyNumberAnimation :to="totalCategories" />
+        个分类，当前页
+        <MyNumberAnimation :to="categories?.length ?? 0" />
+        个
+      </template>
       <template #header-extra>
         <n-button type="primary" @click="onAddCategoryClick">添加分类</n-button>
       </template>
       <template #default>
         <n-scrollbar style="max-height: calc(100vh - 194px)">
           <n-result
-            v-if="categories === null || categories.length === 0"
+            v-if="categories !== null && categories.length === 0"
             style="margin: 40px 0"
             status="500"
             title="这里什么都没有"
             description="快去添加几个分类吧！"
           />
           <!-- 分类列表 -->
-          <div>
-            <n-list hoverable>
-              <n-list-item v-for="category in categories">
+          <n-list hoverable>
+            <transition-group name="list">
+              <n-list-item
+                v-for="category in categories"
+                :key="category.categoryId"
+              >
                 <n-thing>
                   <template #header>
                     {{ category.displayName }}
                   </template>
                   <template #description>
-                    <n-button text text-color="#999">{{
-                      category.slug
-                    }}</n-button>
+                    <n-button text text-color="#999"
+                      >{{ category.slug }}
+                    </n-button>
                   </template>
                   <template #header-extra>
                     <n-button-group size="small">
@@ -374,7 +379,9 @@ const onPaginationSizeUpdate = (size: number) => {
                         @click="onEditCategory(category)"
                       >
                         <template #icon>
-                          <n-icon><EditIcon /></n-icon>
+                          <n-icon>
+                            <EditIcon />
+                          </n-icon>
                         </template>
                         编辑
                       </n-button>
@@ -384,7 +391,9 @@ const onPaginationSizeUpdate = (size: number) => {
                         @click="onDeleteCategory(category)"
                       >
                         <template #icon>
-                          <n-icon><TrashIcon /></n-icon>
+                          <n-icon>
+                            <TrashIcon />
+                          </n-icon>
                         </template>
                         删除
                       </n-button>
@@ -392,8 +401,8 @@ const onPaginationSizeUpdate = (size: number) => {
                   </template>
                 </n-thing>
               </n-list-item>
-            </n-list>
-          </div>
+            </transition-group>
+          </n-list>
         </n-scrollbar>
       </template>
       <template #action>
@@ -422,5 +431,27 @@ const onPaginationSizeUpdate = (size: number) => {
 .pagination-div {
   display: flex;
   justify-content: end;
+}
+
+/* 对移动中的元素应用的过渡 */
+.list-move,
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.5s ease;
+}
+
+.list-enter-from {
+  opacity: 0;
+  transform: translateX(130px);
+}
+.list-leave-to {
+  opacity: 0;
+  transform: translateY(130px);
+}
+
+/* 确保将离开的元素从布局流中删除
+  以便能够正确地计算移动的动画。 */
+.list-leave-active {
+  position: absolute;
 }
 </style>

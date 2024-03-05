@@ -46,23 +46,13 @@ export function updateTag(tag: Tag) {
 }
 
 /**
- * 获取所有标签
- */
-export function allTags() {
-  return service({
-    url: '/admin/tag',
-    method: 'GET'
-  });
-}
-
-/**
  * 分页获取标签
- * @param page 当前页数
+ * @param page 当前页数（留空或 0 获取全部）
  * @param size 每页条数
  */
-export function tagsByPage(page: number, size: number) {
+export function tags(page: number | null = null, size: number | null = null) {
   return service({
-    url: `/admin/tag/${page}/${size}`,
+    url: `/admin/tag?page=${page ?? 0}&size=${size ?? 0}`,
     method: 'GET'
   });
 }

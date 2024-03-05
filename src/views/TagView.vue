@@ -32,9 +32,8 @@ import {
 import { Component, h, onMounted, reactive, ref } from 'vue';
 import {
   addTag,
-  allTags,
   delTagsByIds,
-  tagsByPage,
+  tags as getTags,
   updateTag
 } from '../apis/tagApi.ts';
 import { Tag } from '../models/Tag.ts';
@@ -44,6 +43,7 @@ import { StoreEnum } from '../models/enum/StoreEnum.ts';
 import { Pager } from '../models/Pager.ts';
 import MyPagination from '../components/MyPagination.vue';
 import { displayNameToSlug } from '../utils/MyUtils.ts';
+import MyNumberAnimation from '../components/MyNumberAnimation.vue';
 
 // 标记当前标签显示模式的枚举类
 enum TagMode {
@@ -130,9 +130,9 @@ onMounted(() => {
 const refreshTags = () => {
   if (currentTagMode.value === TagMode.BLOCK) {
     // 当前标签显示模式是块，获取所有标签
-    allTags()
+    getTags()
       .then((res) => {
-        tags.value = res.data;
+        tags.value = res.data.data;
         // 设置总标签数
         totalTags.value = tags.value?.length ?? 0;
       })
@@ -149,7 +149,7 @@ const refreshTags = () => {
  * 分页获取标签
  */
 const getTagsByPage = () => {
-  tagsByPage(currentPage.value, pageSize.value)
+  getTags(currentPage.value, pageSize.value)
     .then((res) => {
       let pager = res.data as Pager<Tag>;
       if (pager.data?.length === 0 && pager.totalData !== 0) {
@@ -167,6 +167,7 @@ const getTagsByPage = () => {
       errorMsg(err);
     });
 };
+
 /**
  * 渲染图标
  */
@@ -434,27 +435,33 @@ const onPaginationSizeUpdate = (size: number) => {
     </n-modal>
 
     <n-card
-      :title="
-        '共 ' +
-        totalTags +
-        ' 个标签' +
-        (currentTagMode === TagMode.LIST
-          ? '，当前页 ' + (tags?.length ?? 0) + ' 个'
-          : '')
-      "
+      class="animate__animated animate__fadeIn"
+      embedded
       :segmented="{
         content: true
       }"
       content-style="padding: 0;"
       size="small"
     >
+      <template #header>
+        <span>
+          共
+          <MyNumberAnimation :to="totalTags" />
+          个标签
+        </span>
+        <span v-if="currentTagMode === TagMode.LIST">
+          ，当前页
+          <MyNumberAnimation :to="tags?.length ?? 0" />
+          个
+        </span>
+      </template>
       <template #header-extra>
         <n-button type="primary" @click="onAddTagClick">添加标签</n-button>
       </template>
       <template #default>
         <n-scrollbar style="max-height: calc(100vh - 196px)">
           <n-result
-            v-if="tags === null || tags.length === 0"
+            v-if="tags !== null && tags.length === 0"
             style="margin: 40px 0"
             status="500"
             title="这里什么都没有"
@@ -485,7 +492,10 @@ const onPaginationSizeUpdate = (size: number) => {
                             tag.color !== null &&
                             tag.color !== '' &&
                             currentMouseEnterTagIndex !== index
-                              ? { textColor: tag.color, borderColor: tag.color }
+                              ? {
+                                  textColor: tag.color,
+                                  borderColor: tag.color
+                                }
                               : {}
                           "
                         >
@@ -548,13 +558,17 @@ const onPaginationSizeUpdate = (size: number) => {
                     <n-button-group size="small">
                       <n-button type="default" tertiary @click="onEditTag(tag)">
                         <template #icon>
-                          <n-icon><EditIcon /></n-icon>
+                          <n-icon>
+                            <EditIcon />
+                          </n-icon>
                         </template>
                         编辑
                       </n-button>
                       <n-button type="error" tertiary @click="onDeleteTag(tag)">
                         <template #icon>
-                          <n-icon><TrashIcon /></n-icon>
+                          <n-icon>
+                            <TrashIcon />
+                          </n-icon>
                         </template>
                         删除
                       </n-button>
@@ -615,9 +629,11 @@ const onPaginationSizeUpdate = (size: number) => {
 .tag {
   cursor: pointer;
 }
+
 .tag-text-shadow {
   text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2);
 }
+
 .pagination-div {
   display: flex;
   justify-content: end;

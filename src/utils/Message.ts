@@ -9,7 +9,7 @@ export function confirmDialog(
   onPositiveClick: () => void,
   onNegativeClick?: () => void
 ) {
-  window.$dialog.warning({
+  window.$dialog.info({
     title: '温馨提示',
     content: msg,
     positiveText: '确定',

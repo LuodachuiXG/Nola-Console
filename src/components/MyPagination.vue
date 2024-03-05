@@ -1,4 +1,4 @@
-<!--自定义分页组件-->
+<!-- 自定义分页组件 -->
 <script setup lang="ts">
 import { NButton, NPagination, NPopselect } from 'naive-ui';
 

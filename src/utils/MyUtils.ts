@@ -13,7 +13,7 @@ export const getCurrentTheme = () => {
 };
 
 /**
- * 存储注册色
+ * 存储主题色
  * @param theme light / dark
  */
 export const setTheme = (theme: 'light' | 'dark') => {

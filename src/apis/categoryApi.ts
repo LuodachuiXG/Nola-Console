@@ -46,23 +46,16 @@ export function updateCategory(category: Category) {
 }
 
 /**
- * 获取所有分类
- */
-export function allCategories() {
-  return service({
-    url: '/admin/category',
-    method: 'GET'
-  });
-}
-
-/**
  * 分页获取分类
- * @param page 当前页数
+ * @param page 当前页数（留空或 0 获取全部）
  * @param size 每页条数
  */
-export function categoriesByPage(page: number, size: number) {
+export function categories(
+  page: number | null = null,
+  size: number | null = null
+) {
   return service({
-    url: `/admin/category/${page}/${size}`,
+    url: `/admin/category?page=${page ?? 0}&size=${size ?? 0}`,
     method: 'GET'
   });
 }
