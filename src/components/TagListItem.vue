@@ -1,0 +1,73 @@
+<!-- 标签列表项 -->
+<script setup lang="ts">
+import { NButton, NButtonGroup, NIcon, NListItem, NThing } from 'naive-ui';
+import {
+  BrushOutline as EditIcon,
+  TrashOutline as TrashIcon
+} from '@vicons/ionicons5';
+import { Tag } from '../models/Tag.ts';
+import TagComponent from './TagComponent.vue';
+
+interface Props {
+  /** 标签类 **/
+  tag: Tag;
+}
+
+defineProps<Props>();
+
+const emit = defineEmits<{
+  (e: 'onEditTag', tag: Tag): void;
+  (e: 'onDeleteTag', tag: Tag): void;
+}>();
+
+/**
+ * 编辑标签事件
+ * @param tag 标签
+ */
+const onEditTag = (tag: Tag) => {
+  emit('onEditTag', tag);
+};
+
+/**
+ * 删除标签事件
+ * @param tag 标签
+ */
+const onDeleteTag = (tag: Tag) => {
+  emit('onDeleteTag', tag);
+};
+</script>
+
+<template>
+  <n-list-item>
+    <n-thing class="animate__animated animate__fadeIn">
+      <template #header>
+        <tag-component size="medium" :tag="tag" />
+      </template>
+      <template #description>
+        <n-button text text-color="#999">{{ tag.slug }}</n-button>
+      </template>
+      <template #header-extra>
+        <n-button-group size="small">
+          <n-button type="default" tertiary @click="onEditTag(tag)">
+            <template #icon>
+              <n-icon>
+                <EditIcon />
+              </n-icon>
+            </template>
+            编辑
+          </n-button>
+          <n-button type="error" tertiary @click="onDeleteTag(tag)">
+            <template #icon>
+              <n-icon>
+                <TrashIcon />
+              </n-icon>
+            </template>
+            删除
+          </n-button>
+        </n-button-group>
+      </template>
+    </n-thing>
+  </n-list-item>
+</template>
+
+<style scoped></style>

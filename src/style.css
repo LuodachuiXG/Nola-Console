@@ -7,9 +7,13 @@ body,
     --color-primary: #306fff;
 }
 
+* {
+    --animate-duration: .5s;
+}
+
 
 .transition {
-    transition: all 0.2s ease-in-out;
+    transition: all 0.3s ease-in-out;
 }
 
 /* 对话框中的表单 */

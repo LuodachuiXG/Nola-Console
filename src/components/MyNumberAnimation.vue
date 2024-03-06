@@ -24,7 +24,7 @@ const onFinish = () => {
 </script>
 
 <template>
-  <n-number-animation :from="form" :to="to" v-on:finish="onFinish"/>
+  <n-number-animation :from="form" :to="to" v-on:finish="onFinish" :duration="500"/>
 </template>
 
 <style scoped></style>

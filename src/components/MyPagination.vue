@@ -42,14 +42,13 @@ interface Props {
   totalPage: number;
 }
 
-// 定义自定义参数
 defineProps<Props>();
-// 定义自定义方法
+
 const emit = defineEmits<{
   /** 页数改变事件 **/
-  onPageChange: [page: number];
+  (e: 'onPageChange', page: number): void
   /** 每页大小改变事件 **/
-  onPageSizeChange: [size: number];
+  (e: 'onPageSizeChange', size: number): void
 }>();
 
 /**

@@ -2,26 +2,18 @@
 import {
   FormInst,
   NButton,
-  NButtonGroup,
   NCard,
   NForm,
   NFormItem,
-  NIcon,
   NInput,
   NModal,
   NScrollbar,
   NList,
-  NListItem,
-  NThing,
   NResult,
   NSwitch,
   NRow,
   NCol
 } from 'naive-ui';
-import {
-  BrushOutline as EditIcon,
-  TrashOutline as TrashIcon
-} from '@vicons/ionicons5';
 import { onMounted, reactive, ref } from 'vue';
 import {
   addCategory,
@@ -37,6 +29,7 @@ import { Pager } from '../models/Pager.ts';
 import MyPagination from '../components/MyPagination.vue';
 import { displayNameToSlug } from '../utils/MyUtils.ts';
 import MyNumberAnimation from '../components/MyNumberAnimation.vue';
+import CategoryListItem from '../components/CategoryListItem.vue';
 
 // 分类集合
 const categories = ref<Array<Category> | null>(null);
@@ -329,6 +322,7 @@ const onPaginationSizeUpdate = (size: number) => {
     </n-modal>
 
     <n-card
+      class="animate__animated animate__fadeIn"
       embedded
       :segmented="{
         content: true
@@ -357,51 +351,13 @@ const onPaginationSizeUpdate = (size: number) => {
           />
           <!-- 分类列表 -->
           <n-list hoverable>
-            <transition-group name="list">
-              <n-list-item
-                v-for="category in categories"
-                :key="category.categoryId"
-              >
-                <n-thing>
-                  <template #header>
-                    {{ category.displayName }}
-                  </template>
-                  <template #description>
-                    <n-button text text-color="#999"
-                      >{{ category.slug }}
-                    </n-button>
-                  </template>
-                  <template #header-extra>
-                    <n-button-group size="small">
-                      <n-button
-                        type="default"
-                        tertiary
-                        @click="onEditCategory(category)"
-                      >
-                        <template #icon>
-                          <n-icon>
-                            <EditIcon />
-                          </n-icon>
-                        </template>
-                        编辑
-                      </n-button>
-                      <n-button
-                        type="error"
-                        tertiary
-                        @click="onDeleteCategory(category)"
-                      >
-                        <template #icon>
-                          <n-icon>
-                            <TrashIcon />
-                          </n-icon>
-                        </template>
-                        删除
-                      </n-button>
-                    </n-button-group>
-                  </template>
-                </n-thing>
-              </n-list-item>
-            </transition-group>
+            <category-list-item
+              v-for="category in categories"
+              :key="category.categoryId"
+              :category="category"
+              @on-delete-category="onDeleteCategory"
+              @on-edit-category="onEditCategory"
+            />
           </n-list>
         </n-scrollbar>
       </template>
@@ -431,27 +387,5 @@ const onPaginationSizeUpdate = (size: number) => {
 .pagination-div {
   display: flex;
   justify-content: end;
-}
-
-/* 对移动中的元素应用的过渡 */
-.list-move,
-.list-enter-active,
-.list-leave-active {
-  transition: all 0.5s ease;
-}
-
-.list-enter-from {
-  opacity: 0;
-  transform: translateX(130px);
-}
-.list-leave-to {
-  opacity: 0;
-  transform: translateY(130px);
-}
-
-/* 确保将离开的元素从布局流中删除
-  以便能够正确地计算移动的动画。 */
-.list-leave-active {
-  position: absolute;
 }
 </style>

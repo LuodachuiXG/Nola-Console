@@ -2,7 +2,6 @@
 import {
   FormInst,
   NButton,
-  NButtonGroup,
   NCard,
   NColorPicker,
   NDropdown,
@@ -13,11 +12,8 @@ import {
   NModal,
   NScrollbar,
   NSpace,
-  NTag,
   NPopover,
   NList,
-  NListItem,
-  NThing,
   NRow,
   NCol,
   NResult
@@ -44,6 +40,8 @@ import { Pager } from '../models/Pager.ts';
 import MyPagination from '../components/MyPagination.vue';
 import { displayNameToSlug } from '../utils/MyUtils.ts';
 import MyNumberAnimation from '../components/MyNumberAnimation.vue';
+import TagListItem from '../components/TagListItem.vue';
+import TagComponent from '../components/TagComponent.vue';
 
 // 标记当前标签显示模式的枚举类
 enum TagMode {
@@ -54,7 +52,7 @@ enum TagMode {
 }
 
 // 当前标签显示模式
-const currentTagMode = ref(TagMode.BLOCK);
+const currentTagMode = ref<TagMode>(TagMode.BLOCK);
 
 // 标签集合
 const tags = ref<Array<Tag> | null>(null);
@@ -107,9 +105,6 @@ const formAddEdit = reactive({
   slug: '',
   color: ''
 });
-
-// 当前鼠标进入的标签的索引，用于在鼠标移到标签时，使标签更可视化
-const currentMouseEnterTagIndex = ref(-1);
 
 onMounted(() => {
   // 读取以前是否设置过标签显示模式
@@ -332,23 +327,6 @@ const onAddEditDialogDisplayNameUpdate = (value: string) => {
 };
 
 /**
- * 鼠标进入标签事件
- * 用于在鼠标进入标签后，使当前标签更加可视化
- */
-const onTagMouseEnter = (index: number) => {
-  // 将当前标签的索引保存到变量
-  currentMouseEnterTagIndex.value = index;
-};
-
-/**
- * 鼠标离开标签事件
- */
-const onTagMouseLeave = () => {
-  // 将当前标签的索引清空
-  currentMouseEnterTagIndex.value = -1;
-};
-
-/**
  * 标签显示模式改变事件
  * @param mode 标签模式
  */
@@ -474,7 +452,10 @@ const onPaginationSizeUpdate = (size: number) => {
                 v-for="(tag, index) in tags"
                 @click="currentClickMenuIndex = index"
               >
-                <n-popover trigger="hover" :keep-alive-on-hover="false">
+                <n-popover
+                  trigger="hover"
+                  :keep-alive-on-hover="false"
+                >
                   <template #trigger>
                     <div>
                       <n-dropdown
@@ -483,33 +464,10 @@ const onPaginationSizeUpdate = (size: number) => {
                         show-arrow
                         @select="onTagMenuSelect"
                       >
-                        <n-tag
-                          @mouseenter="onTagMouseEnter(index)"
-                          @mouseleave="onTagMouseLeave"
-                          class="tag transition"
+                        <tag-component
                           size="medium"
-                          :color="
-                            tag.color !== null &&
-                            tag.color !== '' &&
-                            currentMouseEnterTagIndex !== index
-                              ? {
-                                  textColor: tag.color,
-                                  borderColor: tag.color
-                                }
-                              : {}
-                          "
-                        >
-                          <span
-                            :class="
-                              tag.color !== null &&
-                              tag.color !== '' &&
-                              currentMouseEnterTagIndex !== index
-                                ? 'tag-text-shadow'
-                                : ''
-                            "
-                            >{{ tag.displayName }}</span
-                          >
-                        </n-tag>
+                          :tag="tag"
+                        />
                       </n-dropdown>
                     </div>
                   </template>
@@ -521,61 +479,12 @@ const onPaginationSizeUpdate = (size: number) => {
           <!-- 标签列表 -->
           <div v-if="currentTagMode === TagMode.LIST">
             <n-list hoverable>
-              <n-list-item
-                v-for="(tag, index) in tags"
-                @mouseenter="onTagMouseEnter(index)"
-                @mouseleave="onTagMouseLeave"
-              >
-                <n-thing>
-                  <template #header>
-                    <n-tag
-                      class="tag transition"
-                      size="medium"
-                      :color="
-                        tag.color !== null &&
-                        tag.color !== '' &&
-                        currentMouseEnterTagIndex !== index
-                          ? { textColor: tag.color, borderColor: tag.color }
-                          : {}
-                      "
-                    >
-                      <span
-                        :class="
-                          tag.color !== null &&
-                          tag.color !== '' &&
-                          currentMouseEnterTagIndex !== index
-                            ? 'tag-text-shadow'
-                            : ''
-                        "
-                        >{{ tag.displayName }}</span
-                      >
-                    </n-tag>
-                  </template>
-                  <template #description>
-                    <n-button text text-color="#999">{{ tag.slug }}</n-button>
-                  </template>
-                  <template #header-extra>
-                    <n-button-group size="small">
-                      <n-button type="default" tertiary @click="onEditTag(tag)">
-                        <template #icon>
-                          <n-icon>
-                            <EditIcon />
-                          </n-icon>
-                        </template>
-                        编辑
-                      </n-button>
-                      <n-button type="error" tertiary @click="onDeleteTag(tag)">
-                        <template #icon>
-                          <n-icon>
-                            <TrashIcon />
-                          </n-icon>
-                        </template>
-                        删除
-                      </n-button>
-                    </n-button-group>
-                  </template>
-                </n-thing>
-              </n-list-item>
+              <tag-list-item
+                v-for="tag in tags"
+                :tag="tag"
+                @on-delete-tag="onDeleteTag"
+                @on-edit-tag="onEditTag"
+              />
             </n-list>
           </div>
         </n-scrollbar>
@@ -626,10 +535,6 @@ const onPaginationSizeUpdate = (size: number) => {
 </template>
 
 <style scoped>
-.tag {
-  cursor: pointer;
-}
-
 .tag-text-shadow {
   text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2);
 }
