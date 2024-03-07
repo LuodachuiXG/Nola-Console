@@ -1,7 +1,7 @@
 <!-- 分类列表项 -->
 <script setup lang="ts">
 import { NButton, NButtonGroup, NIcon, NListItem, NThing } from 'naive-ui';
-import { Category } from '../models/Category.ts';
+import { Category } from '../../models/Category.ts';
 import {
   BrushOutline as EditIcon,
   TrashOutline as TrashIcon

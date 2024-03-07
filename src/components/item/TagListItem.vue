@@ -5,8 +5,8 @@ import {
   BrushOutline as EditIcon,
   TrashOutline as TrashIcon
 } from '@vicons/ionicons5';
-import { Tag } from '../models/Tag.ts';
-import TagComponent from './TagComponent.vue';
+import { Tag } from '../../models/Tag.ts';
+import TagComponent from '../component/MyTag.vue';
 
 interface Props {
   /** 标签类 **/

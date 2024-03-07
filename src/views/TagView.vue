@@ -2,7 +2,6 @@
 import {
   FormInst,
   NButton,
-  NCard,
   NColorPicker,
   NDropdown,
   NForm,
@@ -10,13 +9,9 @@ import {
   NIcon,
   NInput,
   NModal,
-  NScrollbar,
   NSpace,
   NPopover,
   NList,
-  NRow,
-  NCol,
-  NResult
 } from 'naive-ui';
 import {
   BookOutline as BookIcon,
@@ -37,11 +32,10 @@ import { confirmDialog, errorMsg, successMsg } from '../utils/Message.ts';
 import { DialogFormMode } from '../models/enum/DialogFormMode.ts';
 import { StoreEnum } from '../models/enum/StoreEnum.ts';
 import { Pager } from '../models/Pager.ts';
-import MyPagination from '../components/MyPagination.vue';
 import { displayNameToSlug } from '../utils/MyUtils.ts';
-import MyNumberAnimation from '../components/MyNumberAnimation.vue';
-import TagListItem from '../components/TagListItem.vue';
-import TagComponent from '../components/TagComponent.vue';
+import TagListItem from '../components/item/TagListItem.vue';
+import TagComponent from '../components/component/MyTag.vue';
+import MyCard from '../components/component/MyCard.vue';
 
 // 标记当前标签显示模式的枚举类
 enum TagMode {
@@ -342,7 +336,7 @@ const onTagModeChange = (mode: TagMode) => {
  * 分页组件当前页改变事件
  * @param page 当前页
  */
-const onPaginationUpdate = (page: number) => {
+const onPageUpdate = (page: number) => {
   currentPage.value = page;
   // 刷新标签
   refreshTags();
@@ -352,7 +346,7 @@ const onPaginationUpdate = (page: number) => {
  * 分页组件每页大小改变事件
  * @param size 每页大小
  */
-const onPaginationSizeUpdate = (size: number) => {
+const onPageSizeUpdate = (size: number) => {
   pageSize.value = size;
   // 将每页大小存储
   localStorage.setItem(StoreEnum.TAG_PAGE_SIZE, size.toString());
@@ -412,135 +406,91 @@ const onPaginationSizeUpdate = (size: number) => {
       </template>
     </n-modal>
 
-    <n-card
-      class="animate__animated animate__fadeIn"
-      embedded
-      :segmented="{
-        content: true
-      }"
-      content-style="padding: 0;"
-      size="small"
+    <my-card
+      :data-count="totalTags"
+      :show-empty-status="tags !== null && tags.length === 0"
+      :current-page="currentPage"
+      :page-size="pageSize"
+      :page-count="totalPages"
+      :current-page-item-count="tags?.length ?? 0"
+      :show-pagination="currentTagMode == TagMode.LIST"
+      item-string="标签"
+      @on-page-update="onPageUpdate"
+      @on-page-size-update="onPageSizeUpdate"
     >
-      <template #header>
-        <span>
-          共
-          <MyNumberAnimation :to="totalTags" />
-          个标签
-        </span>
-        <span v-if="currentTagMode === TagMode.LIST">
-          ，当前页
-          <MyNumberAnimation :to="tags?.length ?? 0" />
-          个
-        </span>
-      </template>
       <template #header-extra>
         <n-button type="primary" @click="onAddTagClick">添加标签</n-button>
       </template>
-      <template #default>
-        <n-scrollbar style="max-height: calc(100vh - 196px)">
-          <n-result
-            v-if="tags !== null && tags.length === 0"
-            style="margin: 40px 0"
-            status="500"
-            title="这里什么都没有"
-            description="快去添加几个标签吧！"
-          />
-          <!-- 标签块 -->
-          <div style="padding: 10px" v-if="currentTagMode === TagMode.BLOCK">
-            <n-space>
-              <div
-                v-for="(tag, index) in tags"
-                @click="currentClickMenuIndex = index"
-              >
-                <n-popover
-                  trigger="hover"
-                  :keep-alive-on-hover="false"
-                >
-                  <template #trigger>
-                    <div>
-                      <n-dropdown
-                        trigger="click"
-                        :options="tagMenuOptions"
-                        show-arrow
-                        @select="onTagMenuSelect"
-                      >
-                        <tag-component
-                          size="medium"
-                          :tag="tag"
-                        />
-                      </n-dropdown>
-                    </div>
-                  </template>
-                  <span>{{ tag.slug }}</span>
-                </n-popover>
-              </div>
-            </n-space>
-          </div>
-          <!-- 标签列表 -->
-          <div v-if="currentTagMode === TagMode.LIST">
-            <n-list hoverable>
-              <tag-list-item
-                v-for="tag in tags"
-                :tag="tag"
-                @on-delete-tag="onDeleteTag"
-                @on-edit-tag="onEditTag"
-              />
-            </n-list>
-          </div>
-        </n-scrollbar>
-      </template>
-      <template #action>
-        <n-row style="margin-bottom: -4px">
-          <n-col :span="6">
-            <n-space>
-              <n-button
-                class="btn-switch-mode"
-                circle
-                size="small"
-                :secondary="currentTagMode === TagMode.BLOCK"
-                @click="onTagModeChange(TagMode.BLOCK)"
-              >
-                <template #icon>
-                  <BlockIcon />
+      <template #content>
+        <!-- 标签块 -->
+        <div style="padding: 10px" v-if="currentTagMode === TagMode.BLOCK">
+          <n-space>
+            <div
+              v-for="(tag, index) in tags"
+              @click="currentClickMenuIndex = index"
+            >
+              <n-popover trigger="hover" :keep-alive-on-hover="false">
+                <template #trigger>
+                  <div>
+                    <n-dropdown
+                      trigger="click"
+                      :options="tagMenuOptions"
+                      show-arrow
+                      @select="onTagMenuSelect"
+                    >
+                      <tag-component size="medium" :tag="tag" />
+                    </n-dropdown>
+                  </div>
                 </template>
-              </n-button>
-              <n-button
-                class="btn-switch-mode"
-                circle
-                size="small"
-                :secondary="currentTagMode === TagMode.LIST"
-                @click="onTagModeChange(TagMode.LIST)"
-              >
-                <template #icon>
-                  <ListIcon />
-                </template>
-              </n-button>
-            </n-space>
-          </n-col>
-          <n-col :span="18">
-            <div class="pagination-div" v-if="currentTagMode === TagMode.LIST">
-              <MyPagination
-                :current-page="currentPage"
-                :page-size="pageSize"
-                :total-page="totalPages"
-                @on-page-change="onPaginationUpdate"
-                @on-page-size-change="onPaginationSizeUpdate"
-              />
+                <span>{{ tag.slug }}</span>
+              </n-popover>
             </div>
-          </n-col>
-        </n-row>
+          </n-space>
+        </div>
+        <!-- 标签列表 -->
+        <div v-if="currentTagMode === TagMode.LIST">
+          <n-list hoverable>
+            <tag-list-item
+              v-for="tag in tags"
+              :tag="tag"
+              @on-delete-tag="onDeleteTag"
+              @on-edit-tag="onEditTag"
+            />
+          </n-list>
+        </div>
       </template>
-    </n-card>
+      <template #action-left>
+        <n-space>
+          <n-button
+            class="btn-switch-mode"
+            circle
+            size="small"
+            :secondary="currentTagMode === TagMode.BLOCK"
+            @click="onTagModeChange(TagMode.BLOCK)"
+          >
+            <template #icon>
+              <BlockIcon />
+            </template>
+          </n-button>
+          <n-button
+            class="btn-switch-mode"
+            circle
+            size="small"
+            :secondary="currentTagMode === TagMode.LIST"
+            @click="onTagModeChange(TagMode.LIST)"
+          >
+            <template #icon>
+              <ListIcon />
+            </template>
+          </n-button>
+        </n-space>
+      </template>
+    </my-card>
   </div>
 </template>
 
 <style scoped>
 .tag-text-shadow {
   text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2);
-}
-
-.pagination-div {
-  display: flex;
-  justify-content: end;
 }
 </style>

@@ -55,7 +55,7 @@ import {
 import themeOverrides from './theme/theme.ts';
 import type { BuiltInGlobalTheme } from 'naive-ui/es/themes/interface';
 import { getCurrentTheme, setTheme } from './utils/MyUtils.ts';
-import AppProvider from './components/AppProvider/AppProvider.vue';
+import AppProvider from './components/appProvider/AppProvider.vue';
 import { StoreEnum } from './models/enum/StoreEnum.ts';
 import NolaIcon from './assets/nola.png';
 import { User } from './models/User.ts';

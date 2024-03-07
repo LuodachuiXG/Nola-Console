@@ -13,5 +13,7 @@ export enum StoreEnum {
   /** 标签页每页大小 **/
   TAG_PAGE_SIZE = 'tag_page_size',
   /** 分类页每页大小 **/
-  CATEGORY_PAGE_SIZE = 'category_page_size'
+  CATEGORY_PAGE_SIZE = 'category_page_size',
+  /** 文章页每页大小 **/
+  POST_PAGE_SIZE = 'post_page_size'
 }

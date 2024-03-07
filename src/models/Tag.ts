@@ -9,5 +9,7 @@ export interface Tag {
   /** 标签别名 **/
   slug: string,
   /** 标签颜色 **/
-  color: string | null
+  color: string | null,
+  /** 文章数量 */
+  postCount?: number
 }

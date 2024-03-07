@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { NTag } from 'naive-ui';
 import { ref } from 'vue';
-import { Tag } from '../models/Tag.ts';
+import { Tag } from '../../models/Tag.ts';
 
 // 鼠标是否进入标签
 const isMouseEnter = ref(false);

@@ -2,17 +2,12 @@
 import {
   FormInst,
   NButton,
-  NCard,
   NForm,
   NFormItem,
   NInput,
   NModal,
-  NScrollbar,
   NList,
-  NResult,
-  NSwitch,
-  NRow,
-  NCol
+  NSwitch
 } from 'naive-ui';
 import { onMounted, reactive, ref } from 'vue';
 import {
@@ -26,10 +21,9 @@ import { confirmDialog, errorMsg, successMsg } from '../utils/Message.ts';
 import { DialogFormMode } from '../models/enum/DialogFormMode.ts';
 import { StoreEnum } from '../models/enum/StoreEnum.ts';
 import { Pager } from '../models/Pager.ts';
-import MyPagination from '../components/MyPagination.vue';
 import { displayNameToSlug } from '../utils/MyUtils.ts';
-import MyNumberAnimation from '../components/MyNumberAnimation.vue';
-import CategoryListItem from '../components/CategoryListItem.vue';
+import CategoryListItem from '../components/item/CategoryListItem.vue';
+import MyCard from '../components/component/MyCard.vue';
 
 // 分类集合
 const categories = ref<Array<Category> | null>(null);
@@ -239,7 +233,7 @@ const onAddEditDialogDisplayNameUpdate = (value: string) => {
  * 分页组件当前页改变事件
  * @param page 当前页
  */
-const onPaginationUpdate = (page: number) => {
+const onPageUpdate = (page: number) => {
   currentPage.value = page;
   // 刷新分类
   refreshCategories();
@@ -249,7 +243,7 @@ const onPaginationUpdate = (page: number) => {
  * 分页组件每页大小改变事件
  * @param size 每页大小
  */
-const onPaginationSizeUpdate = (size: number) => {
+const onPageSizeUpdate = (size: number) => {
   pageSize.value = size;
   // 将每页大小存储
   localStorage.setItem(StoreEnum.CATEGORY_PAGE_SIZE, size.toString());
@@ -321,71 +315,36 @@ const onPaginationSizeUpdate = (size: number) => {
       </template>
     </n-modal>
 
-    <n-card
-      class="animate__animated animate__fadeIn"
-      embedded
-      :segmented="{
-        content: true
-      }"
-      content-style="padding: 0;"
-      size="small"
+    <my-card
+      :data-count="totalCategories"
+      :show-empty-status="categories !== null && categories.length === 0"
+      :current-page="currentPage"
+      :page-size="pageSize"
+      :page-count="totalPages"
+      :current-page-item-count="categories?.length ?? 0"
+      show-pagination
+      item-string="分类"
+      @on-page-update="onPageUpdate"
+      @on-page-size-update="onPageSizeUpdate"
     >
-      <template #header>
-        共
-        <MyNumberAnimation :to="totalCategories" />
-        个分类，当前页
-        <MyNumberAnimation :to="categories?.length ?? 0" />
-        个
-      </template>
       <template #header-extra>
         <n-button type="primary" @click="onAddCategoryClick">添加分类</n-button>
       </template>
-      <template #default>
-        <n-scrollbar style="max-height: calc(100vh - 194px)">
-          <n-result
-            v-if="categories !== null && categories.length === 0"
-            style="margin: 40px 0"
-            status="500"
-            title="这里什么都没有"
-            description="快去添加几个分类吧！"
+      <template #content>
+        <!-- 分类列表 -->
+        <n-list hoverable>
+          <category-list-item
+            v-for="category in categories"
+            :key="category.categoryId"
+            :category="category"
+            @on-delete-category="onDeleteCategory"
+            @on-edit-category="onEditCategory"
           />
-          <!-- 分类列表 -->
-          <n-list hoverable>
-            <category-list-item
-              v-for="category in categories"
-              :key="category.categoryId"
-              :category="category"
-              @on-delete-category="onDeleteCategory"
-              @on-edit-category="onEditCategory"
-            />
-          </n-list>
-        </n-scrollbar>
+        </n-list>
       </template>
-      <template #action>
-        <n-row style="margin-bottom: -4px">
-          <n-col :span="6">
-            <div style="height: 28px; line-height: 28px">所有分类</div>
-          </n-col>
-          <n-col :span="18">
-            <div class="pagination-div">
-              <MyPagination
-                :current-page="currentPage"
-                :page-size="pageSize"
-                :total-page="totalPages"
-                @on-page-change="onPaginationUpdate"
-                @on-page-size-change="onPaginationSizeUpdate"
-              />
-            </div>
-          </n-col>
-        </n-row>
-      </template>
-    </n-card>
+    </my-card>
   </div>
 </template>
 
 <style scoped>
-.pagination-div {
-  display: flex;
-  justify-content: end;
-}
 </style>

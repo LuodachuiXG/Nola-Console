@@ -11,5 +11,7 @@ export interface Category {
   /** 封面 **/
   cover: string | null,
   /** 是否统一封面 **/
-  unifiedCover: boolean
+  unifiedCover: boolean,
+  /** 文章数量 */
+  postCount?: number
 }

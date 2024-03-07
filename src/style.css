@@ -20,3 +20,8 @@ body,
 .dialog-form {
     margin-top: 30px;
 }
+
+.pagination-div {
+    display: flex;
+    justify-content: end;
+}
