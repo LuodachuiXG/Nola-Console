@@ -45,3 +45,22 @@ export const displayNameToSlug = (str: string) => {
   // 将所有空白字符替换成 - ，并且转小写
   return pinyin.replace(/\s+/g, '-').toLowerCase();
 };
+
+/**
+ * 格式化时间戳
+ * @param timestamp 时间戳
+ */
+export const formatTimestamp = (timestamp: number) => {
+  // 创建一个新的日期实例，传入毫秒级时间戳
+  const date = new Date(timestamp);
+
+  // 使用日期方法获取年、月、日、小时和分钟
+  const year = date.getFullYear();
+  const month = `0${date.getMonth() + 1}`.slice(-2);
+  const day = `0${date.getDate()}`.slice(-2);
+  const hours = `0${date.getHours()}`.slice(-2);
+  const minutes = `0${date.getMinutes()}`.slice(-2);
+
+  // 拼接成目标格式的字符串
+  return `${year}-${month}-${day} ${hours}:${minutes}`;
+}

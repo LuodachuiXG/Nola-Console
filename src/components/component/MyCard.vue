@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import MyNumberAnimation from './MyNumberAnimation.vue';
 import MyEmptyResult from './MyEmptyResult.vue';
-import { NCard, NCol, NRow, NScrollbar, NText } from 'naive-ui';
+import {
+  NCard,
+  NCol,
+  NRow,
+  NScrollbar,
+  NText
+} from 'naive-ui';
 import MyPagination from './MyPagination.vue';
 
 interface Props {
@@ -56,23 +62,23 @@ const onPaginationSizeUpdate = (size: number) => {
     class="animate__animated animate__fadeIn"
     :embedded="embedded ?? true"
     :segmented="{
-      content: true
-    }"
+          content: true
+        }"
     content-style="padding: 0;"
     :size="size ?? 'small'"
   >
     <template #header>
       <slot name="header">
-        <span>
-          共
-          <MyNumberAnimation :to="dataCount ?? 0" />
-          个{{ itemString ?? '项目' }}
-        </span>
+            <span>
+              共
+              <MyNumberAnimation :to="dataCount ?? 0" />
+              个{{ itemString ?? '项目' }}
+            </span>
         <span v-if="showPagination ?? true">
-          ，当前页
-          <MyNumberAnimation :to="currentPageItemCount ?? 0" />
-          个
-        </span>
+              ，当前页
+              <MyNumberAnimation :to="currentPageItemCount ?? 0" />
+              个
+            </span>
       </slot>
     </template>
     <template #header-extra>
@@ -91,7 +97,7 @@ const onPaginationSizeUpdate = (size: number) => {
       <n-row style="margin-bottom: -4px">
         <n-col :span="6">
           <slot name="action-left">
-            <n-text style="margin-top: 1px;" tag="div">
+            <n-text style="margin-top: 1px" tag="div">
               {{ '所有' + itemString }}
             </n-text>
           </slot>

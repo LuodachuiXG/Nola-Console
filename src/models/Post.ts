@@ -34,7 +34,7 @@ export interface Post {
   /** 文章访问量 **/
   visit: number;
   /** 文章分类 */
-  category: Category;
+  category: Category | null;
   /** 文章标签数组 */
   tags: Array<Tag>;
   /** 文章创建时间戳 **/

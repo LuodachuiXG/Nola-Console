@@ -63,6 +63,7 @@ import router from './router';
 import { confirmDialog, errorMsg, successMsg } from './utils/Message.ts';
 import bus from './utils/EventBus.ts';
 import { login } from './apis/userApi.ts';
+import { WindowSizeEnum } from './models/enum/WindowSizeEnum.ts';
 
 // 当前登录用户
 const user = ref<User | null>(null);
@@ -237,6 +238,12 @@ const handlerWindowResize = () => {
     // 这里就根据窗口大小自动改变侧边栏状态
     isSmallWindow.value = width < 768;
     isSiderCollapsed.value = isSmallWindow.value;
+  }
+  // 发送窗口大小改变消息
+  if (width < 768) {
+    bus.emit(WindowSizeEnum.SMALL);
+  } else {
+    bus.emit(WindowSizeEnum.LARGE);
   }
 };
 
@@ -537,7 +544,7 @@ function onReLoginDialogLoginClick() {
               </n-col>
             </n-row>
           </n-layout-header>
-          <n-layout-content class="layout-content">
+          <n-layout-content class="layout-content" embedded>
             <router-view />
           </n-layout-content>
         </n-layout>
@@ -551,10 +558,12 @@ function onReLoginDialogLoginClick() {
   min-height: 100%;
   height: 100%;
 }
+
 .main-layout {
   min-height: 100%;
   height: 100%;
 }
+
 .layout-header {
   height: 64px;
 }
@@ -610,6 +619,6 @@ function onReLoginDialogLoginClick() {
   background-color: var(--color-primary);
   border-radius: 999px;
   color: white;
-  font-size: .8em;
+  font-size: 0.8em;
 }
 </style>

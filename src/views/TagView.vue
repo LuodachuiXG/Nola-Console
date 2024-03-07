@@ -11,8 +11,7 @@ import {
   NModal,
   NSpace,
   NPopover,
-  NList,
-  NBadge
+  NList
 } from 'naive-ui';
 import {
   BookOutline as BookIcon,
@@ -118,6 +117,7 @@ onMounted(() => {
  * 刷新标签数据
  */
 const refreshTags = () => {
+  window.$loadingBar.start();
   if (currentTagMode.value === TagMode.BLOCK) {
     // 当前标签显示模式是块，获取所有标签
     getTags()
@@ -125,9 +125,11 @@ const refreshTags = () => {
         tags.value = res.data.data;
         // 设置总标签数
         totalTags.value = tags.value?.length ?? 0;
+        window.$loadingBar.finish();
       })
       .catch((err) => {
         errorMsg(err);
+        window.$loadingBar.error();
       });
   } else {
     // 当前标签显示模式是列表，分页获取标签
@@ -152,9 +154,11 @@ const getTagsByPage = () => {
       tags.value = pager.data;
       totalTags.value = pager.totalData;
       totalPages.value = pager.totalPages;
+      window.$loadingBar.finish();
     })
     .catch((err) => {
       errorMsg(err);
+      window.$loadingBar.error();
     });
 };
 

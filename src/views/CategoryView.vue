@@ -68,6 +68,7 @@ onMounted(() => {
  * 刷新分类数据
  */
 const refreshCategories = () => {
+  window.$loadingBar.start();
   // 分页获取分类
   getCategories(currentPage.value, pageSize.value)
     .then((res) => {
@@ -82,9 +83,11 @@ const refreshCategories = () => {
       categories.value = pager.data;
       totalCategories.value = pager.totalData;
       totalPages.value = pager.totalPages;
+      window.$loadingBar.finish();
     })
     .catch((err) => {
       errorMsg(err);
+      window.$loadingBar.error();
     });
 };
 

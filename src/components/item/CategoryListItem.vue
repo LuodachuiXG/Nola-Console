@@ -17,7 +17,7 @@ import {
 } from '@vicons/ionicons5';
 
 interface Props {
-  /** 分类列表 */
+  /** 分类接口 */
   category: Category;
 }
 
