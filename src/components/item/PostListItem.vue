@@ -141,10 +141,16 @@ const onDeletePost = (post: Post) => {
         </n-popover>
       </template>
       <template #description>
-        <n-row>
+        <n-row style="margin-left: 13px;">
           <n-col :span="16">
+            <div style="font-size: 0.9em">
+              <n-text depth="3">浏览量：{{ post.visit }}</n-text>
+              <n-text depth="3" style="margin-left: 10px">{{
+                post.allowComment ? '允许评论' : '不允许评论'
+              }}</n-text>
+            </div>
             <div v-if="post.category !== null">
-              <n-button text size="small">
+              <n-button text size="small" style="font-size: 0.9em">
                 <template #icon>
                   <n-icon size="14">
                     <CategoryIcon />
@@ -165,8 +171,8 @@ const onDeletePost = (post: Post) => {
             </div>
           </n-col>
           <n-col :span="8">
-            <div style="display: flex; justify-content: end">
-              <n-text depth="3" style="font-size: 0.9em"
+            <div class="post-time-div">
+              <n-text class="post-time-div-text" depth="3" style="font-size: 0.9em"
                 >{{ formatTimestamp(post.createTime) }}
               </n-text>
             </div>
@@ -205,4 +211,15 @@ const onDeletePost = (post: Post) => {
   </n-list-item>
 </template>
 
-<style scoped></style>
+<style scoped>
+.post-time-div {
+  position: relative;
+  height: 100%;
+}
+
+.post-time-div-text {
+  position: absolute;
+  right: 13px;
+  bottom: 0;
+}
+</style>

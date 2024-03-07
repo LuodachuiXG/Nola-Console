@@ -13,5 +13,6 @@ declare global {
     $notification: NotificationApiInjection;
     $dialog: DialogApiInjection;
     $loadingBar: LoadingBarApiInjection;
+    $isLarge: boolean;
   }
 }

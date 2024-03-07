@@ -23,6 +23,7 @@ interface Props {
 
 defineProps<Props>();
 
+
 const emit = defineEmits<{
   (e: 'onEditTag', tag: Tag): void;
   (e: 'onDeleteTag', tag: Tag): void;
