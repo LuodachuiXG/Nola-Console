@@ -12,6 +12,7 @@ import {
   NSpace,
   NPopover,
   NList,
+  NBadge
 } from 'naive-ui';
 import {
   BookOutline as BookIcon,
@@ -438,7 +439,7 @@ const onPageSizeUpdate = (size: number) => {
                       show-arrow
                       @select="onTagMenuSelect"
                     >
-                      <tag-component size="medium" :tag="tag" />
+                      <tag-component size="medium" :tag="tag" pointer/>
                     </n-dropdown>
                   </div>
                 </template>

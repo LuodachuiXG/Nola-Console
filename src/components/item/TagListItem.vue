@@ -1,6 +1,14 @@
 <!-- 标签列表项 -->
 <script setup lang="ts">
-import { NButton, NButtonGroup, NIcon, NListItem, NThing } from 'naive-ui';
+import {
+  NButton,
+  NButtonGroup,
+  NIcon,
+  NListItem,
+  NThing,
+  NBadge,
+  NText
+} from 'naive-ui';
 import {
   BrushOutline as EditIcon,
   TrashOutline as TrashIcon
@@ -41,10 +49,14 @@ const onDeleteTag = (tag: Tag) => {
   <n-list-item>
     <n-thing class="animate__animated animate__fadeIn">
       <template #header>
-        <tag-component size="medium" :tag="tag" />
+        <n-badge :value="tag.postCount ?? 0" type="info">
+          <tag-component size="medium" :tag="tag" />
+        </n-badge>
       </template>
       <template #description>
-        <n-button text text-color="#999">{{ tag.slug }}</n-button>
+        <div class="description">
+          <n-text depth="3">{{ tag.slug }}</n-text>
+        </div>
       </template>
       <template #header-extra>
         <n-button-group size="small">
@@ -69,5 +81,4 @@ const onDeleteTag = (tag: Tag) => {
     </n-thing>
   </n-list-item>
 </template>
-
 <style scoped></style>

@@ -1,6 +1,15 @@
 <!-- 分类列表项 -->
 <script setup lang="ts">
-import { NButton, NButtonGroup, NIcon, NListItem, NThing } from 'naive-ui';
+import {
+  NButton,
+  NButtonGroup,
+  NIcon,
+  NListItem,
+  NThing,
+  NText,
+  NRow,
+  NCol
+} from 'naive-ui';
 import { Category } from '../../models/Category.ts';
 import {
   BrushOutline as EditIcon,
@@ -15,8 +24,8 @@ interface Props {
 defineProps<Props>();
 
 const emit = defineEmits<{
-  (e: 'onEditCategory', category: Category): void
-  (e: 'onDeleteCategory', category: Category): void
+  (e: 'onEditCategory', category: Category): void;
+  (e: 'onDeleteCategory', category: Category): void;
 }>();
 
 const onEditCategory = (category: Category) => {
@@ -32,10 +41,19 @@ const onDeleteCategory = (category: Category) => {
   <n-list-item>
     <n-thing class="animate__animated animate__fadeIn">
       <template #header>
-        {{ category.displayName }}
+        <n-text strong>{{ category.displayName }}</n-text>
       </template>
       <template #description>
-        <n-button text text-color="#999">{{ category.slug }}</n-button>
+        <n-row>
+          <n-col :span="20">
+            <n-text depth="3">{{ category.slug }}</n-text>
+          </n-col>
+          <n-col :span="4">
+            <div style="display: flex;justify-content: end;">
+              <n-text depth="3" style="font-size: 1em">{{ category.postCount ?? 0 }} 篇文章</n-text>
+            </div>
+          </n-col>
+        </n-row>
       </template>
       <template #header-extra>
         <n-button-group size="small">

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import MyNumberAnimation from './MyNumberAnimation.vue';
 import MyEmptyResult from './MyEmptyResult.vue';
-import { NCard, NCol, NRow, NScrollbar } from 'naive-ui';
+import { NCard, NCol, NRow, NScrollbar, NText } from 'naive-ui';
 import MyPagination from './MyPagination.vue';
 
 interface Props {
@@ -91,7 +91,9 @@ const onPaginationSizeUpdate = (size: number) => {
       <n-row style="margin-bottom: -4px">
         <n-col :span="6">
           <slot name="action-left">
-            {{ '所有' + itemString }}
+            <n-text style="margin-top: 1px;" tag="div">
+              {{ '所有' + itemString }}
+            </n-text>
           </slot>
         </n-col>
         <n-col :span="18">

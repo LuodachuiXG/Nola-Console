@@ -11,6 +11,8 @@ interface Props {
   tag: Tag;
   /** 标签大小 */
   size: 'small' | 'medium' | 'large' | 'tiny';
+  /** 是否显示小手 */
+  pointer?: boolean;
 }
 
 const props = defineProps<Props>();
@@ -18,7 +20,7 @@ const props = defineProps<Props>();
 const emit = defineEmits<{
   (e: 'onMouseEnterTag', tag: Tag): void;
   (e: 'onMouseLeaveTag', tag: Tag): void;
-}>()
+}>();
 
 /**
  * 鼠标进入标签事件
@@ -40,7 +42,8 @@ const mouseLeave = () => {
 <template>
   <div @mouseenter="mouseEnter" @mouseleave="mouseLeave">
     <n-tag
-      class="tag transition"
+      class="transition"
+      :style="pointer ? 'cursor: pointer;' : ''"
       :size="size"
       :color="
         tag.color !== null && tag.color !== '' && !isMouseEnter
@@ -62,7 +65,4 @@ const mouseLeave = () => {
 </template>
 
 <style scoped>
-.tag {
-  cursor: pointer;
-}
 </style>
