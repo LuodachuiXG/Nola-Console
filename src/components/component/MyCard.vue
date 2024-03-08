@@ -88,7 +88,7 @@ const onPaginationSizeUpdate = (size: number) => {
       <n-scrollbar style="max-height: calc(100vh - 196px)">
         <my-empty-result
           v-if="showEmptyStatus ?? false"
-          :item-string="itemString"
+          :item-string="itemString ?? '项目'"
         />
         <slot v-else name="content" />
       </n-scrollbar>

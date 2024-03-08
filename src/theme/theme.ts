@@ -5,6 +5,9 @@ const themeOverrides: GlobalThemeOverrides = {
     primaryColorHover: '#1c5bff',
     primaryColorPressed: '#0847ff',
   },
+  Switch: {
+    railColorActive: '#306fff',
+  }
 
 };
 

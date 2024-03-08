@@ -415,7 +415,7 @@ const onPageSizeUpdate = (size: number) => {
               placeholder="标签名"
               @update-value="onAddEditDialogDisplayNameUpdate"
               maxlength="50"
-              show-count
+
             />
           </n-form-item>
           <n-form-item
@@ -427,7 +427,7 @@ const onPageSizeUpdate = (size: number) => {
               v-model:value="formAddEdit.slug"
               placeholder="标签别名"
               maxlength="50"
-              show-count
+
             />
           </n-form-item>
           <n-form-item label="颜色" path="color">

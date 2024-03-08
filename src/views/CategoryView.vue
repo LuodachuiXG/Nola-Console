@@ -315,7 +315,7 @@ const onPageSizeUpdate = (size: number) => {
               placeholder="分类名"
               @update-value="onAddEditDialogDisplayNameUpdate"
               maxlength="50"
-              show-count
+
             />
           </n-form-item>
           <n-form-item
@@ -327,7 +327,7 @@ const onPageSizeUpdate = (size: number) => {
               v-model:value="formAddEdit.slug"
               placeholder="分类别名"
               maxlength="50"
-              show-count
+
             />
           </n-form-item>
           <n-form-item
@@ -339,15 +339,12 @@ const onPageSizeUpdate = (size: number) => {
               v-model:value="formAddEdit.cover"
               placeholder="分类封面地址"
               maxlength="256"
-              show-count
+
             />
           </n-form-item>
           <n-form-item label="统一封面" path="unifiedCover">
             <n-switch
               v-model:value="formAddEdit.unifiedCover"
-              :disabled="
-                formAddEdit.cover === null || formAddEdit.cover.length === 0
-              "
             />
           </n-form-item>
         </n-form>

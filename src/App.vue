@@ -63,7 +63,6 @@ import router from './router';
 import { confirmDialog, errorMsg, successMsg } from './utils/Message.ts';
 import bus from './utils/EventBus.ts';
 import { login } from './apis/userApi.ts';
-import { WindowSizeEnum } from './models/enum/WindowSizeEnum.ts';
 
 // 当前登录用户
 const user = ref<User | null>(null);

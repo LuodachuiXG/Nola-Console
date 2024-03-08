@@ -65,7 +65,7 @@ const onDeleteCategory = (category: Category) => {
                 <EditIcon />
               </n-icon>
             </template>
-            <span v-if="!isCollapsed ?? true">编辑</span>
+            <span v-if="!isCollapsed">编辑</span>
           </n-button>
           <n-button type="error" tertiary @click="onDeleteCategory(category)">
             <template #icon>
@@ -73,7 +73,7 @@ const onDeleteCategory = (category: Category) => {
                 <TrashIcon />
               </n-icon>
             </template>
-            <span v-if="!isCollapsed ?? true">删除</span>
+            <span v-if="!isCollapsed">删除</span>
           </n-button>
         </n-button-group>
       </template>

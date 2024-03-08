@@ -30,7 +30,7 @@ export interface Post {
   /** 文章是否有密码 **/
   encrypted: boolean;
   /** 文章密码，始终为 null，密码不会返回 **/
-  password: null;
+  password: string | null;
   /** 文章访问量 **/
   visit: number;
   /** 文章分类 */

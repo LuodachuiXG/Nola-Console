@@ -50,7 +50,9 @@ const emit = defineEmits<{
 }>();
 
 // 文章状态 badge 类型
-const postStatusBadgeType = ref('success');
+const postStatusBadgeType = ref<
+  'default' | 'error' | 'info' | 'success' | 'warning'
+>('success');
 // 文章状态提示文字
 const postStatusString = ref('已发布');
 
@@ -69,7 +71,7 @@ onMounted(() => {
           postStatusString.value = '草稿';
           break;
         case PostStatus.DELETED:
-          postStatusBadgeType.value = 'danger';
+          postStatusBadgeType.value = 'error';
           postStatusString.value = '已删除';
           break;
       }
@@ -256,7 +258,7 @@ const onPostPinnedBadgeClick = () => {
                 <EditIcon />
               </n-icon>
             </template>
-            <span v-if="!isCollapsed ?? true">编辑</span>
+            <span v-if="!isCollapsed">编辑</span>
           </n-button>
           <n-button type="default" tertiary @click="onSettingPost(post)">
             <template #icon>
@@ -264,7 +266,7 @@ const onPostPinnedBadgeClick = () => {
                 <SettingIcon />
               </n-icon>
             </template>
-            <span v-if="!isCollapsed ?? true">设置</span>
+            <span v-if="!isCollapsed">设置</span>
           </n-button>
           <n-button type="error" tertiary @click="onDeletePost(post)">
             <template #icon>
@@ -272,7 +274,7 @@ const onPostPinnedBadgeClick = () => {
                 <TrashIcon />
               </n-icon>
             </template>
-            <span v-if="!isCollapsed ?? true">回收</span>
+            <span v-if="!isCollapsed">回收</span>
           </n-button>
         </n-button-group>
       </template>

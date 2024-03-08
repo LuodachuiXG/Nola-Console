@@ -34,7 +34,7 @@ export function delPost(ids: Array<number>) {
  * 删除文章前的必要操作
  * @param ids 文章 ID 数组
  */
-export function recyclePost(ids: Array<number>) {
+export function recyclePosts(ids: Array<number>) {
   return service({
     url: '/admin/post/recycle',
     method: 'PUT',
