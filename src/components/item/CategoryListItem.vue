@@ -15,14 +15,12 @@ import {
   BrushOutline as EditIcon,
   TrashOutline as TrashIcon
 } from '@vicons/ionicons5';
-import { onMounted, ref } from 'vue';
-import { PostStatus } from '../../models/enum/PostStatus.ts';
-import bus from '../../utils/EventBus.ts';
-import { WindowSizeEnum } from '../../models/enum/WindowSizeEnum.ts';
 
 interface Props {
   /** 分类接口 */
   category: Category;
+  /** 是否折叠元素 **/
+  isCollapsed?: boolean;
 }
 
 defineProps<Props>();
@@ -67,7 +65,7 @@ const onDeleteCategory = (category: Category) => {
                 <EditIcon />
               </n-icon>
             </template>
-            编辑
+            <span v-if="!isCollapsed ?? true">编辑</span>
           </n-button>
           <n-button type="error" tertiary @click="onDeleteCategory(category)">
             <template #icon>
@@ -75,7 +73,7 @@ const onDeleteCategory = (category: Category) => {
                 <TrashIcon />
               </n-icon>
             </template>
-            删除
+            <span v-if="!isCollapsed ?? true">删除</span>
           </n-button>
         </n-button-group>
       </template>

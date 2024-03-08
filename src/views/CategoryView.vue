@@ -7,24 +7,27 @@ import {
   NInput,
   NModal,
   NList,
-  NSwitch
+  NSwitch,
+  NIcon
 } from 'naive-ui';
-import { onMounted, reactive, ref } from 'vue';
+import { AddOutline as AddIcon } from '@vicons/ionicons5';
+import { onMounted, onUnmounted, reactive, ref } from 'vue';
 import {
   addCategory,
   delCategoriesByIds,
   categories as getCategories,
-  updateCategory
+  updateCategory,
+  category
 } from '../apis/categoryApi.ts';
 import { Category } from '../models/Category.ts';
 import { confirmDialog, errorMsg, successMsg } from '../utils/Message.ts';
 import { DialogFormMode } from '../models/enum/DialogFormMode.ts';
 import { StoreEnum } from '../models/enum/StoreEnum.ts';
 import { Pager } from '../models/Pager.ts';
-import { displayNameToSlug } from '../utils/MyUtils.ts';
+import { displayNameToSlug, isCurrentSmallWindow } from '../utils/MyUtils.ts';
 import CategoryListItem from '../components/item/CategoryListItem.vue';
 import MyCard from '../components/component/MyCard.vue';
-
+import { useRoute } from 'vue-router';
 // 分类集合
 const categories = ref<Array<Category> | null>(null);
 
@@ -54,15 +57,48 @@ const formAddEdit = reactive({
   unifiedCover: false
 });
 
+// 是否是小窗口
+const isSmallWindow = ref(false);
+
+// 路由引用
+const route = useRoute();
+
 onMounted(() => {
   // 读取以前是否设置过每页大小
   pageSize.value = Number(
     localStorage.getItem(StoreEnum.CATEGORY_PAGE_SIZE) ?? 10
   );
 
+  // 监听窗口大小变化
+  window.addEventListener('resize', handleWindowSizeChange);
+  handleWindowSizeChange();
+
+  // 查看路由是否传参
+  let categoryId = route.query.categoryId;
+  if (categoryId !== undefined) {
+    // 获取分类
+    category(Number(categoryId))
+      .then((res) => {
+        // 打开编辑分类页面
+        onEditCategory(res.data as Category);
+      })
+      .catch((err) => errorMsg(err));
+  }
+
   // 刷新分类数据
   refreshCategories();
 });
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleWindowSizeChange);
+});
+
+/**
+ *
+ */
+const handleWindowSizeChange = () => {
+  isSmallWindow.value = isCurrentSmallWindow();
+};
 
 /**
  * 刷新分类数据
@@ -331,7 +367,14 @@ const onPageSizeUpdate = (size: number) => {
       @on-page-size-update="onPageSizeUpdate"
     >
       <template #header-extra>
-        <n-button type="primary" @click="onAddCategoryClick">添加分类</n-button>
+        <n-button type="primary" @click="onAddCategoryClick">
+          <template #icon>
+            <n-icon>
+              <AddIcon />
+            </n-icon>
+          </template>
+          <span v-if="!isSmallWindow">添加分类</span>
+        </n-button>
       </template>
       <template #content>
         <!-- 分类列表 -->
@@ -340,6 +383,7 @@ const onPageSizeUpdate = (size: number) => {
             v-for="category in categories"
             :key="category.categoryId"
             :category="category"
+            :is-collapsed="isSmallWindow"
             @on-delete-category="onDeleteCategory"
             @on-edit-category="onEditCategory"
           />
@@ -349,5 +393,4 @@ const onPageSizeUpdate = (size: number) => {
   </div>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>

@@ -46,6 +46,17 @@ export function updateTag(tag: Tag) {
 }
 
 /**
+ * 根据标签 ID 获取标签
+ * @param tagId 标签 ID
+ */
+export function tag(tagId: number) {
+  return service({
+    url: `/admin/tag/${tagId}`,
+    method: 'GET'
+  });
+}
+
+/**
  * 分页获取标签
  * @param page 当前页数（留空或 0 获取全部）
  * @param size 每页条数

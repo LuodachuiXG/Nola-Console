@@ -24,6 +24,20 @@ export function confirmDialog(
 }
 
 /**
+ * 封装操作成功消息
+ */
+export function optionSuccessMsg() {
+  successMsg('操作成功');
+}
+
+/**
+ * 封装操作失败消息
+ */
+export function optionErrorMsg() {
+  errorMsg('操作失败');
+}
+
+/**
  * 封装成功消息
  * @param msg 消息内容
  */

@@ -55,6 +55,31 @@ export function updatePost(postRequest: PostRequest) {
 }
 
 /**
+ * 修改文章状态
+ * @param postId 文章 ID
+ * @param status 文章状态
+ * @param visible 文章可见性
+ * @param pinned 文章置顶
+ */
+export function updatePostStatus(
+  postId: number,
+  status: PostStatus | null = null,
+  visible: PostVisible | null = null,
+  pinned: boolean | null = null
+) {
+  return service({
+    url: '/admin/post/status',
+    method: 'PUT',
+    data: {
+      postId: postId,
+      status: status,
+      visible: visible,
+      pinned: pinned
+    }
+  });
+}
+
+/**
  * 获取文章
  */
 export function posts(
@@ -235,16 +260,12 @@ export function updatePostDraftToPublish(
   });
 }
 
-
 /**
  * 获取文章草稿
  * @param postId 文章 ID
  * @param draftName 草稿名
  */
-export function postDraft(
-  postId: number,
-  draftName: string
-) {
+export function postDraft(postId: number, draftName: string) {
   return service({
     url: `/admin/post/content/${postId}/draft/${draftName}`,
     method: 'GET'

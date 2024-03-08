@@ -1,5 +1,6 @@
 import { StoreEnum } from '../models/enum/StoreEnum.ts';
 import pinyin from 'js-pinyin';
+
 /**
  * 返回当前主题颜色
  * @return 返回当前的主题颜色：light / dark
@@ -63,4 +64,11 @@ export const formatTimestamp = (timestamp: number) => {
 
   // 拼接成目标格式的字符串
   return `${year}-${month}-${day} ${hours}:${minutes}`;
-}
+};
+
+/**
+ * 判断当前是否为小窗口
+ */
+export const isCurrentSmallWindow = (): boolean => {
+  return window.document.documentElement.clientWidth < 768;
+};

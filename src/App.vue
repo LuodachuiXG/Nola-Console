@@ -54,7 +54,7 @@ import {
 } from '@vicons/ionicons5';
 import themeOverrides from './theme/theme.ts';
 import type { BuiltInGlobalTheme } from 'naive-ui/es/themes/interface';
-import { getCurrentTheme, setTheme } from './utils/MyUtils.ts';
+import { getCurrentTheme, isCurrentSmallWindow, setTheme } from './utils/MyUtils.ts';
 import AppProvider from './components/appProvider/AppProvider.vue';
 import { StoreEnum } from './models/enum/StoreEnum.ts';
 import NolaIcon from './assets/nola.png';
@@ -232,18 +232,11 @@ onUnmounted(() => {
  * 因窗口大小改变导致的侧边栏改变，侧边栏折叠配置不存储到本地
  */
 const handlerWindowResize = () => {
-  let width = window.document.documentElement.clientWidth;
   if (!isManualUpdateSider.value) {
     // 如果用户之前没有手动修改过侧边栏
     // 这里就根据窗口大小自动改变侧边栏状态
-    isSmallWindow.value = width < 768;
+    isSmallWindow.value = isCurrentSmallWindow();
     isSiderCollapsed.value = isSmallWindow.value;
-  }
-  // 发送窗口大小改变消息
-  if (width < 768) {
-    bus.emit(WindowSizeEnum.SMALL);
-  } else {
-    bus.emit(WindowSizeEnum.LARGE);
   }
 };
 

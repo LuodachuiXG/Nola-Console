@@ -19,6 +19,8 @@ import TagComponent from '../component/MyTag.vue';
 interface Props {
   /** 标签类 **/
   tag: Tag;
+  /** 是否折叠元素 **/
+  isCollapsed?: boolean;
 }
 
 defineProps<Props>();
@@ -67,7 +69,7 @@ const onDeleteTag = (tag: Tag) => {
                 <EditIcon />
               </n-icon>
             </template>
-            编辑
+            <span v-if="!isCollapsed ?? true">编辑</span>
           </n-button>
           <n-button type="error" tertiary @click="onDeleteTag(tag)">
             <template #icon>
@@ -75,7 +77,7 @@ const onDeleteTag = (tag: Tag) => {
                 <TrashIcon />
               </n-icon>
             </template>
-            删除
+            <span v-if="!isCollapsed ?? true">删除</span>
           </n-button>
         </n-button-group>
       </template>

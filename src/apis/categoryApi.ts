@@ -46,6 +46,17 @@ export function updateCategory(category: Category) {
 }
 
 /**
+ * 根据分类 ID 获取分类
+ * @param categoryId 分类 ID
+ */
+export function category(categoryId: number) {
+  return service({
+    url: `/admin/category/${categoryId}`,
+    method: 'GET'
+  });
+}
+
+/**
  * 分页获取分类
  * @param page 当前页数（留空或 0 获取全部）
  * @param size 每页条数
