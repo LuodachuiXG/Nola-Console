@@ -2,22 +2,24 @@
 import {
   FormInst,
   NButton,
-  NIcon,
-  NList,
-  NModal,
   NForm,
   NFormItem,
+  NIcon,
   NInput,
   NInputGroup,
-  NText,
-  NScrollbar,
-  NSwitch,
+  NList,
+  NModal,
   NPopover,
-  NSpace,
+  NScrollbar,
   NSelect,
-  SelectOption
+  NSpace,
+  NSwitch,
+  NTag,
+  NText,
+  SelectOption,
+  SelectRenderTag
 } from 'naive-ui';
-import { onMounted, onUnmounted, reactive, ref } from 'vue';
+import { h, onMounted, onUnmounted, reactive, ref } from 'vue';
 import { StoreEnum } from '../models/enum/StoreEnum.ts';
 import { Post } from '../models/Post.ts';
 import MyCard from '../components/component/MyCard.vue';
@@ -34,21 +36,23 @@ import { confirmDialog, errorMsg, optionSuccessMsg } from '../utils/Message.ts';
 import { Pager } from '../models/Pager.ts';
 import {
   displayNameToSlug,
-  formatTimestamp,
-  isCurrentSmallWindow
+  isCurrentSmallWindow,
+  isNumber
 } from '../utils/MyUtils.ts';
 import {
   AddOutline as AddIcon,
-  RefreshOutline as RefreshIcon,
   FileTrayFullOutline as FileIcon,
-  LockOpenOutline as LockOpenIcon,
+  FlashOffOutline as FlashOffIcon,
   FlashOutline as FlashIcon,
-  FlashOffOutline as FlashOffIcon
+  LockOpenOutline as LockOpenIcon,
+  RefreshOutline as RefreshIcon
 } from '@vicons/ionicons5';
-import { tags } from '../apis/tagApi.ts';
-import { categories } from '../apis/categoryApi.ts';
+import { addTag, tags } from '../apis/tagApi.ts';
+import { addCategory, categories } from '../apis/categoryApi.ts';
 import { Tag } from '../models/Tag.ts';
 import { Category } from '../models/Category.ts';
+import { TagColor } from 'naive-ui/es/tag/src/common-props';
+import MyTag from '../components/component/MyTag.vue';
 
 // 总文章数
 const totalPosts = ref(0);
@@ -62,13 +66,13 @@ const pageSize = ref(10);
 const posts = ref<Array<Post> | null>(null);
 
 // 标签列表
-const tagsList = ref<Array<Tag> | null>(null);
+const tagsList = ref(Array<Tag>());
 // 标签选择器列表
-const tagsSelectOptions = ref<Array<SelectOption>>();
+const tagsSelectOptions = ref(Array<SelectOption>());
 // 分类列表
-const categoriesList = ref<Array<Category> | null>(null);
+const categoriesList = ref(Array<Category>());
 // 分类选择器列表
-const categoriesSelectOptions = ref<Array<SelectOption>>();
+const categoriesSelectOptions = ref(Array<SelectOption>());
 
 // 检索文章状态
 const queryPostStatus = ref<PostStatus | null>(null);
@@ -114,7 +118,7 @@ const formSettingPost: Post = reactive({
   createTime: 0
 });
 // 设置文章对话框表单，当前文章的标签 ID 数组
-const formSettingPostTagIds = ref<Array<number>>();
+const formSettingPostTagIds = ref(Array<number>());
 // // 设置文章对话框表单，当前文章的分类 ID
 const formSettingPostCategoryId = ref<number>();
 
@@ -128,7 +132,8 @@ onMounted(() => {
   // 刷新文章数据
   refreshPosts();
   // 刷新标签和分类数据
-  refreshTagAndCategory();
+  refreshTag();
+  refreshCategory();
 });
 
 onUnmounted(() => {
@@ -180,39 +185,81 @@ const refreshPosts = () => {
 };
 
 /**
- * 刷新标签和分类
+ * 获取标签
  */
-const refreshTagAndCategory = () => {
+const refreshTag = () => {
   // 获取所有标签
   tags(0, 0)
     .then((res) => {
       tagsList.value = res.data.data;
       // 将标签封装到标签选择器列表中
-      let selectList = Array<SelectOption>();
-      tagsList.value?.forEach((tag) => {
-        selectList.push({
-          label: tag.displayName,
-          value: tag.tagId!!
-        });
-      });
-      tagsSelectOptions.value = selectList;
+      tags2SelectOptions(tagsList.value);
     })
     .catch((err) => errorMsg('标签获取失败：' + err));
+};
+
+/**
+ * 将标签数组封装到标签选择器列表中
+ * @param tags 标签数组
+ * @param override 是否覆盖原数组，否则将新数据添加到末尾
+ */
+const tags2SelectOptions = (tags: Array<Tag>, override: boolean = true) => {
+  // 将标签封装到标签选择器列表中
+  let selectList = Array<SelectOption>();
+  tags.forEach((tag) => {
+    selectList.push({
+      label: tag.displayName,
+      value: tag.tagId,
+      color: tag.color
+    });
+  });
+  if (override) {
+    // 覆盖原数组
+    tagsSelectOptions.value = selectList;
+  } else {
+    // 添加到末尾
+    tagsSelectOptions.value.push(...selectList);
+  }
+};
+
+/**
+ * 获取分类
+ */
+const refreshCategory = () => {
   // 获取所有分类
   categories(0, 0)
     .then((res) => {
       categoriesList.value = res.data.data;
       // 将分类封装到分类选择器列表中
-      let selectList = Array<SelectOption>();
-      categoriesList.value?.forEach((category) => {
-        selectList.push({
-          label: category.displayName,
-          value: category.categoryId!!
-        });
-      });
-      categoriesSelectOptions.value = selectList;
+      categories2SelectOptions(categoriesList.value);
     })
     .catch((err) => errorMsg('分类获取失败：' + err));
+};
+
+/**
+ * 将分类数组封装到分类选择器列表中
+ * @param categories 分类数组
+ * @param override 是否覆盖原数组，否则将新数据添加到末尾
+ */
+const categories2SelectOptions = (
+  categories: Array<Category>,
+  override: boolean = true
+) => {
+  // 将分类封装到分类选择器列表中
+  let selectList = Array<SelectOption>();
+  categories.forEach((category) => {
+    selectList.push({
+      label: category.displayName,
+      value: category.categoryId!!
+    });
+  });
+  if (override) {
+    // 覆盖原数组
+    categoriesSelectOptions.value = selectList;
+  } else {
+    // 添加到末尾
+    categoriesSelectOptions.value.push(...selectList);
+  }
 };
 
 /**
@@ -267,6 +314,8 @@ const clearFormSettingPost = () => {
   formSettingPost.password = '';
   formSettingPost.encrypted = false;
   formSettingPost.lastModifyTime = null;
+  formSettingPostCategoryId.value = undefined;
+  formSettingPostTagIds.value = Array<number>();
 };
 /**
  * 设置文章按钮点击事件
@@ -290,6 +339,13 @@ const onSettingPost = (post: Post) => {
   formSettingPost.encrypted = post.encrypted;
   formSettingPost.lastModifyTime = post.lastModifyTime;
 
+  let tagIds = Array<number>();
+  post.tags.forEach((tag) => {
+    tagIds.push(tag.tagId!!);
+  });
+  formSettingPostTagIds.value = tagIds;
+  formSettingPostCategoryId.value = post.category?.categoryId;
+
   // 显示设置文章对话框
   visibleSettingPostDialog.value = true;
 };
@@ -310,6 +366,205 @@ const onSettingPostGenerateSlugClick = () => {
  */
 const onSettingPostAutoGenerateExcerptClick = () => {
   formSettingPost.autoGenerateExcerpt = !formSettingPost.autoGenerateExcerpt;
+};
+
+/**
+ * 文章设置对话框分类选择器改变事件
+ * @param value 已存在的分类为分类 ID，如果是不存在（新增分类）则为分类名称 string
+ */
+const onFormSettingPostCategoryUpdate = (value: number | string | null) => {
+  if (value === null) {
+    return;
+  }
+
+  if (isNumber(value)) {
+    // 已存在的分类 ID，写入表单数据
+    formSettingPostCategoryId.value = Number(value);
+    return;
+  }
+
+  // value为 string，新增分类
+  addCategory({
+    displayName: value as string,
+    slug: displayNameToSlug(value as string),
+    cover: null,
+    unifiedCover: false
+  })
+    .then((res) => {
+      // 添加分类成功
+      let newCategory = res.data as Category;
+      // 将新增的分类 ID 写入表单数据
+      formSettingPostCategoryId.value = newCategory.categoryId;
+      // 刷新分类
+      refreshCategory();
+    })
+    .catch((err) => errorMsg('添加分类失败：' + err));
+};
+
+/**
+ * 文章设置对话框分类选择器搜索事件
+ * @param query
+ */
+const onPostSettingCategorySelectSearch = (query: string) => {
+  if (!query.length) {
+    // 如果查询关键字为空，则默认显示所有分类
+    categories2SelectOptions(categoriesList.value);
+    return;
+  }
+
+  // 在所有分类中检索关键字
+  let queryResult = categoriesList.value.filter((category) => {
+    if (category.displayName.toLowerCase().includes(query.toLowerCase()))
+      return true;
+  });
+
+  if (queryResult.length === 0) {
+    // 查询结果为空，添加一个选项到选择题，提示用户是否添加新分类
+    categoriesSelectOptions.value = [
+      {
+        label: `添加 [${query}] 分类`,
+        value: query
+      }
+    ];
+    return;
+  }
+  // 将分类搜索结果填充到分类选择器中
+  categories2SelectOptions(queryResult);
+};
+
+/**
+ * 文章设置对话框标签选择器改变事件
+ * @param value 已存在的标签为标签 ID，如果是不存在（新增标签）则为标签名称 string
+ */
+const onFormSettingPostTagUpdate = (value: Array<number> | Array<string>) => {
+  // 如果标签为空，则清空表单数据
+  if (value.length === 0) {
+    formSettingPostTagIds.value = [];
+    return;
+  }
+  // 封装已经选择的标签的 ID 数组
+  let selectedTagIds = Array<number>();
+  value.forEach((v) => {
+    if (isNumber(v)) {
+      // 当前 value 为数字（标签 ID），添加到已选择标签数组
+      selectedTagIds.push(Number(v));
+    } else {
+      // 当前 value 为 string（标签名称），先添加标签
+      addTag({
+        displayName: v as string,
+        slug: displayNameToSlug(v as string),
+        color: null
+      })
+        .then((res) => {
+          // 添加标签成功
+          let newTag = res.data as Tag;
+          // 将新增的标签 ID 添加到已选择标签数组
+          formSettingPostTagIds.value.push(newTag.tagId!!);
+          // 刷新标签
+          refreshTag();
+        })
+        .catch((err) => errorMsg('添加标签失败：' + err));
+    }
+  });
+  formSettingPostTagIds.value = selectedTagIds;
+};
+
+/**
+ * 文章设置对话框分类选择器搜索事件
+ * @param query
+ */
+const onPostSettingTagSelectSearch = (query: string) => {
+  if (!query.length) {
+    // 如果查询关键字为空，则默认显示所有标签
+    tags2SelectOptions(tagsList.value);
+    return;
+  }
+
+  // 在所有标签中检索关键字
+  let queryResult = tagsList.value.filter((tag) => {
+    if (tag.displayName.toLowerCase().includes(query.toLowerCase()))
+      return true;
+  });
+
+  if (queryResult.length === 0) {
+    // 查询结果为空，添加一个选项到选择题，提示用户是否添加新标签
+    tagsSelectOptions.value = [
+      {
+        label: query,
+        value: query,
+        // 标记当前是选择器选项是添加标签
+        addTag: true
+      }
+    ];
+    return;
+  }
+  // 将标签搜索结果填充到标签选择器中
+  tags2SelectOptions(queryResult);
+};
+
+const onPostSettingTagSelectRenderTag: SelectRenderTag = ({
+  option,
+  handleClose
+}) => {
+  let tagColor: TagColor = {
+    textColor: option.color as string,
+    borderColor: option.color as string
+  };
+  return h(
+    NTag,
+    {
+      closable: true,
+      color: tagColor,
+      // 标签有颜色才加字体影音 class
+      class: option.color ? 'tag-text-shadow' : '',
+      themeOverrides: {
+        closeIconColor: option.color as string
+      },
+      onMousedown: (e: FocusEvent) => {
+        e.preventDefault();
+      },
+      onClose: (e: MouseEvent) => {
+        e.stopPropagation();
+        handleClose();
+      }
+    },
+    { default: () => option.label }
+  );
+};
+
+const onPostSettingTagSelectRenderLabel = (option: SelectOption) => {
+  // 放在标签选项前
+  let prefix: string = '';
+  // 放在标签选项后
+  let suffix: string = '';
+  // 当前标签被标记为添加标签
+  // 详情看方法：onPostSettingTagSelectSearch
+  if (option.addTag) {
+    prefix = '添加';
+    suffix = '标签';
+  }
+  // 在要添加的标签前后加上提示文字，即 "添加 '<标签名>' 标签"
+  return [
+    h(
+      NSpace,
+      {},
+      {
+        default: () => [
+          prefix.length === 0 ? null : h(NText, {}, { default: () => prefix }),
+          h(MyTag, {
+            tag: {
+              displayName: option.label,
+              slug: option.label,
+              color: option.color as string
+            } as Tag,
+            size: 'small',
+            pointer: true
+          }),
+          suffix.length === 0 ? null : h(NText, {}, { default: () => suffix })
+        ]
+      }
+    )
+  ];
 };
 
 /**
@@ -495,8 +750,30 @@ const onSettingPostDialogSubmit = () => {};
               <n-form-item label="分类" path="category">
                 <n-select
                   :options="categoriesSelectOptions"
-                  v-model:value="formSettingPostCategoryId"
-                  @focus="console.log(formSettingPostCategoryId)"
+                  :value="formSettingPostCategoryId"
+                  @update:value="onFormSettingPostCategoryUpdate"
+                  @search="onPostSettingCategorySelectSearch"
+                  @clear="formSettingPostCategoryId = undefined"
+                  filterable
+                  tag
+                  remote
+                  clearable
+                />
+              </n-form-item>
+
+              <n-form-item label="标签" path="tag">
+                <n-select
+                  :options="tagsSelectOptions"
+                  :value="formSettingPostTagIds"
+                  @update:value="onFormSettingPostTagUpdate"
+                  @search="onPostSettingTagSelectSearch"
+                  @clear="formSettingPostTagIds = Array<number>()"
+                  :render-tag="onPostSettingTagSelectRenderTag"
+                  :render-label="onPostSettingTagSelectRenderLabel"
+                  multiple
+                  filterable
+                  tag
+                  remote
                   clearable
                 />
               </n-form-item>

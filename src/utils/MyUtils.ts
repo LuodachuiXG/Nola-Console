@@ -72,3 +72,20 @@ export const formatTimestamp = (timestamp: number) => {
 export const isCurrentSmallWindow = (): boolean => {
   return window.document.documentElement.clientWidth < 768;
 };
+
+
+/**
+ * 判断是否为数字
+ * @param value 数字或字符串
+ */
+export const isNumber = (value: number | string): boolean => {
+  return typeof value === 'number' && !isNaN(value);
+};
+
+/**
+ * 判断是是否是字符串
+ * @param value 数组或字符串
+ */
+export const isString = (value: number | string): boolean => {
+  return typeof value === 'string';
+};

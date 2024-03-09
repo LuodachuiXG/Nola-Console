@@ -12,7 +12,6 @@ import { RouteLocationNormalizedLoaded, useRoute } from 'vue-router';
 import { RouterViews } from './router/RouterViews.ts';
 import {
   NIcon,
-  NSelect,
   NLayout,
   NLayoutContent,
   NLayoutHeader,
@@ -371,22 +370,6 @@ function onReLoginDialogLoginClick() {
 
   return false;
 }
-
-// const options = [
-//   {
-//     label: 'A',
-//     value: 1
-//   },
-//   {
-//     label: 'B',
-//     value: 2
-//   },
-//   {
-//     label: 'C',
-//     value: 3
-//   }
-// ];
-// const showModal = ref(false);
 </script>
 
 <template>
