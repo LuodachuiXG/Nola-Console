@@ -12,6 +12,7 @@ import { RouteLocationNormalizedLoaded, useRoute } from 'vue-router';
 import { RouterViews } from './router/RouterViews.ts';
 import {
   NIcon,
+  NSelect,
   NLayout,
   NLayoutContent,
   NLayoutHeader,
@@ -54,7 +55,11 @@ import {
 } from '@vicons/ionicons5';
 import themeOverrides from './theme/theme.ts';
 import type { BuiltInGlobalTheme } from 'naive-ui/es/themes/interface';
-import { getCurrentTheme, isCurrentSmallWindow, setTheme } from './utils/MyUtils.ts';
+import {
+  getCurrentTheme,
+  isCurrentSmallWindow,
+  setTheme
+} from './utils/MyUtils.ts';
 import AppProvider from './components/appProvider/AppProvider.vue';
 import { StoreEnum } from './models/enum/StoreEnum.ts';
 import NolaIcon from './assets/nola.png';
@@ -366,6 +371,22 @@ function onReLoginDialogLoginClick() {
 
   return false;
 }
+
+// const options = [
+//   {
+//     label: 'A',
+//     value: 1
+//   },
+//   {
+//     label: 'B',
+//     value: 2
+//   },
+//   {
+//     label: 'C',
+//     value: 3
+//   }
+// ];
+// const showModal = ref(false);
 </script>
 
 <template>

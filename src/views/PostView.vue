@@ -412,15 +412,6 @@ const onSettingPostDialogSubmit = () => {};
     >
       <template #default>
         <div>
-          <n-text
-            depth="3"
-            style="margin-left: 2px; margin-top: 4px"
-            v-if="formSettingPost.lastModifyTime !== null"
-          >
-            最后修改时间：{{
-              formatTimestamp(formSettingPost.lastModifyTime ?? 0)
-            }}
-          </n-text>
           <n-scrollbar style="max-height: 70vh; padding-right: 12px">
             <n-form
               ref="settingPostDialogRef"
@@ -470,7 +461,11 @@ const onSettingPostDialogSubmit = () => {};
                 <n-input-group>
                   <n-input
                     v-model:value="formSettingPost.excerpt"
-                    placeholder="文章摘要"
+                    :placeholder="
+                      formSettingPost.autoGenerateExcerpt
+                        ? '根据文章内容自动生成'
+                        : '文章摘要'
+                    "
                     maxlength="512"
                     clearable
                     :disabled="formSettingPost.autoGenerateExcerpt"
@@ -500,8 +495,8 @@ const onSettingPostDialogSubmit = () => {};
               <n-form-item label="分类" path="category">
                 <n-select
                   :options="categoriesSelectOptions"
-                  :value="formSettingPostCategoryId"
-                  :keyboard="false"
+                  v-model:value="formSettingPostCategoryId"
+                  @focus="console.log(formSettingPostCategoryId)"
                   clearable
                 />
               </n-form-item>
