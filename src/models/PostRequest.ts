@@ -25,6 +25,8 @@ export interface PostRequest {
   status: PostStatus;
   /** 文章可见性 **/
   visible: PostVisible;
+  /** 文章是否有密码（为 true 时需提供 password，为 null 保持不变，为 false 删除密码） **/
+  encrypted: boolean | null,
   /** 文章密码 **/
   password: string | null;
   /** 文章分类 ID */

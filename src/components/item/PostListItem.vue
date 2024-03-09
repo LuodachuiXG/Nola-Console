@@ -18,7 +18,8 @@ import {
   EyeOffOutline as EyeOffIcon,
   LibraryOutline as CategoryIcon,
   SettingsOutline as SettingIcon,
-  TrashOutline as TrashIcon
+  TrashOutline as TrashIcon,
+  LockClosedOutline as LockClosedIcon
 } from '@vicons/ionicons5';
 import { Post } from '../../models/Post.ts';
 import { formatTimestamp } from '../../utils/MyUtils.ts';
@@ -47,6 +48,7 @@ const emit = defineEmits<{
   (e: 'onPostStatusBadgeClick', post: Post): void;
   (e: 'onPostPinnedBadgeClick', post: Post): void;
   (e: 'onPostVisibleBadgeClick', post: Post): void;
+  (e: 'onPostEncryptedBadgeClick', post: Post): void;
 }>();
 
 // 文章状态 badge 类型
@@ -57,27 +59,33 @@ const postStatusBadgeType = ref<
 const postStatusString = ref('已发布');
 
 onMounted(() => {
+  refreshPostStatusBadge(props.post.status);
   // 监听文章状态变化
   watch(
     () => props.post.status,
-    (newValue) => {
-      switch (newValue) {
-        case PostStatus.PUBLISHED:
-          postStatusBadgeType.value = 'success';
-          postStatusString.value = '已发布';
-          break;
-        case PostStatus.DRAFT:
-          postStatusBadgeType.value = 'warning';
-          postStatusString.value = '草稿';
-          break;
-        case PostStatus.DELETED:
-          postStatusBadgeType.value = 'error';
-          postStatusString.value = '已删除';
-          break;
-      }
-    }
+    (status) => refreshPostStatusBadge(status)
   );
 });
+
+/**
+ * 刷新文章状态 badge
+ */
+const refreshPostStatusBadge = (status: PostStatus) => {
+  switch (status) {
+    case PostStatus.PUBLISHED:
+      postStatusBadgeType.value = 'success';
+      postStatusString.value = '已发布';
+      break;
+    case PostStatus.DRAFT:
+      postStatusBadgeType.value = 'warning';
+      postStatusString.value = '草稿';
+      break;
+    case PostStatus.DELETED:
+      postStatusBadgeType.value = 'error';
+      postStatusString.value = '已删除';
+      break;
+  }
+};
 
 /**
  * 编辑文章
@@ -151,6 +159,13 @@ const onPostVisibleBadgeClick = () => {
 const onPostPinnedBadgeClick = () => {
   emit('onPostPinnedBadgeClick', props.post);
 };
+
+/**
+ * 文章加密 badge 点击事件
+ */
+const onPostEncryptedBadgeClick = () => {
+  emit('onPostEncryptedBadgeClick', props.post);
+}
 </script>
 
 <template>
@@ -201,6 +216,28 @@ const onPostPinnedBadgeClick = () => {
           </template>
           <span>当前文章不可见</span>
         </n-popover>
+
+        <n-popover
+          :keep-alive-on-hover="false"
+          v-if="post.encrypted"
+        >
+          <template #trigger>
+            <span>
+              <n-badge
+                class="pointer"
+                :offset="[15, -2]"
+                type="warning"
+                style="margin-left: 5px"
+                @click="onPostEncryptedBadgeClick"
+              >
+                <template #value>
+                  <n-icon size="14" :component="LockClosedIcon" />
+                </template>
+              </n-badge>
+            </span>
+          </template>
+          <span>文章已加密</span>
+        </n-popover>
       </template>
       <template #description>
         <n-row style="margin-left: 13px">
@@ -208,7 +245,7 @@ const onPostPinnedBadgeClick = () => {
             <div style="font-size: 0.9em">
               <n-text depth="3">浏览量：{{ post.visit }}</n-text>
               <n-text depth="3" style="margin-left: 10px"
-                >{{ post.allowComment ? '允许评论' : '不允许评论' }}
+                >{{ post.allowComment ? '允许评论' : '禁止评论' }}
               </n-text>
             </div>
             <div v-if="post.category !== null">

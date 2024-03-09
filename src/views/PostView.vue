@@ -13,12 +13,10 @@ import {
   NScrollbar,
   NSelect,
   NSpace,
-  NSwitch,
   NTag,
   NText,
   NDivider,
-  NRadioButton,
-  NRadioGroup,
+  NSwitch,
   SelectOption,
   SelectRenderTag
 } from 'naive-ui';
@@ -30,6 +28,7 @@ import PostListItem from '../components/item/PostListItem.vue';
 import {
   posts as getPosts,
   recyclePosts,
+  updatePost,
   updatePostStatus
 } from '../apis/postApi.ts';
 import { PostStatus } from '../models/enum/PostStatus.ts';
@@ -56,6 +55,7 @@ import { Tag } from '../models/Tag.ts';
 import { Category } from '../models/Category.ts';
 import { TagColor } from 'naive-ui/es/tag/src/common-props';
 import MyTag from '../components/component/MyTag.vue';
+import { PostRequest } from '../models/PostRequest.ts';
 
 // 总文章数
 const totalPosts = ref(0);
@@ -649,9 +649,55 @@ const onPostPinnedBadgeClick = (post: Post) => {
 };
 
 /**
+ * 文章加密 badge 点击事件
+ * @param post
+ */
+const onPostEncryptedBadgeClick = (post: Post) => {
+  onSettingPost(post);
+};
+
+/**
  * 设置文章对话框提交事件
  */
-const onSettingPostDialogSubmit = () => {};
+const onSettingPostDialogSubmit = () => {
+  let encrypted: Boolean | null;
+  if (
+    (formSettingPost.password === null ||
+      formSettingPost.password.length === 0) &&
+    formSettingPost.encrypted
+  ) {
+    // 文章密码为空，并且文章当前加密
+    // encrypted 设为 null，代表文章加密状态保持不变
+    encrypted = null;
+  } else encrypted = !!(formSettingPost.password && !formSettingPost.encrypted);
+
+  // 封装文章请求类
+  let postRequest: PostRequest = {
+    postId: formSettingPost.postId,
+    title: formSettingPost.title,
+    autoGenerateExcerpt: formSettingPost.autoGenerateExcerpt,
+    excerpt: formSettingPost.excerpt,
+    slug: formSettingPost.slug,
+    cover: formSettingPost.cover,
+    allowComment: formSettingPost.allowComment,
+    pinned: formSettingPost.pinned,
+    status: formSettingPost.status,
+    visible: formSettingPost.visible,
+    encrypted: encrypted,
+    password: formSettingPost.password,
+    categoryId: formSettingPostCategoryId.value,
+    tagIds: formSettingPostTagIds.value
+  };
+
+  // 更新文章
+  updatePost(postRequest)
+    .then(() => {
+      optionSuccessMsg();
+      // 刷新文章
+      refreshPosts();
+    })
+    .catch((err) => errorMsg(err));
+};
 </script>
 
 <template>
@@ -804,9 +850,8 @@ const onSettingPostDialogSubmit = () => {};
               </n-form-item>
 
               <n-divider>
-                <n-text depth="3" style="font-size: .9em">进阶设置</n-text>
+                <n-text depth="3" style="font-size: 0.9em">进阶设置</n-text>
               </n-divider>
-
 
               <n-form-item label="密码" path="password">
                 <n-input-group>
@@ -819,6 +864,7 @@ const onSettingPostDialogSubmit = () => {};
                     clearable
                     type="password"
                     :disabled="formSettingPost.encrypted"
+                    show-password-on="mousedown"
                   />
                   <n-popover v-if="formSettingPost.encrypted">
                     <template #trigger>
@@ -836,31 +882,55 @@ const onSettingPostDialogSubmit = () => {};
               </n-form-item>
 
               <n-form-item label="评论" path="allowComment">
-                <n-radio-group v-model:value="formSettingPost.allowComment">
-                  <n-radio-button label="允许评论" :value="true" />
-                  <n-radio-button label="禁止评论" :value="false" />
-                </n-radio-group>
+                <n-switch v-model:value="formSettingPost.allowComment">
+                  <template #checked>
+                    <span>允许评论</span>
+                  </template>
+                  <template #unchecked>
+                    <span>禁止评论</span>
+                  </template>
+                </n-switch>
               </n-form-item>
 
               <n-form-item label="置顶" path="pinned">
-                <n-radio-group v-model:value="formSettingPost.pinned">
-                  <n-radio-button label="置顶文章" :value="true" />
-                  <n-radio-button label="默认文章" :value="false" />
-                </n-radio-group>
+                <n-switch v-model:value="formSettingPost.pinned">
+                  <template #checked>
+                    <span>置顶文章</span>
+                  </template>
+                  <template #unchecked>
+                    <span>默认文章</span>
+                  </template>
+                </n-switch>
               </n-form-item>
 
               <n-form-item label="状态" path="status">
-                <n-radio-group v-model:value="formSettingPost.status">
-                  <n-radio-button label="已发布" :value="PostStatus.PUBLISHED" />
-                  <n-radio-button label="草稿" :value="PostStatus.DRAFT" />
-                </n-radio-group>
+                <n-switch
+                  v-model:value="formSettingPost.status"
+                  :checked-value="PostStatus.PUBLISHED"
+                  :unchecked-value="PostStatus.DRAFT"
+                >
+                  <template #checked>
+                    <span>已发布</span>
+                  </template>
+                  <template #unchecked>
+                    <span>草稿</span>
+                  </template>
+                </n-switch>
               </n-form-item>
 
               <n-form-item label="可见性" path="visible">
-                <n-radio-group v-model:value="formSettingPost.visible">
-                  <n-radio-button label="可见" :value="PostVisible.VISIBLE" />
-                  <n-radio-button label="隐藏" :value="PostVisible.HIDDEN" />
-                </n-radio-group>
+                <n-switch
+                  v-model:value="formSettingPost.visible"
+                  :checked-value="PostVisible.VISIBLE"
+                  :unchecked-value="PostVisible.HIDDEN"
+                >
+                  <template #checked>
+                    <span>可见</span>
+                  </template>
+                  <template #unchecked>
+                    <span>隐藏</span>
+                  </template>
+                </n-switch>
               </n-form-item>
             </n-form>
           </n-scrollbar>
@@ -904,6 +974,7 @@ const onSettingPostDialogSubmit = () => {};
             @on-post-status-badge-click="onPostStatusBadgeClick"
             @on-post-visible-badge-click="onPostVisibleBadgeClick"
             @on-post-pinned-badge-click="onPostPinnedBadgeClick"
+            @on-post-encrypted-badge-click="onPostEncryptedBadgeClick"
           />
         </n-list>
       </template>
