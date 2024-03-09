@@ -46,8 +46,10 @@ import {
   FileTrayFullOutline as FileIcon,
   FlashOffOutline as FlashOffIcon,
   FlashOutline as FlashIcon,
+  TrashOutline as TrashIcon,
   LockOpenOutline as LockOpenIcon,
-  RefreshOutline as RefreshIcon
+  RefreshOutline as RefreshIcon,
+  SearchOutline as SearchIcon
 } from '@vicons/ionicons5';
 import { addTag, tags } from '../apis/tagApi.ts';
 import { addCategory, categories } from '../apis/categoryApi.ts';
@@ -89,6 +91,61 @@ const queryTagId = ref<number | null>(null);
 const queryCategoryId = ref<number | null>(null);
 // 检索文章排序
 const querySort = ref<PostSort | null>(null);
+// 检索文章状态选择器选项
+const queryPostStatusSelectOptions = ref<Array<SelectOption>>([
+  {
+    label: '已发布',
+    value: PostStatus.PUBLISHED
+  },
+  {
+    label: '草稿',
+    value: PostStatus.DRAFT
+  }
+]);
+
+// 检索文章可见性选择器选项
+const queryPostVisibleSelectOptions: Array<SelectOption> = [
+  {
+    label: '可见',
+    value: PostVisible.VISIBLE
+  },
+  {
+    label: '隐藏',
+    value: PostVisible.HIDDEN
+  }
+];
+
+// 检索文章排序选择器选项
+const queryPostSortSelectOptions: Array<SelectOption> = [
+  {
+    label: '创建时间降序',
+    value: PostSort.CREATE_DESC
+  },
+  {
+    label: '创建时间升序',
+    value: PostSort.CREATE_ASC
+  },
+  {
+    label: '修改时间降序',
+    value: PostSort.MODIFY_DESC
+  },
+  {
+    label: '修改时间升序',
+    value: PostSort.MODIFY_ASC
+  },
+  {
+    label: '访问量降序',
+    value: PostSort.VISIT_DESC
+  },
+  {
+    label: '访问量升序',
+    value: PostSort.VISIT_ASC
+  },
+  {
+    label: '置顶排序',
+    value: PostSort.PINNED
+  }
+];
 
 // 当前是否是小窗口
 const isSmallWindow = ref(false);
@@ -660,44 +717,95 @@ const onPostEncryptedBadgeClick = (post: Post) => {
  * 设置文章对话框提交事件
  */
 const onSettingPostDialogSubmit = () => {
-  let encrypted: Boolean | null;
-  if (
-    (formSettingPost.password === null ||
-      formSettingPost.password.length === 0) &&
-    formSettingPost.encrypted
-  ) {
-    // 文章密码为空，并且文章当前加密
-    // encrypted 设为 null，代表文章加密状态保持不变
-    encrypted = null;
-  } else encrypted = !!(formSettingPost.password && !formSettingPost.encrypted);
+  // 验证表单是否有错误
+  settingPostDialogRef.value
+    ?.validate((errors) => {
+      if (!errors) {
+        // 表单验证成功
+        isSettingPostDialogLoading.value = true;
 
-  // 封装文章请求类
-  let postRequest: PostRequest = {
-    postId: formSettingPost.postId,
-    title: formSettingPost.title,
-    autoGenerateExcerpt: formSettingPost.autoGenerateExcerpt,
-    excerpt: formSettingPost.excerpt,
-    slug: formSettingPost.slug,
-    cover: formSettingPost.cover,
-    allowComment: formSettingPost.allowComment,
-    pinned: formSettingPost.pinned,
-    status: formSettingPost.status,
-    visible: formSettingPost.visible,
-    encrypted: encrypted,
-    password: formSettingPost.password,
-    categoryId: formSettingPostCategoryId.value,
-    tagIds: formSettingPostTagIds.value
-  };
+        // 文章是否有密码（为 true 时需提供 password，为 null 保持不变，为 false 删除密码）
+        let encrypted: Boolean | null;
+        if (
+          (formSettingPost.password === null ||
+            formSettingPost.password.length === 0) &&
+          formSettingPost.encrypted
+        ) {
+          // 文章密码为空，并且文章当前加密
+          // encrypted 设为 null，代表文章加密状态保持不变
+          encrypted = null;
+        } else {
+          encrypted = !!(
+            formSettingPost.password && !formSettingPost.encrypted
+          );
+        }
+        // 封装文章请求类
+        let postRequest: PostRequest = {
+          postId: formSettingPost.postId,
+          title: formSettingPost.title,
+          autoGenerateExcerpt: formSettingPost.autoGenerateExcerpt,
+          excerpt: formSettingPost.excerpt,
+          slug: formSettingPost.slug,
+          cover: formSettingPost.cover,
+          allowComment: formSettingPost.allowComment,
+          pinned: formSettingPost.pinned,
+          status: formSettingPost.status,
+          visible: formSettingPost.visible,
+          encrypted: encrypted,
+          password: formSettingPost.password,
+          categoryId: formSettingPostCategoryId.value,
+          tagIds: formSettingPostTagIds.value
+        };
 
-  // 更新文章
-  updatePost(postRequest)
-    .then(() => {
-      optionSuccessMsg();
-      // 刷新文章
-      refreshPosts();
+        // 更新文章
+        updatePost(postRequest)
+          .then(() => {
+            optionSuccessMsg();
+            onSettingPostDialogClose();
+          })
+          .catch((err) => {
+            isSettingPostDialogLoading.value = false;
+            errorMsg(err);
+          });
+      }
     })
-    .catch((err) => errorMsg(err));
+    .catch(() => {});
+  return false;
 };
+
+/**
+ * 设置文章对话框关闭后相关事件
+ */
+const onSettingPostDialogClose = () => {
+  // 设置文章对话框加载状态取消
+  isSettingPostDialogLoading.value = false;
+  // 取消对话框显示
+  visibleSettingPostDialog.value = false;
+  // 刷新文章
+  refreshPosts();
+};
+
+/**
+ * 检索文章关键字输入框清除事件
+ */
+const onPostQueryKeyClear = () => {
+  queryKey.value = '';
+  refreshPosts();
+}
+
+/**
+ * 检索文章清除事件
+ */
+const onPostQueryClear = () => {
+  queryPostStatus.value = null;
+  queryPostVisible.value = null;
+  queryCategoryId.value = null;
+  queryTagId.value = null;
+  queryKey.value = null;
+  querySort.value = null;
+  // 刷新文章
+  refreshPosts();
+}
 </script>
 
 <template>
@@ -950,6 +1058,90 @@ const onSettingPostDialogSubmit = () => {
       @on-page-update="onPageUpdate"
       @on-page-size-update="onPageSizeUpdate"
     >
+      <template #header>
+        <n-space>
+          <n-input-group>
+            <n-select
+              style="min-width: 90px"
+              :options="queryPostStatusSelectOptions"
+              v-model:value="queryPostStatus"
+              @update:value="refreshPosts"
+              placeholder="状态"
+              clearable
+            />
+
+            <n-select
+              style="min-width: 80px"
+              :options="queryPostVisibleSelectOptions"
+              v-model:value="queryPostVisible"
+              @update:value="refreshPosts"
+              placeholder="可见性"
+              clearable
+            />
+          </n-input-group>
+
+          <n-input-group>
+            <n-select
+              style="min-width: 140px"
+              :options="categoriesSelectOptions"
+              v-model:value="queryCategoryId"
+              placeholder="分类"
+              clearable
+              @clear="queryCategoryId = null"
+              @update:value="refreshPosts"
+            />
+
+            <n-select
+              style="min-width: 160px"
+              :options="tagsSelectOptions"
+              v-model:value="queryTagId"
+              :render-label="onPostSettingTagSelectRenderLabel"
+              clearable
+              @clear="queryTagId = null"
+              @update:value="refreshPosts"
+            />
+          </n-input-group>
+
+          <n-input-group>
+            <n-popover>
+              <template #trigger>
+                <n-input
+                  v-model:value="queryKey"
+                  placeholder="关键字检索"
+                  clearable
+                  @clear="onPostQueryKeyClear"
+                />
+              </template>
+              <span>标题、别名、摘要、文章内容</span>
+            </n-popover>
+
+            <n-button @click="refreshPosts">
+              <template #icon>
+                <n-icon>
+                  <SearchIcon />
+                </n-icon>
+              </template>
+            </n-button>
+          </n-input-group>
+          <n-select
+            style="min-width: 140px"
+            :options="queryPostSortSelectOptions"
+            v-model:value="querySort"
+            placeholder="排序方式"
+            clearable
+            @clear="querySort = null"
+            @update:value="refreshPosts"
+          />
+
+          <n-button @click="onPostQueryClear">
+            <template #icon>
+              <n-icon>
+                <TrashIcon />
+              </n-icon>
+            </template>
+          </n-button>
+        </n-space>
+      </template>
       <template #header-extra>
         <n-button type="primary" @click="onAddPostClick">
           <template #icon>
