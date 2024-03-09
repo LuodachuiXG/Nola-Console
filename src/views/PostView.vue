@@ -16,6 +16,9 @@ import {
   NSwitch,
   NTag,
   NText,
+  NDivider,
+  NRadioButton,
+  NRadioGroup,
   SelectOption,
   SelectRenderTag
 } from 'naive-ui';
@@ -799,6 +802,12 @@ const onSettingPostDialogSubmit = () => {};
                   </n-popover>
                 </n-input-group>
               </n-form-item>
+
+              <n-divider>
+                <n-text depth="3" style="font-size: .9em">进阶设置</n-text>
+              </n-divider>
+
+
               <n-form-item label="密码" path="password">
                 <n-input-group>
                   <n-input
@@ -826,25 +835,32 @@ const onSettingPostDialogSubmit = () => {};
                 </n-input-group>
               </n-form-item>
 
-              <n-form-item label="评论 & 置顶" path="allowComment">
-                <n-space>
-                  <n-switch v-model:value="formSettingPost.allowComment">
-                    <template #checked>
-                      <span>允许评论</span>
-                    </template>
-                    <template #unchecked>
-                      <span>禁止评论</span>
-                    </template>
-                  </n-switch>
-                  <n-switch v-model:value="formSettingPost.pinned">
-                    <template #checked>
-                      <span>置顶文章</span>
-                    </template>
-                    <template #unchecked>
-                      <span>默认文章</span>
-                    </template>
-                  </n-switch>
-                </n-space>
+              <n-form-item label="评论" path="allowComment">
+                <n-radio-group v-model:value="formSettingPost.allowComment">
+                  <n-radio-button label="允许评论" :value="true" />
+                  <n-radio-button label="禁止评论" :value="false" />
+                </n-radio-group>
+              </n-form-item>
+
+              <n-form-item label="置顶" path="pinned">
+                <n-radio-group v-model:value="formSettingPost.pinned">
+                  <n-radio-button label="置顶文章" :value="true" />
+                  <n-radio-button label="默认文章" :value="false" />
+                </n-radio-group>
+              </n-form-item>
+
+              <n-form-item label="状态" path="status">
+                <n-radio-group v-model:value="formSettingPost.status">
+                  <n-radio-button label="已发布" :value="PostStatus.PUBLISHED" />
+                  <n-radio-button label="草稿" :value="PostStatus.DRAFT" />
+                </n-radio-group>
+              </n-form-item>
+
+              <n-form-item label="可见性" path="visible">
+                <n-radio-group v-model:value="formSettingPost.visible">
+                  <n-radio-button label="可见" :value="PostVisible.VISIBLE" />
+                  <n-radio-button label="隐藏" :value="PostVisible.HIDDEN" />
+                </n-radio-group>
               </n-form-item>
             </n-form>
           </n-scrollbar>
