@@ -195,12 +195,9 @@ onMounted(() => {
   }
 });
 
-onUnmounted(() => {
+onBeforeUnmount(() => {
   // 退出前保存一下当前编辑内容
   postContentSave(text.value, true);
-});
-
-onBeforeUnmount(() => {
   // 取消监听 beforeunload 事件
   window.removeEventListener('beforeunload', () => {});
 });
@@ -524,7 +521,7 @@ const onDraft2PublishSubmit = () => {
 const onSubmitClick = () => {
   if (currentMode.value === EditorMode.EDIT) {
     // 当前是编辑模式
-    // 直接跳转文章页，当前页生命周期 onUnmounted 时会自动保存
+    // 直接跳转文章页，当前页生命周期 onBeforeUnmount 时会自动保存
     router.push(RouterViews.POST.name);
   }
 }
