@@ -12,6 +12,7 @@
     "animate.css": "^4.1.1",
     "axios": "^1.6.7",
     "js-pinyin": "^0.2.5",
+    "md-editor-v3": "^4.12.1",
     "mitt": "^3.0.1",
     "vue": "^3.3.11",
     "vue-router": "^4.2.5"

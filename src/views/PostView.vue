@@ -39,7 +39,7 @@ import { Pager } from '../models/Pager.ts';
 import {
   displayNameToSlug,
   isCurrentSmallWindow,
-  isNumber
+  isNumberType
 } from '../utils/MyUtils.ts';
 import {
   AddOutline as AddIcon,
@@ -358,7 +358,12 @@ const onPageSizeUpdate = (size: number) => {
  * @param post 文章接口
  */
 const onEditPost = (post: Post) => {
-  console.log(post);
+  router.push({
+    name: RouterViews.EDITOR.name,
+    query: {
+      postId: post.postId
+    }
+  });
 };
 
 /**
@@ -441,7 +446,7 @@ const onFormSettingPostCategoryUpdate = (value: number | string | null) => {
     return;
   }
 
-  if (isNumber(value)) {
+  if (isNumberType(value)) {
     // 已存在的分类 ID，写入表单数据
     formSettingPostCategoryId.value = Number(value);
     return;
@@ -509,7 +514,7 @@ const onFormSettingPostTagUpdate = (value: Array<number> | Array<string>) => {
   // 封装已经选择的标签的 ID 数组
   let selectedTagIds = Array<number>();
   value.forEach((v) => {
-    if (isNumber(v)) {
+    if (isNumberType(v)) {
       // 当前 value 为数字（标签 ID），添加到已选择标签数组
       selectedTagIds.push(Number(v));
     } else {
@@ -796,7 +801,7 @@ const onSettingPostDialogClose = () => {
 const onPostQueryKeyClear = () => {
   queryKey.value = '';
   refreshPosts();
-}
+};
 
 /**
  * 检索文章清除事件
@@ -810,7 +815,7 @@ const onPostQueryClear = () => {
   querySort.value = null;
   // 刷新文章
   refreshPosts();
-}
+};
 </script>
 
 <template>

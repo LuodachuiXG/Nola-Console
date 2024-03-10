@@ -1,5 +1,7 @@
 import { StoreEnum } from '../models/enum/StoreEnum.ts';
 import pinyin from 'js-pinyin';
+import { Component, h } from 'vue';
+import { NIcon } from 'naive-ui';
 
 /**
  * 返回当前主题颜色
@@ -73,19 +75,34 @@ export const isCurrentSmallWindow = (): boolean => {
   return window.document.documentElement.clientWidth < 768;
 };
 
-
 /**
- * 判断是否为数字
+ * 判断是否为数字类型
  * @param value 数字或字符串
  */
-export const isNumber = (value: number | string): boolean => {
+export const isNumberType = (value: number | string): boolean => {
   return typeof value === 'number' && !isNaN(value);
 };
 
 /**
- * 判断是是否是字符串
+ * 判断是是否是字符串类型
  * @param value 数组或字符串
  */
-export const isString = (value: number | string): boolean => {
+export const isStringType = (value: number | string): boolean => {
   return typeof value === 'string';
 };
+
+/**
+ * 判断一段文本是否是数字
+ * @param str 文本
+ */
+export const isNumber = (str: string): boolean => {
+  return !isNaN(Number(str));
+};
+
+/**
+ * 渲染图标
+ * @param icon 图标组件
+ */
+export function renderIcon(icon: Component) {
+  return () => h(NIcon, null, { default: () => h(icon) });
+}

@@ -133,7 +133,7 @@ export function postContents(postId: number) {
  * @param postId 文章 ID
  * @param content 文章正文（Markdown / PlainText）
  */
-export function updatePostContent(postId: number, content: string) {
+export function updatePostPublish(postId: number, content: string) {
   return service({
     url: '/admin/post/publish',
     method: 'PUT',
@@ -148,7 +148,7 @@ export function updatePostContent(postId: number, content: string) {
  * 获取文章正文
  * @param postId 文章 ID
  */
-export function postContent(postId: number) {
+export function postPublish(postId: number) {
   return service({
     url: `/admin/post/publish/${postId}`,
     method: 'GET'
@@ -167,7 +167,7 @@ export function addPostDraft(
   draftName: string
 ) {
   return service({
-    url: '/admin/post/content/draft',
+    url: '/admin/post/draft',
     method: 'POST',
     data: {
       postId: postId,
@@ -184,7 +184,7 @@ export function addPostDraft(
  */
 export function delPostDraft(postId: number, draftNames: Array<string>) {
   return service({
-    url: `/admin/post/content/${postId}/draft`,
+    url: `/admin/post/${postId}/draft`,
     method: 'DELETE',
     data: draftNames
   });
@@ -202,7 +202,7 @@ export function updatePostDraft(
   draftName: string
 ) {
   return service({
-    url: '/admin/post/content/draft',
+    url: '/admin/post/draft',
     method: 'PUT',
     data: {
       postId: postId,
@@ -224,7 +224,7 @@ export function updatePostDraftName(
   newName: string
 ) {
   return service({
-    url: '/admin/post/content/draft/name',
+    url: '/admin/post/draft/name',
     method: 'PUT',
     data: {
       postId: postId,
@@ -249,7 +249,7 @@ export function updatePostDraftToPublish(
   contentName: string | null
 ) {
   return service({
-    url: '/admin/post/content/draft/publish',
+    url: '/admin/post/draft/publish',
     method: 'PUT',
     data: {
       postId: postId,
@@ -267,7 +267,7 @@ export function updatePostDraftToPublish(
  */
 export function postDraft(postId: number, draftName: string) {
   return service({
-    url: `/admin/post/content/${postId}/draft/${draftName}`,
+    url: `/admin/post/${postId}/draft/${draftName}`,
     method: 'GET'
   });
 }

@@ -21,7 +21,7 @@ import {
   ListOutline as ListIcon,
   AddOutline as AddIcon
 } from '@vicons/ionicons5';
-import { Component, h, onMounted, onUnmounted, reactive, ref } from 'vue';
+import { onMounted, onUnmounted, reactive, ref } from 'vue';
 import {
   addTag,
   delTagsByIds, tag,
@@ -33,7 +33,7 @@ import { confirmDialog, errorMsg, successMsg } from '../utils/Message.ts';
 import { DialogFormMode } from '../models/enum/DialogFormMode.ts';
 import { StoreEnum } from '../models/enum/StoreEnum.ts';
 import { Pager } from '../models/Pager.ts';
-import { displayNameToSlug, isCurrentSmallWindow } from '../utils/MyUtils.ts';
+import { displayNameToSlug, isCurrentSmallWindow, renderIcon } from '../utils/MyUtils.ts';
 import TagListItem from '../components/item/TagListItem.vue';
 import TagComponent from '../components/component/MyTag.vue';
 import MyCard from '../components/component/MyCard.vue';
@@ -192,13 +192,6 @@ const getTagsByPage = () => {
       window.$loadingBar.error();
     });
 };
-
-/**
- * 渲染图标
- */
-function renderIcon(icon: Component) {
-  return () => h(NIcon, null, { default: () => h(icon) });
-}
 
 /**
  * 标签菜单选择事件

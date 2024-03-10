@@ -1,7 +1,7 @@
 import axios, { AxiosRequestHeaders } from 'axios';
 import { StoreEnum } from '../models/enum/StoreEnum.ts';
 import { User } from '../models/User.ts';
-import bus from '../utils/EventBus.ts';
+import bus, { BusEnum } from '../utils/EventBus.ts';
 
 // 创建 axios 实例
 const service = axios.create({
@@ -9,9 +9,9 @@ const service = axios.create({
   timeout: 5000,
   headers: {
     'Content-type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': '*'
   },
-  withCredentials: true,
+  withCredentials: true
 });
 
 // 请求拦截，在请求发送前加上 Token
@@ -32,7 +32,7 @@ service.interceptors.request.use(
   (error) => {
     // 处理错误请求
     return Promise.reject(error);
-  },
+  }
 );
 
 /**
@@ -51,14 +51,14 @@ service.interceptors.response.use(
         // 移除用户配置信息
         localStorage.removeItem(StoreEnum.USER);
         // 发送登录过期消息
-        bus.emit('loginExpired')
+        bus.emit(BusEnum.LOGIN_EXPIRED);
         return Promise.reject('登录过期');
       }
       return Promise.reject(err.response.data.errMsg);
     }
     // 处理错误响应
     return Promise.reject(err.code ? err.code : err.response.data.errMsg);
-  },
+  }
 );
 
 export default service;

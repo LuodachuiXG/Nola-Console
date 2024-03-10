@@ -15,7 +15,7 @@ export const router = createRouter({
     },
     {
       path: '/:pathMatch(.*)',
-      redirect: '/404',
+      redirect: '/404'
     },
     {
       path: RouterViews.LOGIN.path,
@@ -142,8 +142,8 @@ export const router = createRouter({
         displayName: RouterViews.SYSTEM.displayName,
         menuName: RouterViews.SYSTEM.menuName
       }
-    },
-  ],
+    }
+  ]
 });
 
 /**

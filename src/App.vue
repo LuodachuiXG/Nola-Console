@@ -1,13 +1,5 @@
 <script setup lang="ts">
-import {
-  Component,
-  onMounted,
-  ref,
-  watch,
-  h,
-  reactive,
-  onUnmounted
-} from 'vue';
+import { onMounted, ref, watch, reactive, onUnmounted } from 'vue';
 import { RouteLocationNormalizedLoaded, useRoute } from 'vue-router';
 import { RouterViews } from './router/RouterViews.ts';
 import {
@@ -57,6 +49,7 @@ import type { BuiltInGlobalTheme } from 'naive-ui/es/themes/interface';
 import {
   getCurrentTheme,
   isCurrentSmallWindow,
+  renderIcon,
   setTheme
 } from './utils/MyUtils.ts';
 import AppProvider from './components/appProvider/AppProvider.vue';
@@ -65,7 +58,7 @@ import NolaIcon from './assets/nola.png';
 import { User } from './models/User.ts';
 import router from './router';
 import { confirmDialog, errorMsg, successMsg } from './utils/Message.ts';
-import bus from './utils/EventBus.ts';
+import bus, { BusEnum } from './utils/EventBus.ts';
 import { login } from './apis/userApi.ts';
 
 // 当前登录用户
@@ -219,9 +212,29 @@ onMounted(() => {
   handlerWindowResize();
 
   // 监听事件总线中登录过期消息
-  bus.on('loginExpired', () => {
+  bus.on(BusEnum.LOGIN_EXPIRED, () => {
     // 收到登录过期消息，显示重新登录对话框
     visibleReLoginDialog.value = true;
+  });
+
+  // 监听暗色主题消息
+  bus.on(BusEnum.THEME_DARK, () => {
+    onSwitchTheme(true);
+  });
+
+  // 监听亮色主题消息
+  bus.on(BusEnum.THEME_LIGHT, () => {
+    onSwitchTheme();
+  });
+
+  // 监听隐藏侧边栏消息
+  bus.on(BusEnum.HIDDEN_SIDER, () => {
+    hideSider.value = true;
+  });
+
+  // 监听显示侧边栏消息
+  bus.on(BusEnum.VISIBLE_SIDER, () => {
+    hideSider.value = false;
   });
 });
 
@@ -244,16 +257,15 @@ const handlerWindowResize = () => {
 };
 
 /**
- * 渲染图标
- */
-function renderIcon(icon: Component) {
-  return () => h(NIcon, null, { default: () => h(icon) });
-}
-
-/**
  * 主题切换事件
  */
-const onSwitchTheme = () => {
+const onSwitchTheme = (isDarkTheme: boolean | null = null) => {
+  if (isDarkTheme !== null) {
+    currentTheme.value = isDarkTheme ? darkTheme : undefined;
+    setTheme(isDarkTheme ? 'dark' : 'light');
+    return;
+  }
+
   if (currentTheme.value !== undefined) {
     currentTheme.value = undefined;
     setTheme('light');
@@ -466,7 +478,11 @@ function onReLoginDialogLoginClick() {
           />
         </n-layout-sider>
         <n-layout>
-          <n-layout-header :bordered="!hideSider" class="layout-header">
+          <n-layout-header
+            :bordered="!hideSider"
+            class="layout-header"
+            v-if="route.name !== RouterViews.EDITOR.name"
+          >
             <n-row>
               <n-col :span="10">
                 <div class="header-title" v-if="!hideSider">
@@ -527,7 +543,7 @@ function onReLoginDialogLoginClick() {
                       </n-dropdown>
                     </div>
 
-                    <n-button circle @click="onSwitchTheme" secondary>
+                    <n-button circle @click="onSwitchTheme()" secondary>
                       <template #icon>
                         <n-icon>
                           <SunIcon v-if="currentTheme === undefined" />
