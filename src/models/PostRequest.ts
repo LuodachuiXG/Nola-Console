@@ -30,7 +30,7 @@ export interface PostRequest {
   /** 文章密码 **/
   password: string | null;
   /** 文章分类 ID */
-  categoryId: number;
+  categoryId: number | null;
   /** 文章标签 ID 数组 */
   tagIds: Array<number>;
   /** 文章正文 (添加时必填，修改时为 null） **/

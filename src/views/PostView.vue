@@ -58,6 +58,8 @@ import { Category } from '../models/Category.ts';
 import { TagColor } from 'naive-ui/es/tag/src/common-props';
 import MyTag from '../components/component/MyTag.vue';
 import { PostRequest } from '../models/PostRequest.ts';
+import router from '../router';
+import { RouterViews } from '../router/RouterViews.ts';
 
 // 总文章数
 const totalPosts = ref(0);
@@ -325,7 +327,9 @@ const categories2SelectOptions = (
 /**
  * 添加文章按钮点击事件
  */
-const onAddPostClick = () => {};
+const onAddPostClick = () => {
+  router.push(RouterViews.EDITOR.name);
+};
 
 /**
  * 分页组件当前页改变事件
@@ -725,7 +729,7 @@ const onSettingPostDialogSubmit = () => {
         isSettingPostDialogLoading.value = true;
 
         // 文章是否有密码（为 true 时需提供 password，为 null 保持不变，为 false 删除密码）
-        let encrypted: Boolean | null;
+        let encrypted: boolean | null;
         if (
           (formSettingPost.password === null ||
             formSettingPost.password.length === 0) &&
@@ -753,8 +757,9 @@ const onSettingPostDialogSubmit = () => {
           visible: formSettingPost.visible,
           encrypted: encrypted,
           password: formSettingPost.password,
-          categoryId: formSettingPostCategoryId.value,
-          tagIds: formSettingPostTagIds.value
+          categoryId: formSettingPostCategoryId.value ?? null,
+          tagIds: formSettingPostTagIds.value,
+          content: null
         };
 
         // 更新文章

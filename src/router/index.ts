@@ -45,6 +45,15 @@ export const router = createRouter({
       }
     },
     {
+      path: RouterViews.EDITOR.path,
+      name: RouterViews.EDITOR.name,
+      component: () => import('../views/EditorView.vue'),
+      meta: {
+        displayName: RouterViews.EDITOR.displayName,
+        menuName: RouterViews.EDITOR.menuName
+      }
+    },
+    {
       path: RouterViews.TAG.path,
       name: RouterViews.TAG.name,
       component: () => import('../views/TagView.vue'),

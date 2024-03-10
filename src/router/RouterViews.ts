@@ -34,6 +34,12 @@ export class RouterViews {
     menuName: '文章',
     displayName: '文章'
   };
+  static readonly EDITOR: RouterItem = {
+    name: 'editor',
+    path: '/editor',
+    menuName: '文章编辑',
+    displayName: '文章编辑'
+  };
   static readonly TAG: RouterItem = {
     name: 'tag',
     path: '/tag',
