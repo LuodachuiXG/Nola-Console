@@ -184,7 +184,7 @@ export function addPostDraft(
  */
 export function delPostDraft(postId: number, draftNames: Array<string>) {
   return service({
-    url: `/admin/post/${postId}/draft`,
+    url: `/admin/post/draft/${postId}`,
     method: 'DELETE',
     data: draftNames
   });
@@ -242,7 +242,7 @@ export function updatePostDraftName(
  * @param contentName 正文草稿名，如果不删除正文（deleteContent = false）
  *                    原先的正文将转为草稿，如果此项留空，将默认使用被转换为正文的旧草稿名。
  */
-export function updatePostDraftToPublish(
+export function updatePostDraft2Publish(
   postId: number,
   draftName: string,
   deleteContent: boolean = false,

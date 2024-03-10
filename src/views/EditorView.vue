@@ -4,48 +4,53 @@ import { onBeforeUnmount, onMounted, onUnmounted, reactive, ref } from 'vue';
 import {
   confirmDialog,
   errorMsg,
-  successMsg,
-  optionSuccessMsg
+  optionSuccessMsg,
+  successMsg
 } from '../utils/Message.ts';
 import {
+  FormInst,
   NButton,
   NCard,
-  NIcon,
-  NInputGroup,
-  NSelect,
-  NSpace,
-  SelectOption,
   NDropdown,
-  FormInst,
   NForm,
   NFormItem,
+  NIcon,
   NInput,
-  NModal
+  NInputGroup,
+  NModal,
+  NSelect,
+  NSpace,
+  NSwitch,
+  SelectOption
 } from 'naive-ui';
 import { getCurrentTheme, isNumber, renderIcon } from '../utils/MyUtils.ts';
 import {
   FileTrayFullOutline as DraftIcon,
+  HammerOutline as HammerIcon,
   MoonOutline as MoonIcon,
+  RepeatOutline as RepeatIcon,
   RocketOutline as PublishIcon,
   SaveOutline as SaveIcon,
   SunnyOutline as SunIcon,
-  TrashOutline as TrashIcon,
-  HammerOutline as HammerIcon,
-  RepeatOutline as RepeatIcon
+  TrashOutline as TrashIcon
 } from '@vicons/ionicons5';
 import bus, { BusEnum } from '../utils/EventBus.ts';
 import {
+  addPostDraft,
   delPostDraft,
   postContents as getPostContents,
   postDraft as getPostDraft,
   postPublish as getPostPublish,
   updatePostDraft,
+  updatePostDraft2Publish,
   updatePostDraftName,
   updatePostPublish
 } from '../apis/postApi.ts';
 import { useRoute } from 'vue-router';
 import { PostContent } from '../models/PostContent.ts';
 import { PostContentStatus } from '../models/enum/PostContentStatus.ts';
+import router from '../router';
+import { RouterViews } from '../router/RouterViews.ts';
 
 /**
  * 标记编辑器当前是添加 / 编辑文章
@@ -53,6 +58,16 @@ import { PostContentStatus } from '../models/enum/PostContentStatus.ts';
 enum EditorMode {
   ADD,
   EDIT
+}
+
+/**
+ * 草稿名表单模式枚举类
+ */
+enum DraftNameDialogMode {
+  /** 重命名草稿模式 **/
+  RENAME,
+  /** 添加草稿模式 **/
+  ADD_DRAFT
 }
 
 // 编辑器引用
@@ -85,7 +100,7 @@ const postContentList = ref(Array<PostContent>());
 // 文章草稿选择器选项
 const postDraftSelectOptions = ref(Array<SelectOption>());
 // 文章草稿选择器值
-const postDraftSelectValue = ref<string | undefined>();
+const postDraftSelectValue = ref<string | undefined | null>();
 // 文章草稿管理按钮弹出菜单项
 const postDraftManagerSelectOptions = [
   {
@@ -108,10 +123,14 @@ const postDraftManagerSelectOptions = [
   }
 ];
 
-// 是否显示草稿重命名模态框
-const visibleDraftRenameDialog = ref(false);
-// 草稿重命名表单
-const formDraftRename = reactive({
+// 是否显示草稿名模态框
+const visibleDraftNameDialog = ref(false);
+// 草稿名对话框当前模式
+const draftNameDialogMode = ref<DraftNameDialogMode>(
+  DraftNameDialogMode.RENAME
+);
+// 草稿名表单（用于重命名草稿和添加草稿）
+const formDraftName = reactive({
   // 文章 ID
   postId: -1,
   // 旧草稿名
@@ -119,10 +138,27 @@ const formDraftRename = reactive({
   // 新草稿名
   newName: ''
 });
-// 草稿重命名表单是否正在加载
-const isDraftRenameDialogLoading = ref(false);
-// 草稿重命名表单引用
-const draftRenameDialogRef = ref<FormInst | null>(null);
+// 草稿名表单是否正在加载
+const isDraftNameDialogLoading = ref(false);
+// 草稿名表单引用
+const draftNameDialogRef = ref<FormInst | null>(null);
+
+// 是否显示草稿转正文模态框
+const visibleDraft2PublishDialog = ref(false);
+const formDraft2Publish = reactive({
+  // 文章 ID
+  postId: -1,
+  // 草稿名
+  draftName: '',
+  // 是否删除原来的正文（默认为 false，如果为 true 就删除原来的正文）
+  deleteContent: false,
+  // 正文草稿名
+  // 如果不删除正文（deleteContent = false）
+  // 原先的正文将转为草稿，如果此项留空，将默认使用被转换为正文的旧草稿名。
+  contentName: ''
+});
+// 草稿转正文表单是否正在加载
+const isDraft2PublishDialogLoading = ref(false);
 
 onMounted(() => {
   // 获取当前设置的主题
@@ -161,7 +197,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   // 退出前保存一下当前编辑内容
-  postContentSave(text.value);
+  postContentSave(text.value, true);
 });
 
 onBeforeUnmount(() => {
@@ -228,31 +264,44 @@ const switchToDraft = (draftName: string) => {
  * @param _html 转换 HTML
  */
 const onEditorSave = (value: string, _html: Promise<string>) => {
-  postContentSave(value);
+  postContentSave(value, true);
 };
 
 /**
  * 文章内容保存事件
  * 根据当前编辑器显示的内容，进行不同的操作
  * @param value 要保存的内容
+ * @param showMsg 是否显示提示信息
  */
-const postContentSave = (value: string) => {
-  let postId = currentPostContent.value!!.postId;
-  let draftName = currentPostContent.value!!.draftName;
-  if (currentContentStatus.value === PostContentStatus.PUBLISHED) {
-    // 保存正文内容
-    updatePostPublish(postId, value)
-      .then(() => {
-        successMsg('文章内容已保存');
-      })
-      .catch((err) => errorMsg('文章内容保存失败：' + err));
-  } else {
-    // 保存文章草稿
-    updatePostDraft(postId, value, draftName!!)
-      .then(() => {
-        successMsg(`草稿 [${draftName}] 内容已保存`);
-      })
-      .catch((err) => errorMsg(`草稿 [${draftName}] 保存失败：` + err));
+const postContentSave = (value: string, showMsg: boolean = false) => {
+  window.$loadingBar.start();
+  if (currentMode.value === EditorMode.EDIT) {
+    // 当前是编辑模式
+    let postId = currentPostContent.value!!.postId;
+    let draftName = currentPostContent.value!!.draftName;
+    if (currentContentStatus.value === PostContentStatus.PUBLISHED) {
+      // 保存正文内容
+      updatePostPublish(postId, value)
+        .then(() => {
+          if (showMsg) successMsg('文章内容已保存');
+          window.$loadingBar.finish();
+        })
+        .catch((err) => {
+          window.$loadingBar.error();
+          errorMsg('文章内容保存失败：' + err);
+        });
+    } else {
+      // 保存文章草稿
+      updatePostDraft(postId, value, draftName!!)
+        .then(() => {
+          if (showMsg) successMsg(`草稿 [${draftName}] 内容已保存`);
+          window.$loadingBar.finish();
+        })
+        .catch((err) => {
+          window.$loadingBar.error();
+          errorMsg(`草稿 [${draftName}] 保存失败：` + err);
+        });
+    }
   }
 };
 
@@ -281,7 +330,7 @@ const onPostContentSelect = (value: string | null) => {
 
   if (value === null) {
     // 当前事件是清空选择器，切换回文章正文
-    postDraftSelectValue.value = undefined;
+    postDraftSelectValue.value = null;
     refreshPostPublish();
     return;
   }
@@ -306,10 +355,13 @@ const onPostDraftManagerSelect = (key: string) => {
           ])
             .then(() => {
               // 删除成功
+              optionSuccessMsg();
               // 获取文章所有草稿
               refreshPostDrafts();
               // 切换回文章正文
               refreshPostPublish();
+              // 清空草稿选择器数据
+              postDraftSelectValue.value = null;
             })
             .catch((err) => errorMsg(err));
         }
@@ -317,85 +369,225 @@ const onPostDraftManagerSelect = (key: string) => {
       break;
     case 'rename':
       // 重命名草稿
-      // 首先清空草稿改名表单
-      clearDraftRenameForm();
+      // 设置草稿名表单为重命名模式
+      draftNameDialogMode.value = DraftNameDialogMode.RENAME;
+      // 首先清空草稿名表单
+      clearDraftNameForm();
       // 将草稿数据填入表单
-      formDraftRename.postId = currentPostContent.value!!.postId;
-      formDraftRename.oldName = currentPostContent.value!!.draftName!!;
-      formDraftRename.newName = currentPostContent.value!!.draftName!!;
+      formDraftName.postId = currentPostContent.value!!.postId;
+      formDraftName.oldName = currentPostContent.value!!.draftName!!;
+      formDraftName.newName = currentPostContent.value!!.draftName!!;
       // 显示对话框
-      visibleDraftRenameDialog.value = true;
+      visibleDraftNameDialog.value = true;
       break;
     case 'switch':
       // 将草稿转为正文
+      // 首先清空草稿转正文表单
+      clearDraft2PublishForm();
+      // 将草稿数据填入表单
+      formDraft2Publish.postId = currentPostContent.value!!.postId;
+      formDraft2Publish.draftName = currentPostContent.value!!.draftName!!;
+      // 显示对话框
+      visibleDraft2PublishDialog.value = true;
       break;
   }
 };
 
 /**
- * 清空草稿改名表单
+ * 清空草稿名表单
  */
-const clearDraftRenameForm = () => {
-  formDraftRename.postId = -1;
-  formDraftRename.oldName = '';
-  formDraftRename.newName = '';
+const clearDraftNameForm = () => {
+  formDraftName.postId = -1;
+  formDraftName.oldName = '';
+  formDraftName.newName = '';
 };
 
 /**
- * 草稿重命名表单提交事件
+ * 草稿名表单提交事件
  */
 const onDraftRenameSubmit = () => {
   // 检查表单是否有错误
-  draftRenameDialogRef.value
+  draftNameDialogRef.value
     ?.validate((errors) => {
       if (!errors) {
-        // 表单正确，修改草稿名
-        updatePostDraftName(
-          formDraftRename.postId,
-          formDraftRename.oldName,
-          formDraftRename.newName
-        )
-          .then(() => {
-            // 重命名成功
-            optionSuccessMsg();
-            postDraftSelectValue.value = formDraftRename.newName;
-            currentPostContent.value!!.draftName = formDraftRename.newName;
-            // 重新获取当前文章所有草稿
-            refreshPostDrafts();
-            // 关闭重命名表单对话框
-            visibleDraftRenameDialog.value = false;
-          })
-          .catch((err) => errorMsg(err));
+        // 表单正确
+        isDraftNameDialogLoading.value = true;
+        if (draftNameDialogMode.value === DraftNameDialogMode.RENAME) {
+          // 当前是重命名草稿模式，修改草稿名
+          updatePostDraftName(
+            formDraftName.postId,
+            formDraftName.oldName,
+            formDraftName.newName
+          )
+            .then(() => {
+              // 重命名成功
+              optionSuccessMsg();
+              // 设置文章草稿选择框当前草稿名为新草稿名
+              postDraftSelectValue.value = formDraftName.newName;
+              // 将当前编辑框显示文章对象的草稿名改为新草稿名
+              currentPostContent.value!!.draftName = formDraftName.newName;
+              // 重新获取当前文章所有草稿
+              refreshPostDrafts();
+              // 关闭草稿名表单对话框
+              visibleDraftNameDialog.value = false;
+              // 停止加载状态
+              isDraftNameDialogLoading.value = false;
+            })
+            .catch((err) => {
+              errorMsg(err);
+              // 停止加载状态
+              isDraftNameDialogLoading.value = false;
+            });
+        } else {
+          // 当前是添加草稿模式，添加草稿
+          let draftName = formDraftName.newName;
+          addPostDraft(formDraftName.postId, text.value, draftName)
+            .then(() => {
+              // 刷新文章所有草稿
+              refreshPostDrafts();
+              successMsg(`草稿 [${draftName}] 已创建`);
+              // 关闭对话框
+              visibleDraftNameDialog.value = false;
+              // 停止加载状态
+              isDraftNameDialogLoading.value = false;
+            })
+            .catch((err) => {
+              errorMsg(`草稿创建失败：` + err);
+              // 停止加载状态
+              isDraftNameDialogLoading.value = false;
+            });
+        }
       }
     })
     .catch(() => {});
   return false;
 };
+
+/**
+ * 将文章正文另存为草稿按钮点击事件
+ */
+const onSaveAsDraftClick = () => {
+  // 首先清空草稿名表单
+  clearDraftNameForm();
+  // 将文章 ID 填入表单
+  formDraftName.postId = currentPostId.value!!;
+  // 设置当前草稿名表单为添加草稿模式
+  draftNameDialogMode.value = DraftNameDialogMode.ADD_DRAFT;
+  visibleDraftNameDialog.value = true;
+};
+
+/**
+ * 清空草稿转正文表单
+ */
+const clearDraft2PublishForm = () => {
+  formDraft2Publish.postId = -1;
+  formDraft2Publish.draftName = '';
+  formDraft2Publish.deleteContent = false;
+  formDraft2Publish.contentName = '';
+};
+
+/**
+ * 草稿转正文表单提交事件
+ */
+const onDraft2PublishSubmit = () => {
+  // 草稿转正文
+  isDraft2PublishDialogLoading.value = true;
+  let contentName =
+    formDraft2Publish.contentName.length === 0
+      ? null
+      : formDraft2Publish.contentName;
+  updatePostDraft2Publish(
+    formDraft2Publish.postId,
+    formDraft2Publish.draftName,
+    formDraft2Publish.deleteContent,
+    contentName
+  ).then(() => {
+    // 操作成功
+    optionSuccessMsg();
+    isDraft2PublishDialogLoading.value = false;
+    // 获取并转为正文模式
+    refreshPostPublish();
+    // 重新获取当前文章所有草稿
+    refreshPostDrafts();
+    // 清空草稿选择器数据
+    postDraftSelectValue.value = null;
+  }).catch((err) => {
+    // 操作失败
+    errorMsg('操作失败：' + err);
+    isDraft2PublishDialogLoading.value = false;
+  })
+};
+
+/**
+ * 右上角，发布 / 保存文章按钮点击事件
+ */
+const onSubmitClick = () => {
+  if (currentMode.value === EditorMode.EDIT) {
+    // 当前是编辑模式
+    // 直接跳转文章页，当前页生命周期 onUnmounted 时会自动保存
+    router.push(RouterViews.POST.name);
+  }
+}
 </script>
 
 <template>
   <div class="container">
     <!-- 草稿改名模态框 -->
     <n-modal
-      v-model:show="visibleDraftRenameDialog"
+      v-model:show="visibleDraftNameDialog"
       preset="dialog"
-      title="草稿重命名"
+      title="草稿设置"
       positive-text="保存"
       negative-text="取消"
-      :loading="isDraftRenameDialogLoading"
+      :loading="isDraftNameDialogLoading"
       @positiveClick="onDraftRenameSubmit"
     >
       <template #default>
-        <n-form ref="draftRenameDialogRef" :model="formDraftRename">
+        <n-form
+          class="dialog-form"
+          ref="draftNameDialogRef"
+          :model="formDraftName"
+        >
           <n-form-item
             label="草稿名"
             path="newName"
             :rule="{ required: true, message: '请输入草稿名' }"
           >
             <n-input
-              v-model:value="formDraftRename.newName"
+              v-model:value="formDraftName.newName"
               placeholder="草稿名"
               maxlength="256"
+            />
+          </n-form-item>
+        </n-form>
+      </template>
+    </n-modal>
+
+    <!-- 草稿转正文模态框 -->
+    <n-modal
+      v-model:show="visibleDraft2PublishDialog"
+      preset="dialog"
+      title="草稿转正文"
+      positive-text="保存"
+      negative-text="取消"
+      :loading="isDraft2PublishDialogLoading"
+      @positiveClick="onDraft2PublishSubmit"
+    >
+      <template #default>
+        <n-form class="dialog-form" :model="formDraft2Publish">
+          <n-form-item label="待转换草稿名" path="draftName">
+            <n-input v-model:value="formDraft2Publish.draftName" readonly />
+          </n-form-item>
+
+          <n-form-item label="是否删除原正文" path="deleteContent">
+            <n-switch v-model:value="formDraft2Publish.deleteContent" />
+          </n-form-item>
+
+          <n-form-item label="正文草稿名" path="contentName">
+            <n-input
+              v-model:value="formDraft2Publish.contentName"
+              placeholder="留空默认使用被转换为正文的旧草稿名"
+              :disabled="formDraft2Publish.deleteContent"
             />
           </n-form-item>
         </n-form>
@@ -410,6 +602,11 @@ const onDraftRenameSubmit = () => {
     >
       <template #header>
         <div class="card-header">
+          <n-space></n-space>
+        </div>
+      </template>
+      <template #header-extra>
+        <div style="padding: 10px">
           <n-space>
             <n-button circle @click="onSwitchTheme()" secondary>
               <template #icon>
@@ -430,7 +627,7 @@ const onDraftRenameSubmit = () => {
                 style="min-width: 150px"
                 :options="postDraftSelectOptions"
                 @update:value="onPostContentSelect"
-                :value="postDraftSelectValue"
+                v-model:value="postDraftSelectValue"
                 placeholder="选择草稿"
                 clearable
               />
@@ -439,22 +636,13 @@ const onDraftRenameSubmit = () => {
                 @select="onPostDraftManagerSelect"
                 trigger="click"
                 show-arrow
+                v-if="currentContentStatus === PostContentStatus.DRAFT"
               >
                 <div>
-                  <n-button
-                    v-if="currentContentStatus === PostContentStatus.DRAFT"
-                  >
-                    管理
-                  </n-button>
+                  <n-button>管理</n-button>
                 </div>
               </n-dropdown>
             </n-input-group>
-          </n-space>
-        </div>
-      </template>
-      <template #header-extra>
-        <div style="padding: 10px">
-          <n-space>
             <n-button v-if="currentMode === EditorMode.ADD">
               <template #icon>
                 <n-icon>
@@ -464,10 +652,8 @@ const onDraftRenameSubmit = () => {
               <span>保存内容</span>
             </n-button>
             <n-button
-              v-if="
-                currentMode === EditorMode.EDIT &&
-                currentContentStatus === PostContentStatus.PUBLISHED
-              "
+              v-if="currentMode === EditorMode.EDIT"
+              @click="onSaveAsDraftClick"
             >
               <template #icon>
                 <n-icon>
@@ -476,7 +662,7 @@ const onDraftRenameSubmit = () => {
               </template>
               <span>另存为草稿</span>
             </n-button>
-            <n-button type="primary">
+            <n-button type="primary" @click="onSubmitClick">
               <template #icon>
                 <n-icon>
                   <PublishIcon />
