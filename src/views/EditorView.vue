@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ExposeParam, MdEditor, Themes } from 'md-editor-v3';
-import { onBeforeUnmount, onMounted, onUnmounted, reactive, ref } from 'vue';
+import { onBeforeUnmount, onMounted, reactive, ref } from 'vue';
 import {
   confirmDialog,
   errorMsg,
@@ -9,9 +9,11 @@ import {
 } from '../utils/Message.ts';
 import {
   FormInst,
+  NBadge,
   NButton,
   NCard,
   NDropdown,
+  NEllipsis,
   NForm,
   NFormItem,
   NIcon,
@@ -21,7 +23,7 @@ import {
   NSelect,
   NSpace,
   NSwitch,
-  SelectOption
+  SelectOption,
 } from 'naive-ui';
 import { getCurrentTheme, isNumber, renderIcon } from '../utils/MyUtils.ts';
 import {
@@ -36,8 +38,10 @@ import {
 } from '@vicons/ionicons5';
 import bus, { BusEnum } from '../utils/EventBus.ts';
 import {
+  addPost,
   addPostDraft,
   delPostDraft,
+  postById,
   postContents as getPostContents,
   postDraft as getPostDraft,
   postPublish as getPostPublish,
@@ -51,6 +55,10 @@ import { PostContent } from '../models/PostContent.ts';
 import { PostContentStatus } from '../models/enum/PostContentStatus.ts';
 import router from '../router';
 import { RouterViews } from '../router/RouterViews.ts';
+import { PostRequest } from '../models/PostRequest.ts';
+import { PostStatus } from '../models/enum/PostStatus.ts';
+import { PostVisible } from '../models/enum/PostVisible.ts';
+import { Post } from '../models/Post.ts';
 
 /**
  * 标记编辑器当前是添加 / 编辑文章
@@ -83,6 +91,8 @@ const theme = ref<Themes | undefined>('light');
 
 // 当前文章 ID
 const currentPostId = ref<number | undefined>();
+// 当前文章
+const currentPost = ref<Post | undefined>();
 
 // 编辑器内容
 const text = ref('');
@@ -188,6 +198,8 @@ onMounted(() => {
     currentPostId.value = Number(postId);
     // 设置当前为编辑模式
     currentMode.value = EditorMode.EDIT;
+    // 获取当前文章
+    refreshPost();
     // 获取文章正文
     refreshPostPublish();
     // 获取文章的所有草稿，用于填充在草稿选择器中
@@ -197,24 +209,40 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   // 退出前保存一下当前编辑内容
-  postContentSave(text.value, true);
+  postContentSave(text.value, true, false);
   // 取消监听 beforeunload 事件
   window.removeEventListener('beforeunload', () => {});
 });
+
+/**
+ * 获取文章
+ */
+const refreshPost = () => {
+  postById(currentPostId.value!!)
+    .then((res) => {
+      currentPost.value = res.data as Post;
+    })
+    .catch((err) => errorMsg(err));
+};
 
 /**
  * 获取文章正文
  */
 const refreshPostPublish = () => {
   if (currentPostId.value === undefined) return;
+  window.$loadingBar.start();
   getPostPublish(currentPostId.value)
     .then((res) => {
+      window.$loadingBar.finish();
       currentPostContent.value = res.data as PostContent;
       text.value = currentPostContent.value?.content ?? '';
       // 设置当前文章编辑器现实的是文章正文
       currentContentStatus.value = PostContentStatus.PUBLISHED;
     })
-    .catch((err) => errorMsg(err));
+    .catch((err) => {
+      window.$loadingBar.error();
+      errorMsg(err);
+    });
 };
 
 /**
@@ -261,7 +289,7 @@ const switchToDraft = (draftName: string) => {
  * @param _html 转换 HTML
  */
 const onEditorSave = (value: string, _html: Promise<string>) => {
-  postContentSave(value, true);
+  postContentSave(value, true, true);
 };
 
 /**
@@ -269,8 +297,13 @@ const onEditorSave = (value: string, _html: Promise<string>) => {
  * 根据当前编辑器显示的内容，进行不同的操作
  * @param value 要保存的内容
  * @param showMsg 是否显示提示信息
+ * @param isManual 是否为手动保存
  */
-const postContentSave = (value: string, showMsg: boolean = false) => {
+const postContentSave = (
+  value: string,
+  showMsg: boolean = false,
+  isManual: boolean = false
+) => {
   window.$loadingBar.start();
   if (currentMode.value === EditorMode.EDIT) {
     // 当前是编辑模式
@@ -282,6 +315,8 @@ const postContentSave = (value: string, showMsg: boolean = false) => {
         .then(() => {
           if (showMsg) successMsg('文章内容已保存');
           window.$loadingBar.finish();
+          // 更新当前文章内容，用于判断编辑器内容是否修改
+          currentPostContent.value = copyPostContent(currentPostContent.value!!, value);
         })
         .catch((err) => {
           window.$loadingBar.error();
@@ -292,14 +327,42 @@ const postContentSave = (value: string, showMsg: boolean = false) => {
       updatePostDraft(postId, value, draftName!!)
         .then(() => {
           if (showMsg) successMsg(`草稿 [${draftName}] 内容已保存`);
+          currentPostContent.value!!.content = value;
           window.$loadingBar.finish();
+          // 更新当前文章内容，用于判断编辑器内容是否修改
+          currentPostContent.value = copyPostContent(currentPostContent.value!!, value);
         })
         .catch((err) => {
           window.$loadingBar.error();
           errorMsg(`草稿 [${draftName}] 保存失败：` + err);
         });
     }
+  } else {
+    // 当前是新增文章模式，调用 “保存内容” 按钮点击事件
+    if (isManual) {
+      onSaveContentClick();
+    } else if (text.value.length > 0) {
+      // 不是手动保存，文章只有在有内容时才保存文章
+      // 因为用户切换页面也会调用该方法
+      // 所以如果用户编辑框内容为空，就不新增文章
+      onSaveContentClick();
+    }
   }
+};
+
+/**
+ * 根据新的文章内容生成新的 PostContent
+ * @param oldPostContent 旧的 PostContent
+ * @param newContent 新文章内容
+ */
+const copyPostContent = (
+  oldPostContent: PostContent,
+  newContent: string
+): PostContent => {
+  return {
+    ...oldPostContent,
+    content: newContent
+  };
 };
 
 /**
@@ -318,13 +381,18 @@ const onSwitchTheme = () => {
 };
 
 /**
+ * 文章草稿选择器点击事件
+ */
+const onPostContentSelectClick = () => {
+  // 保存编辑器内容
+  postContentSave(text.value, false);
+}
+
+/**
  * 文章草稿选择器选择事件
  * @param value
  */
 const onPostContentSelect = (value: string | null) => {
-  // 切换草稿前先保存一下编辑器内容
-  postContentSave(text.value);
-
   if (value === null) {
     // 当前事件是清空选择器，切换回文章正文
     postDraftSelectValue.value = null;
@@ -498,21 +566,23 @@ const onDraft2PublishSubmit = () => {
     formDraft2Publish.draftName,
     formDraft2Publish.deleteContent,
     contentName
-  ).then(() => {
-    // 操作成功
-    optionSuccessMsg();
-    isDraft2PublishDialogLoading.value = false;
-    // 获取并转为正文模式
-    refreshPostPublish();
-    // 重新获取当前文章所有草稿
-    refreshPostDrafts();
-    // 清空草稿选择器数据
-    postDraftSelectValue.value = null;
-  }).catch((err) => {
-    // 操作失败
-    errorMsg('操作失败：' + err);
-    isDraft2PublishDialogLoading.value = false;
-  })
+  )
+    .then(() => {
+      // 操作成功
+      optionSuccessMsg();
+      isDraft2PublishDialogLoading.value = false;
+      // 获取并转为正文模式
+      refreshPostPublish();
+      // 重新获取当前文章所有草稿
+      refreshPostDrafts();
+      // 清空草稿选择器数据
+      postDraftSelectValue.value = null;
+    })
+    .catch((err) => {
+      // 操作失败
+      errorMsg('操作失败：' + err);
+      isDraft2PublishDialogLoading.value = false;
+    });
 };
 
 /**
@@ -524,7 +594,50 @@ const onSubmitClick = () => {
     // 直接跳转文章页，当前页生命周期 onBeforeUnmount 时会自动保存
     router.push(RouterViews.POST.name);
   }
-}
+};
+
+/**
+ * 右上角，新增文章时保存内容按钮点击事件
+ */
+const onSaveContentClick = () => {
+  window.$loadingBar.start();
+  // 创建一个未命名文章
+  let postRequest: PostRequest = {
+    postId: null,
+    title: '未命名文章',
+    autoGenerateExcerpt: true,
+    excerpt: null,
+    slug: new Date().getTime().toString(),
+    cover: null,
+    allowComment: true,
+    pinned: false,
+    status: PostStatus.DRAFT,
+    visible: PostVisible.VISIBLE,
+    encrypted: null,
+    password: null,
+    categoryId: null,
+    tagIds: Array<number>(),
+    content: text.value
+  };
+  // 添加文章
+  addPost(postRequest)
+    .then((res) => {
+      window.$loadingBar.finish();
+      // 设置当前文章
+      currentPost.value = res.data as Post;
+      // 设置当前文章 ID
+      currentPostId.value = currentPost.value?.postId;
+      // 获取文章正文
+      refreshPostPublish();
+      // 设置当前为编辑模式
+      currentMode.value = EditorMode.EDIT;
+      successMsg('保存成功');
+    })
+    .catch((err) => {
+      window.$loadingBar.error();
+      errorMsg('保存失败：' + err);
+    });
+};
 </script>
 
 <template>
@@ -599,7 +712,15 @@ const onSubmitClick = () => {
     >
       <template #header>
         <div class="card-header">
-          <n-space></n-space>
+          <n-space>
+            <n-badge
+              dot
+              :type="currentPostContent?.content === text ? 'success' : 'error'"
+            />
+            <n-ellipsis>
+              {{ currentPost?.title }}
+            </n-ellipsis>
+          </n-space>
         </div>
       </template>
       <template #header-extra>
@@ -624,6 +745,7 @@ const onSubmitClick = () => {
                 style="min-width: 150px"
                 :options="postDraftSelectOptions"
                 @update:value="onPostContentSelect"
+                @click="onPostContentSelectClick"
                 v-model:value="postDraftSelectValue"
                 placeholder="选择草稿"
                 clearable
@@ -640,7 +762,10 @@ const onSubmitClick = () => {
                 </div>
               </n-dropdown>
             </n-input-group>
-            <n-button v-if="currentMode === EditorMode.ADD">
+            <n-button
+              v-if="currentMode === EditorMode.ADD"
+              @click="onSaveContentClick"
+            >
               <template #icon>
                 <n-icon>
                   <SaveIcon />
@@ -702,6 +827,6 @@ const onSubmitClick = () => {
 }
 
 .card-header {
-  padding: 10px;
+  padding: 10px 10px 10px 15px;
 }
 </style>

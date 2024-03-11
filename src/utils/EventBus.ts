@@ -13,7 +13,9 @@ export enum BusEnum {
   /** 隐藏侧边栏 **/
   HIDDEN_SIDER = 'hidden_sider',
   /** 显示侧边栏 **/
-  VISIBLE_SIDER = 'visible_sider'
+  VISIBLE_SIDER = 'visible_sider',
+  /** 刷新文章列表 **/
+  REFRESH_POST = 'refresh_post'
 }
 
 export default bus;

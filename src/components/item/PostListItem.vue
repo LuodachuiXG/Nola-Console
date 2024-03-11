@@ -17,9 +17,9 @@ import {
   BrushOutline as EditIcon,
   EyeOffOutline as EyeOffIcon,
   LibraryOutline as CategoryIcon,
+  LockClosedOutline as LockClosedIcon,
   SettingsOutline as SettingIcon,
-  TrashOutline as TrashIcon,
-  LockClosedOutline as LockClosedIcon
+  TrashOutline as TrashIcon
 } from '@vicons/ionicons5';
 import { Post } from '../../models/Post.ts';
 import { formatTimestamp } from '../../utils/MyUtils.ts';
@@ -165,7 +165,7 @@ const onPostPinnedBadgeClick = () => {
  */
 const onPostEncryptedBadgeClick = () => {
   emit('onPostEncryptedBadgeClick', props.post);
-}
+};
 </script>
 
 <template>
@@ -217,10 +217,7 @@ const onPostEncryptedBadgeClick = () => {
           <span>当前文章不可见</span>
         </n-popover>
 
-        <n-popover
-          :keep-alive-on-hover="false"
-          v-if="post.encrypted"
-        >
+        <n-popover :keep-alive-on-hover="false" v-if="post.encrypted">
           <template #trigger>
             <span>
               <n-badge
@@ -311,7 +308,8 @@ const onPostEncryptedBadgeClick = () => {
                 <TrashIcon />
               </n-icon>
             </template>
-            <span v-if="!isCollapsed">回收</span>
+            <span v-if="!isCollapsed">{{
+              post.status === PostStatus.DELETED ? '删除' : '回收'}}</span>
           </n-button>
         </n-button-group>
       </template>

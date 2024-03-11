@@ -118,6 +118,17 @@ export function posts(
 }
 
 /**
+ * 根据文章 ID 获取文章
+ * @param postId 文章 ID
+ */
+export function postById(postId: number) {
+  return service({
+    url: `/admin/post/${postId}`,
+    method: 'GET'
+  });
+}
+
+/**
  * 获取文章正文和草稿
  * @param postId 文章 ID
  */

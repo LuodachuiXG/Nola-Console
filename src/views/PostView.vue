@@ -2,6 +2,7 @@
 import {
   FormInst,
   NButton,
+  NDivider,
   NForm,
   NFormItem,
   NIcon,
@@ -13,10 +14,9 @@ import {
   NScrollbar,
   NSelect,
   NSpace,
+  NSwitch,
   NTag,
   NText,
-  NDivider,
-  NSwitch,
   SelectOption,
   SelectRenderTag
 } from 'naive-ui';
@@ -26,6 +26,7 @@ import { Post } from '../models/Post.ts';
 import MyCard from '../components/component/MyCard.vue';
 import PostListItem from '../components/item/PostListItem.vue';
 import {
+  delPost,
   posts as getPosts,
   recyclePosts,
   updatePost,
@@ -34,7 +35,12 @@ import {
 import { PostStatus } from '../models/enum/PostStatus.ts';
 import { PostVisible } from '../models/enum/PostVisible.ts';
 import { PostSort } from '../models/enum/PostSort.ts';
-import { confirmDialog, errorMsg, optionSuccessMsg } from '../utils/Message.ts';
+import {
+  confirmDialog,
+  errorMsg,
+  optionSuccessMsg,
+  successMsg
+} from '../utils/Message.ts';
 import { Pager } from '../models/Pager.ts';
 import {
   displayNameToSlug,
@@ -46,7 +52,6 @@ import {
   FileTrayFullOutline as FileIcon,
   FlashOffOutline as FlashOffIcon,
   FlashOutline as FlashIcon,
-  TrashOutline as TrashIcon,
   LockOpenOutline as LockOpenIcon,
   RefreshOutline as RefreshIcon,
   SearchOutline as SearchIcon
@@ -60,6 +65,7 @@ import MyTag from '../components/component/MyTag.vue';
 import { PostRequest } from '../models/PostRequest.ts';
 import router from '../router';
 import { RouterViews } from '../router/RouterViews.ts';
+import bus, { BusEnum } from '../utils/EventBus.ts';
 
 // 总文章数
 const totalPosts = ref(0);
@@ -102,6 +108,10 @@ const queryPostStatusSelectOptions = ref<Array<SelectOption>>([
   {
     label: '草稿',
     value: PostStatus.DRAFT
+  },
+  {
+    label: '回收站',
+    value: PostStatus.DELETED
   }
 ]);
 
@@ -196,6 +206,11 @@ onMounted(() => {
   // 刷新标签和分类数据
   refreshTag();
   refreshCategory();
+
+  // 监听刷新文章事件
+  bus.on(BusEnum.REFRESH_POST, () => {
+    refreshPosts();
+  });
 });
 
 onUnmounted(() => {
@@ -641,15 +656,30 @@ const onPostSettingTagSelectRenderLabel = (option: SelectOption) => {
  * @param post 文章接口
  */
 const onDeletePost = (post: Post) => {
-  confirmDialog(`确定要将文章 [${post.title}] 移入回收站吗？`, () => {
-    recyclePosts([post.postId])
-      .then(() => {
-        optionSuccessMsg();
-        // 刷新文章
-        refreshPosts();
-      })
-      .catch((err) => errorMsg(err));
-  });
+  if (post.status === PostStatus.DELETED) {
+    // 永久删除文章
+    confirmDialog(`确定要永久删除文章 [${post.title}] 吗？此操作不可逆`, () => {
+      delPost([post.postId])
+        .then(() => {
+          // 删除成功
+          successMsg('删除成功');
+          // 刷新文章
+          refreshPosts();
+        })
+        .catch((err) => errorMsg(err));
+    });
+  } else {
+    // 回收文章
+    confirmDialog(`确定要将文章 [${post.title}] 移入回收站吗？`, () => {
+      recyclePosts([post.postId])
+        .then(() => {
+          optionSuccessMsg();
+          // 刷新文章
+          refreshPosts();
+        })
+        .catch((err) => errorMsg(err));
+    });
+  }
 };
 
 /**
@@ -1105,6 +1135,7 @@ const onPostQueryClear = () => {
               style="min-width: 160px"
               :options="tagsSelectOptions"
               v-model:value="queryTagId"
+              placeholder="标签"
               :render-label="onPostSettingTagSelectRenderLabel"
               clearable
               @clear="queryTagId = null"
@@ -1143,10 +1174,20 @@ const onPostQueryClear = () => {
             @update:value="refreshPosts"
           />
 
-          <n-button @click="onPostQueryClear">
+          <n-button
+            @click="onPostQueryClear"
+            v-if="
+              queryPostStatus !== null ||
+              queryPostVisible !== null ||
+              queryCategoryId !== null ||
+              queryTagId !== null ||
+              queryKey !== null ||
+              querySort !== null
+            "
+          >
             <template #icon>
               <n-icon>
-                <TrashIcon />
+                <RefreshIcon />
               </n-icon>
             </template>
           </n-button>

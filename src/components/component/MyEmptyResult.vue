@@ -15,7 +15,6 @@ defineProps<Props>();
     style="margin: 40px 0"
     status="500"
     title="这里什么都没有"
-    :description="'快去添加几个' + itemString + '吧！'"
   />
 </template>
 
