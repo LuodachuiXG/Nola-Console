@@ -15,5 +15,7 @@ export enum StoreEnum {
   /** 分类页每页大小 **/
   CATEGORY_PAGE_SIZE = 'category_page_size',
   /** 文章页每页大小 **/
-  POST_PAGE_SIZE = 'post_page_size'
+  POST_PAGE_SIZE = 'post_page_size',
+  /** 文章编辑自动保存间隔 **/
+  POST_AUTO_SAVE_INTERVAL = 'post_auto_save_interval'
 }

@@ -1,7 +1,8 @@
 import axios, { AxiosRequestHeaders } from 'axios';
 import { StoreEnum } from '../models/enum/StoreEnum.ts';
 import { User } from '../models/User.ts';
-import bus, { BusEnum } from '../utils/EventBus.ts';
+import bus from '../utils/EventBus.ts';
+import { BusEnum } from '../models/enum/BusEnum.ts';
 
 // 创建 axios 实例
 const service = axios.create({

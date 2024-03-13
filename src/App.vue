@@ -58,8 +58,9 @@ import NolaIcon from './assets/nola.png';
 import { User } from './models/User.ts';
 import router from './router';
 import { confirmDialog, errorMsg, successMsg } from './utils/Message.ts';
-import bus, { BusEnum } from './utils/EventBus.ts';
+import bus from './utils/EventBus.ts';
 import { login } from './apis/userApi.ts';
+import { BusEnum } from './models/enum/BusEnum.ts';
 
 // 当前登录用户
 const user = ref<User | null>(null);
