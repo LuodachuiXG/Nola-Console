@@ -46,7 +46,7 @@ export const displayNameToSlug = (str: string) => {
   // 先将中文转拼音
   let pinyin = chineseToPinyin(str);
   // 将所有空白字符替换成 - ，并且转小写
-  return pinyin.replace(/\s+/g, '-').toLowerCase();
+  return pinyin.replace(/[\s\W]+/g, '-').toLowerCase();
 };
 
 /**
