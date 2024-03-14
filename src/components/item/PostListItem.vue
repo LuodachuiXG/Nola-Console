@@ -25,7 +25,7 @@ import { Post } from '../../models/Post.ts';
 import { formatTimestamp } from '../../utils/MyUtils.ts';
 import MyTag from '../component/MyTag.vue';
 import { PostStatus } from '../../models/enum/PostStatus.ts';
-import { onMounted, ref, watch } from 'vue';
+import { inject, onMounted, ref, watch } from 'vue';
 import { PostVisible } from '../../models/enum/PostVisible.ts';
 import { Tag } from '../../models/Tag.ts';
 import { Category } from '../../models/Category.ts';
@@ -35,9 +35,9 @@ import { RouterViews } from '../../router/RouterViews.ts';
 interface Props {
   /** 文章接口 */
   post: Post;
-  /** 是否折叠元素 **/
-  isCollapsed?: boolean;
 }
+
+const globalVars: GlobalVars = inject('globalVars')!!;
 
 const props = defineProps<Props>();
 
@@ -292,7 +292,7 @@ const onPostEncryptedBadgeClick = () => {
                 <EditIcon />
               </n-icon>
             </template>
-            <span v-if="!isCollapsed">编辑</span>
+            <span v-if="!globalVars.isSmallWindow">编辑</span>
           </n-button>
           <n-button type="default" tertiary @click="onSettingPost(post)">
             <template #icon>
@@ -300,7 +300,7 @@ const onPostEncryptedBadgeClick = () => {
                 <SettingIcon />
               </n-icon>
             </template>
-            <span v-if="!isCollapsed">设置</span>
+            <span v-if="!globalVars.isSmallWindow">设置</span>
           </n-button>
           <n-button type="error" tertiary @click="onDeletePost(post)">
             <template #icon>
@@ -308,7 +308,7 @@ const onPostEncryptedBadgeClick = () => {
                 <TrashIcon />
               </n-icon>
             </template>
-            <span v-if="!isCollapsed">{{
+            <span v-if="!globalVars.isSmallWindow">{{
               post.status === PostStatus.DELETED ? '删除' : '回收'}}</span>
           </n-button>
         </n-button-group>

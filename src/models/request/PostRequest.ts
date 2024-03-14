@@ -1,8 +1,8 @@
-import { PostStatus } from './enum/PostStatus.ts';
-import { PostVisible } from './enum/PostVisible.ts';
+import { PostStatus } from '../enum/PostStatus.ts';
+import { PostVisible } from '../enum/PostVisible.ts';
 
 /**
- * 文章接口
+ * 文章请求接口
  */
 export interface PostRequest {
   /** 文章 ID（添加时为 null，修改时必填） **/

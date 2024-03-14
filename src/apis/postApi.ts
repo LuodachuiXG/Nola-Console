@@ -1,4 +1,4 @@
-import { PostRequest } from '../models/PostRequest.ts';
+import { PostRequest } from '../models/request/PostRequest.ts';
 import service from './index.ts';
 import { PostStatus } from '../models/enum/PostStatus.ts';
 import { PostVisible } from '../models/enum/PostVisible.ts';

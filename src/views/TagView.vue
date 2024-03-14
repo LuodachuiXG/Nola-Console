@@ -21,10 +21,11 @@ import {
   ListOutline as ListIcon,
   AddOutline as AddIcon
 } from '@vicons/ionicons5';
-import { onMounted, onUnmounted, reactive, ref } from 'vue';
+import { inject, onMounted, reactive, ref } from 'vue';
 import {
   addTag,
-  delTagsByIds, tag,
+  delTagsByIds,
+  tag,
   tags as getTags,
   updateTag
 } from '../apis/tagApi.ts';
@@ -33,7 +34,7 @@ import { confirmDialog, errorMsg, successMsg } from '../utils/Message.ts';
 import { DialogFormMode } from '../models/enum/DialogFormMode.ts';
 import { StoreEnum } from '../models/enum/StoreEnum.ts';
 import { Pager } from '../models/Pager.ts';
-import { displayNameToSlug, isCurrentSmallWindow, renderIcon } from '../utils/MyUtils.ts';
+import { displayNameToSlug, renderIcon } from '../utils/MyUtils.ts';
 import TagListItem from '../components/item/TagListItem.vue';
 import TagComponent from '../components/component/MyTag.vue';
 import MyCard from '../components/component/MyCard.vue';
@@ -46,6 +47,9 @@ enum TagMode {
   // 块模式
   BLOCK
 }
+
+// 全局响应式变量
+const globalVars: GlobalVars = inject('globalVars')!!;
 
 // 当前标签显示模式
 const currentTagMode = ref<TagMode>(TagMode.BLOCK);
@@ -102,8 +106,6 @@ const formAddEdit = reactive({
   color: ''
 });
 
-// 是否是小窗口
-const isSmallWindow = ref(false);
 // 路由引用
 const route = useRoute();
 
@@ -116,34 +118,21 @@ onMounted(() => {
   // 读取以前是否设置过每页大小
   pageSize.value = Number(localStorage.getItem(StoreEnum.TAG_PAGE_SIZE) ?? 10);
 
-  // 监听窗口大小改变事件
-  window.addEventListener('resize', handleWindowSizeChange);
-  handleWindowSizeChange();
-
   // 查看路由是否传参
-  let tagId = route.query.tagId;
-  if (tagId !== undefined) {
+  let tagId = Number(route.query.tagId);
+  if (!isNaN(tagId)) {
     // 获取标签
-    tag(Number(tagId)).then((res) => {
-      // 打开编辑标签页面
-      onEditTag(res.data as Tag)
-    }).catch((err) => errorMsg(err));
+    tag(Number(tagId))
+      .then((res) => {
+        // 打开编辑标签页面
+        onEditTag(res.data as Tag);
+      })
+      .catch((err) => errorMsg(err));
   }
   // 刷新标签数据
   refreshTags();
 });
 
-onUnmounted(() => {
-  window.removeEventListener('resize', handleWindowSizeChange);
-});
-
-/**
- * 窗口大小改变事件
- */
-const handleWindowSizeChange = () => {
-  // 判断是否是小窗口
-  isSmallWindow.value = isCurrentSmallWindow();
-};
 /**
  * 刷新标签数据
  */
@@ -408,7 +397,6 @@ const onPageSizeUpdate = (size: number) => {
               placeholder="标签名"
               @update-value="onAddEditDialogDisplayNameUpdate"
               maxlength="50"
-
             />
           </n-form-item>
           <n-form-item
@@ -420,7 +408,6 @@ const onPageSizeUpdate = (size: number) => {
               v-model:value="formAddEdit.slug"
               placeholder="标签别名"
               maxlength="50"
-
             />
           </n-form-item>
           <n-form-item label="颜色" path="color">
@@ -454,7 +441,7 @@ const onPageSizeUpdate = (size: number) => {
               <AddIcon />
             </n-icon>
           </template>
-          <span v-if="!isSmallWindow">添加标签</span>
+          <span v-if="!globalVars.isSmallWindow">添加标签</span>
         </n-button>
       </template>
       <template #content>
@@ -489,7 +476,6 @@ const onPageSizeUpdate = (size: number) => {
             <tag-list-item
               v-for="tag in tags"
               :tag="tag"
-              :is-collapsed="isSmallWindow"
               @on-delete-tag="onDeleteTag"
               @on-edit-tag="onEditTag"
             />
@@ -526,5 +512,4 @@ const onPageSizeUpdate = (size: number) => {
   </div>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>

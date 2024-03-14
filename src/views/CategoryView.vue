@@ -11,7 +11,7 @@ import {
   NIcon
 } from 'naive-ui';
 import { AddOutline as AddIcon } from '@vicons/ionicons5';
-import { onMounted, onUnmounted, reactive, ref } from 'vue';
+import { inject, onMounted, reactive, ref } from 'vue';
 import {
   addCategory,
   delCategoriesByIds,
@@ -24,10 +24,14 @@ import { confirmDialog, errorMsg, successMsg } from '../utils/Message.ts';
 import { DialogFormMode } from '../models/enum/DialogFormMode.ts';
 import { StoreEnum } from '../models/enum/StoreEnum.ts';
 import { Pager } from '../models/Pager.ts';
-import { displayNameToSlug, isCurrentSmallWindow } from '../utils/MyUtils.ts';
+import { displayNameToSlug } from '../utils/MyUtils.ts';
 import CategoryListItem from '../components/item/CategoryListItem.vue';
 import MyCard from '../components/component/MyCard.vue';
 import { useRoute } from 'vue-router';
+
+// 全局响应式变量
+const globalVars: GlobalVars = inject('globalVars')!!;
+
 // 分类集合
 const categories = ref<Array<Category> | null>(null);
 
@@ -57,9 +61,6 @@ const formAddEdit = reactive({
   unifiedCover: false
 });
 
-// 是否是小窗口
-const isSmallWindow = ref(false);
-
 // 路由引用
 const route = useRoute();
 
@@ -69,13 +70,9 @@ onMounted(() => {
     localStorage.getItem(StoreEnum.CATEGORY_PAGE_SIZE) ?? 10
   );
 
-  // 监听窗口大小变化
-  window.addEventListener('resize', handleWindowSizeChange);
-  handleWindowSizeChange();
-
   // 查看路由是否传参
-  let categoryId = route.query.categoryId;
-  if (categoryId !== undefined) {
+  let categoryId = Number(route.query.categoryId);
+  if (!isNaN(categoryId)) {
     // 获取分类
     category(Number(categoryId))
       .then((res) => {
@@ -89,16 +86,6 @@ onMounted(() => {
   refreshCategories();
 });
 
-onUnmounted(() => {
-  window.removeEventListener('resize', handleWindowSizeChange);
-});
-
-/**
- *
- */
-const handleWindowSizeChange = () => {
-  isSmallWindow.value = isCurrentSmallWindow();
-};
 
 /**
  * 刷新分类数据
@@ -370,7 +357,7 @@ const onPageSizeUpdate = (size: number) => {
               <AddIcon />
             </n-icon>
           </template>
-          <span v-if="!isSmallWindow">添加分类</span>
+          <span v-if="!globalVars.isSmallWindow">添加分类</span>
         </n-button>
       </template>
       <template #content>
@@ -380,7 +367,6 @@ const onPageSizeUpdate = (size: number) => {
             v-for="category in categories"
             :key="category.categoryId"
             :category="category"
-            :is-collapsed="isSmallWindow"
             @on-delete-category="onDeleteCategory"
             @on-edit-category="onEditCategory"
           />

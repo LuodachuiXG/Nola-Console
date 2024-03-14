@@ -15,15 +15,17 @@ import {
   BrushOutline as EditIcon,
   TrashOutline as TrashIcon
 } from '@vicons/ionicons5';
+import { inject } from 'vue';
 
 interface Props {
   /** 分类接口 */
   category: Category;
-  /** 是否折叠元素 **/
-  isCollapsed?: boolean;
 }
 
 defineProps<Props>();
+
+// 全局响应式变量
+const globalVars: GlobalVars = inject('globalVars')!!;
 
 const emit = defineEmits<{
   (e: 'onEditCategory', category: Category): void;
@@ -65,7 +67,7 @@ const onDeleteCategory = (category: Category) => {
                 <EditIcon />
               </n-icon>
             </template>
-            <span v-if="!isCollapsed">编辑</span>
+            <span v-if="!globalVars.isSmallWindow">编辑</span>
           </n-button>
           <n-button type="error" tertiary @click="onDeleteCategory(category)">
             <template #icon>
@@ -73,7 +75,7 @@ const onDeleteCategory = (category: Category) => {
                 <TrashIcon />
               </n-icon>
             </template>
-            <span v-if="!isCollapsed">删除</span>
+            <span v-if="!globalVars.isSmallWindow">删除</span>
           </n-button>
         </n-button-group>
       </template>

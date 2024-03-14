@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watch, reactive, onUnmounted } from 'vue';
+import { onMounted, ref, watch, reactive, onUnmounted, inject } from 'vue';
 import { RouteLocationNormalizedLoaded, useRoute } from 'vue-router';
 import { RouterViews } from './router/RouterViews.ts';
 import {
@@ -48,7 +48,6 @@ import themeOverrides from './theme/theme.ts';
 import type { BuiltInGlobalTheme } from 'naive-ui/es/themes/interface';
 import {
   getCurrentTheme,
-  isCurrentSmallWindow,
   renderIcon,
   setTheme
 } from './utils/MyUtils.ts';
@@ -61,6 +60,9 @@ import { confirmDialog, errorMsg, successMsg } from './utils/Message.ts';
 import bus from './utils/EventBus.ts';
 import { login } from './apis/userApi.ts';
 import { BusEnum } from './models/enum/BusEnum.ts';
+
+// 全局响应式变量
+const globalVars: GlobalVars = inject('globalVars')!!;
 
 // 当前登录用户
 const user = ref<User | null>(null);
@@ -79,9 +81,6 @@ const isSiderCollapsed = ref(true);
 // 用户是否手动修改过侧边栏
 // 如果修改过，就不再根据窗口宽度自动折叠侧边栏
 const isManualUpdateSider = ref(false);
-
-// 标记当前是否是小窗（手机模式）
-const isSmallWindow = ref(false);
 
 // 重新登录对话框表单引用
 const formReLoginRef = ref<FormInst | null>(null);
@@ -252,8 +251,7 @@ const handlerWindowResize = () => {
   if (!isManualUpdateSider.value) {
     // 如果用户之前没有手动修改过侧边栏
     // 这里就根据窗口大小自动改变侧边栏状态
-    isSmallWindow.value = isCurrentSmallWindow();
-    isSiderCollapsed.value = isSmallWindow.value;
+    isSiderCollapsed.value = globalVars?.isSmallWindow;
   }
 };
 
@@ -509,7 +507,7 @@ function onReLoginDialogLoginClick() {
                             secondary
                             :style="
                               'padding-right: ' +
-                              (isSmallWindow ? '5px;' : '12px;')
+                              (globalVars?.isSmallWindow ? '5px;' : '12px;')
                             "
                           >
                             <!-- 用户头像不为空显示头像 -->
@@ -522,7 +520,7 @@ function onReLoginDialogLoginClick() {
                               preview-disabled
                               :style="
                                 'margin-right: ' +
-                                (isSmallWindow ? '0px;' : '6px;')
+                                (globalVars?.isSmallWindow ? '0px;' : '6px;')
                               "
                             />
                             <!-- 用户头像为空，显示名称第一个字 -->
@@ -531,12 +529,12 @@ function onReLoginDialogLoginClick() {
                               class="avatar-text"
                               :style="
                                 'margin-right: ' +
-                                (isSmallWindow ? '0px;' : '6px;')
+                                (globalVars?.isSmallWindow ? '0px;' : '6px;')
                               "
                             >
                               {{ user?.displayName[0] }}
                             </div>
-                            <span v-if="!isSmallWindow">{{
+                            <span v-if="!globalVars?.isSmallWindow">{{
                               user?.displayName
                             }}</span>
                           </n-button>

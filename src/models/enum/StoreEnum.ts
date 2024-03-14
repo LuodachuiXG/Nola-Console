@@ -17,5 +17,7 @@ export enum StoreEnum {
   /** 文章页每页大小 **/
   POST_PAGE_SIZE = 'post_page_size',
   /** 文章编辑自动保存间隔 **/
-  POST_AUTO_SAVE_INTERVAL = 'post_auto_save_interval'
+  POST_AUTO_SAVE_INTERVAL = 'post_auto_save_interval',
+  /** 链接页每页大小 **/
+  LINK_PAGE_SIZE = 'link_page_size'
 }

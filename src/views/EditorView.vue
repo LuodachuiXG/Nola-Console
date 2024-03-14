@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ExposeParam, MdEditor, Themes } from 'md-editor-v3';
-import { onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
+import { inject, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import {
   confirmDialog,
   errorMsg,
@@ -23,12 +23,10 @@ import {
   NSelect,
   NSpace,
   NSwitch,
-  SelectOption,
-  NPopover
+  SelectOption
 } from 'naive-ui';
 import {
   getCurrentTheme,
-  isCurrentSmallWindow,
   isNumber,
   renderIcon
 } from '../utils/MyUtils.ts';
@@ -59,7 +57,7 @@ import {
 import { useRoute } from 'vue-router';
 import { PostContent } from '../models/PostContent.ts';
 import { PostContentStatus } from '../models/enum/PostContentStatus.ts';
-import { PostRequest } from '../models/PostRequest.ts';
+import { PostRequest } from '../models/request/PostRequest.ts';
 import { PostStatus } from '../models/enum/PostStatus.ts';
 import { PostVisible } from '../models/enum/PostVisible.ts';
 import { Post } from '../models/Post.ts';
@@ -86,6 +84,9 @@ enum DraftNameDialogMode {
   /** 添加草稿模式 **/
   ADD_DRAFT
 }
+
+// 全局响应式变量
+const globalVars: GlobalVars = inject('globalVars')!!;
 
 // 编辑器引用
 const editorRef = ref<ExposeParam>();
@@ -116,9 +117,6 @@ const currentPostContent = ref<PostContent>();
 const currentContentStatus = ref<PostContentStatus>(
   PostContentStatus.PUBLISHED
 );
-
-// 当前是否是小窗口
-const isSmallWindow = ref(false);
 
 // 文章内容列表（当前文章的正文和所有草稿）
 const postContentList = ref(Array<PostContent>());
@@ -223,14 +221,8 @@ const isDraft2PublishDialogLoading = ref(false);
 const visiblePostSetting = ref(false);
 
 onMounted(() => {
-  // 获取当前设置的主题
-  theme.value = getCurrentTheme() as Themes;
-
-  // 获取之前是否设置过文章自动保存时间间隔
-  postAutoSaveIntervalSelectValue.value =
-    Number(localStorage.getItem(StoreEnum.POST_AUTO_SAVE_INTERVAL) ?? 5000) ||
-    5000;
-
+  // 读取以前保存的设置
+  loadSetting();
   // 监听编辑器屏幕全屏事件
   editorRef.value?.on('pageFullscreen', (status) => {
     // 编辑器全屏就隐藏博客侧边栏
@@ -282,10 +274,6 @@ onMounted(() => {
       }
     }, postAutoSaveIntervalSelectValue.value ?? 5000);
   });
-
-  // 添加窗口大小监听事件
-  window.addEventListener('resize', handleWindowSizeChange);
-  handleWindowSizeChange();
 });
 
 onBeforeUnmount(() => {
@@ -293,16 +281,19 @@ onBeforeUnmount(() => {
   postContentSave(text.value, false, false);
   // 取消监听 beforeunload 事件
   window.removeEventListener('beforeunload', () => {});
-  // 取消监听窗口大小改变事件
-  window.removeEventListener('resize', handleWindowSizeChange);
 });
 
 /**
- * 窗口大小改变事件
+ * 读取本地保存的设置
  */
-const handleWindowSizeChange = () => {
-  console.log(isCurrentSmallWindow());
-  isSmallWindow.value = isCurrentSmallWindow();
+const loadSetting = () => {
+  // 获取当前设置的主题
+  theme.value = getCurrentTheme() as Themes;
+
+  // 获取之前是否设置过文章自动保存时间间隔
+  postAutoSaveIntervalSelectValue.value =
+    Number(localStorage.getItem(StoreEnum.POST_AUTO_SAVE_INTERVAL) ?? 5000) ||
+    5000;
 };
 
 /**
@@ -439,7 +430,7 @@ const postContentSave = (
         .catch((err) => {
           window.$loadingBar.error();
           errorMsg(`草稿 [${draftName}] 保存失败：` + err);
-          onFail?.(err)
+          onFail?.(err);
         });
     }
   } else {
@@ -703,7 +694,7 @@ const onSubmitClick = () => {
     onSaveContentClick(() => {
       // 保存成功，显示文章设置对话框
       visiblePostSetting.value = true;
-    })
+    });
   }
 };
 
@@ -906,25 +897,14 @@ const onPostUpdate = () => {
               </n-dropdown>
             </n-input-group>
 
-            <n-popover
-              placement="bottom"
-              trigger="hover"
-              :keep-alive-on-hover="false"
-            >
-              <template #trigger>
-                <div>
-                  <n-select
-                    v-if="!isSmallWindow"
-                    style="min-width: 130px"
-                    :options="postAutoSaveIntervalSelectOptions"
-                    :value="postAutoSaveIntervalSelectValue ?? 5000"
-                    @update:value="onPostAutoSaveIntervalSelectUpdate"
-                    placeholder="自动保存间隔"
-                  />
-                </div>
-              </template>
-              <span>文章自动保存间隔时间（停止编辑后）</span>
-            </n-popover>
+            <n-select
+              v-if="!globalVars.isSmallWindow"
+              style="min-width: 130px"
+              :options="postAutoSaveIntervalSelectOptions"
+              :value="postAutoSaveIntervalSelectValue ?? 5000"
+              @update:value="onPostAutoSaveIntervalSelectUpdate"
+              placeholder="自动保存间隔"
+            />
 
             <n-button
               v-if="currentMode === EditorMode.ADD"
@@ -935,7 +915,7 @@ const onPostUpdate = () => {
                   <SaveIcon />
                 </n-icon>
               </template>
-              <span v-if="!isSmallWindow">保存内容</span>
+              <span v-if="!globalVars.isSmallWindow">保存内容</span>
             </n-button>
             <n-button
               v-if="currentMode === EditorMode.EDIT"
@@ -946,7 +926,7 @@ const onPostUpdate = () => {
                   <DraftIcon />
                 </n-icon>
               </template>
-              <span v-if="!isSmallWindow">另存为草稿</span>
+              <span v-if="!globalVars.isSmallWindow">另存为草稿</span>
             </n-button>
             <n-button type="primary" @click="onSubmitClick">
               <template #icon>
@@ -954,7 +934,7 @@ const onPostUpdate = () => {
                   <PublishIcon />
                 </n-icon>
               </template>
-              <span v-if="!isSmallWindow"
+              <span v-if="!globalVars.isSmallWindow"
                 >{{
                   currentMode === EditorMode.ADD ? '发布' : '保存'
                 }}文章</span

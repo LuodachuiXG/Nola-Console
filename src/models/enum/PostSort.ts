@@ -2,7 +2,7 @@
  * 文章排序枚举类
  */
 export enum PostSort {
-  /** 创建时间降序 **/
+  /** 创建时间降序（默认） **/
   CREATE_DESC = 'CREATE_DESC',
   /** 创建时间升序 **/
   CREATE_ASC = 'CREATE_ASC',

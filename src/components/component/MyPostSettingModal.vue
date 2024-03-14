@@ -34,7 +34,7 @@ import { PostStatus } from '../../models/enum/PostStatus.ts';
 import { PostVisible } from '../../models/enum/PostVisible.ts';
 import { TagColor } from 'naive-ui/es/tag/src/common-props';
 import { addCategory, categories } from '../../apis/categoryApi.ts';
-import { PostRequest } from '../../models/PostRequest.ts';
+import { PostRequest } from '../../models/request/PostRequest.ts';
 import { addTag, tags } from '../../apis/tagApi.ts';
 import { Post } from '../../models/Post.ts';
 import { errorMsg, optionSuccessMsg } from '../../utils/Message.ts';

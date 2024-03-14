@@ -10,7 +10,7 @@ import {
   NSpace,
   SelectOption
 } from 'naive-ui';
-import { h, onMounted, onUnmounted, ref } from 'vue';
+import { h, inject, onMounted, ref } from 'vue';
 import { StoreEnum } from '../models/enum/StoreEnum.ts';
 import { Post } from '../models/Post.ts';
 import MyCard from '../components/component/MyCard.vue';
@@ -31,7 +31,6 @@ import {
   successMsg
 } from '../utils/Message.ts';
 import { Pager } from '../models/Pager.ts';
-import { isCurrentSmallWindow } from '../utils/MyUtils.ts';
 import {
   AddOutline as AddIcon,
   RefreshOutline as RefreshIcon,
@@ -45,6 +44,9 @@ import { tags } from '../apis/tagApi.ts';
 import { categories } from '../apis/categoryApi.ts';
 import { Category } from '../models/Category.ts';
 import MyPostSettingModal from '../components/component/MyPostSettingModal.vue';
+
+// 全局响应式变量
+const globalVars: GlobalVars = inject('globalVars')!!;
 
 // 总文章数
 const totalPosts = ref(0);
@@ -141,9 +143,6 @@ const categoriesList = ref(Array<Category>());
 // 当前点击的文章
 const currentClickPost = ref<Post | null>(null);
 
-// 当前是否是小窗口
-const isSmallWindow = ref(false);
-
 // 是否显示设置文章对话框
 const visibleSettingPostDialog = ref(false);
 
@@ -151,9 +150,6 @@ onMounted(() => {
   // 读取以前是否设置过每页大小
   pageSize.value = Number(localStorage.getItem(StoreEnum.POST_PAGE_SIZE) ?? 10);
 
-  // 监听窗口大小改变事件
-  window.addEventListener('resize', handleWindowSizeChange);
-  handleWindowSizeChange();
   // 刷新文章数据
   refreshPosts();
   // 刷新标签和分类
@@ -161,10 +157,6 @@ onMounted(() => {
   refreshCategory();
 });
 
-onUnmounted(() => {
-  // 移除监听窗口大小改变事件
-  window.removeEventListener('resize', handleWindowSizeChange);
-});
 
 /**
  * 获取标签
@@ -242,13 +234,6 @@ const tags2SelectOptions = (tags: Array<Tag>, override: boolean = true) => {
     // 添加到末尾
     tagsSelectOptions.value.push(...selectList);
   }
-};
-
-/**
- * 窗口大小改变事件
- */
-const handleWindowSizeChange = () => {
-  isSmallWindow.value = isCurrentSmallWindow();
 };
 
 /**
@@ -603,7 +588,7 @@ const onPostQueryClear = () => {
               <AddIcon />
             </n-icon>
           </template>
-          <span v-if="!isSmallWindow">添加文章</span>
+          <span v-if="!globalVars.isSmallWindow">添加文章</span>
         </n-button>
       </template>
       <template #content>
@@ -613,7 +598,6 @@ const onPostQueryClear = () => {
             v-for="post in posts"
             :key="post.postId"
             :post="post"
-            :is-collapsed="isSmallWindow"
             @on-edit-post="onEditPost"
             @on-setting-post="onSettingPost"
             @on-delete-post="onDeletePost"
