@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import MyCard from '../components/component/MyCard.vue';
-import { onMounted, ref } from 'vue';
+import { inject, onMounted, ref } from 'vue';
 import { Link } from '../models/Link.ts';
 import { StoreEnum } from '../models/enum/StoreEnum.ts';
+
+const globalVars: GlobalVars = inject('globalVars')!!;
 
 // 总链接数
 const totalLinks = ref(0);
