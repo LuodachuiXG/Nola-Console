@@ -429,6 +429,7 @@ const onMouseClickLogo = () => {
         :loading="isReLoginLoading"
         @positiveClick="onReLoginDialogLoginClick"
         @negativeClick="onReLoginDialogCancelClick"
+        @keydown.enter="onReLoginDialogLoginClick"
       >
         <template #default>
           <n-form

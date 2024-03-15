@@ -289,6 +289,7 @@ const onPageSizeUpdate = (size: number) => {
       negative-text="取消"
       :loading="isAddEditDialogLoading"
       @positiveClick="onAddEditDialogSubmit"
+      @keydown.enter="onAddEditDialogSubmit"
     >
       <template #default>
         <n-form ref="addEditDialogRef" class="dialog-form" :model="formAddEdit">

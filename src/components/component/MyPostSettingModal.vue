@@ -544,6 +544,7 @@ const onSettingPostDialogClose = () => {
     :loading="isSettingPostDialogLoading"
     @positiveClick="onSettingPostDialogSubmit"
     @close="emit('onCancel')"
+    @keydown.enter="onSettingPostDialogSubmit"
     :close-on-esc="false"
     :mask-closable="false"
   >

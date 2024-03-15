@@ -279,6 +279,7 @@ const onLinkDialogSubmit = () => {
       negative-text="取消"
       :loading="isLinkDialogLoading"
       @positiveClick="onLinkDialogSubmit"
+      @keydown.enter="onLinkDialogSubmit"
     >
       <template #default>
         <n-scrollbar style="max-height: 55vh; padding-right: 12px">
