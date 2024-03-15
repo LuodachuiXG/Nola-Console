@@ -284,8 +284,8 @@ const onPageSizeUpdate = (size: number) => {
     <n-modal
       v-model:show="visibleAddEditDialog"
       preset="dialog"
-      :title="addEditMode == DialogFormMode.ADD ? '添加分类' : '编辑分类'"
-      :positive-text="addEditMode == DialogFormMode.ADD ? '添加' : '编辑'"
+      :title="addEditMode == DialogFormMode.ADD ? '添加分类' : '分类设置'"
+      :positive-text="addEditMode == DialogFormMode.ADD ? '添加' : '保存'"
       negative-text="取消"
       :loading="isAddEditDialogLoading"
       @positiveClick="onAddEditDialogSubmit"

@@ -10,7 +10,7 @@ import {
   NText
 } from 'naive-ui';
 import {
-  BrushOutline as EditIcon,
+  SettingsOutline as SettingIcon,
   TrashOutline as TrashIcon
 } from '@vicons/ionicons5';
 import { Tag } from '../../models/Tag.ts';
@@ -67,10 +67,10 @@ const onDeleteTag = (tag: Tag) => {
           <n-button type="default" tertiary @click="onEditTag(tag)">
             <template #icon>
               <n-icon>
-                <EditIcon />
+                <SettingIcon />
               </n-icon>
             </template>
-            <span v-if="!globalVars.isSmallWindow">编辑</span>
+            <span v-if="!globalVars.isSmallWindow">设置</span>
           </n-button>
           <n-button type="error" tertiary @click="onDeleteTag(tag)">
             <template #icon>

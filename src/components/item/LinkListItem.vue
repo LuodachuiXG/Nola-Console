@@ -76,7 +76,7 @@ const onAvatarEnter = () => {
           :value="link.priority"
           class="animate__animated none-select"
           :class="{ animate__pulse: isMouseEnterAvatar }"
-          style="margin-right: 5px;"
+          style="margin-right: 5px"
         >
           <div @mouseenter="onAvatarEnter">
             <n-avatar
@@ -85,7 +85,16 @@ const onAvatarEnter = () => {
               :src="link.logo"
               circle
               size="large"
-            />
+            >
+              <template #fallback>
+                <div
+                  class="avatar-text-div shadow"
+                  :class="{ animate__pulse: isMouseEnterAvatar }"
+                >
+                  <span>{{ link.displayName[0] }}</span>
+                </div>
+              </template>
+            </n-avatar>
             <div
               v-else
               class="avatar-text-div shadow"
@@ -99,9 +108,9 @@ const onAvatarEnter = () => {
       <template #header>
         <n-popover trigger="hover">
           <template #trigger>
-            <n-text strong style="cursor: default">{{
-              link.displayName
-            }}</n-text>
+            <n-text strong style="cursor: default"
+              >{{ link.displayName }}
+            </n-text>
           </template>
           <span>备注：{{ link.remark ?? '无' }}</span>
         </n-popover>

@@ -12,7 +12,7 @@ import {
 } from 'naive-ui';
 import { Category } from '../../models/Category.ts';
 import {
-  BrushOutline as EditIcon,
+  SettingsOutline as SettingIcon,
   TrashOutline as TrashIcon
 } from '@vicons/ionicons5';
 import { inject } from 'vue';
@@ -64,10 +64,10 @@ const onDeleteCategory = (category: Category) => {
           <n-button type="default" tertiary @click="onEditCategory(category)">
             <template #icon>
               <n-icon>
-                <EditIcon />
+                <SettingIcon />
               </n-icon>
             </template>
-            <span v-if="!globalVars.isSmallWindow">编辑</span>
+            <span v-if="!globalVars.isSmallWindow">设置</span>
           </n-button>
           <n-button type="error" tertiary @click="onDeleteCategory(category)">
             <template #icon>
