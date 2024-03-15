@@ -18,7 +18,7 @@ import TagComponent from '../component/MyTag.vue';
 import { inject } from 'vue';
 
 interface Props {
-  /** 标签类 **/
+  /** 标签接口 **/
   tag: Tag;
 }
 

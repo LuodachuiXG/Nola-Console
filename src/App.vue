@@ -46,11 +46,7 @@ import {
 } from '@vicons/ionicons5';
 import themeOverrides from './theme/theme.ts';
 import type { BuiltInGlobalTheme } from 'naive-ui/es/themes/interface';
-import {
-  getCurrentTheme,
-  renderIcon,
-  setTheme
-} from './utils/MyUtils.ts';
+import { getCurrentTheme, renderIcon, setTheme } from './utils/MyUtils.ts';
 import AppProvider from './components/appProvider/AppProvider.vue';
 import { StoreEnum } from './models/enum/StoreEnum.ts';
 import NolaIcon from './assets/nola.png';
@@ -63,6 +59,11 @@ import { BusEnum } from './models/enum/BusEnum.ts';
 
 // 全局响应式变量
 const globalVars: GlobalVars = inject('globalVars')!!;
+
+// 鼠标是否进入 LOGO
+const isLogoEnter = ref(false);
+// 鼠标是否点击 LOGO
+const isLogoClick = ref(false)
 
 // 当前登录用户
 const user = ref<User | null>(null);
@@ -381,6 +382,28 @@ function onReLoginDialogLoginClick() {
 
   return false;
 }
+
+/**
+ * 鼠标进入 LOGO 图标事件
+ */
+const onMouseEnterLogo = () => {
+  if (isLogoClick.value || isLogoEnter.value) return;
+  isLogoEnter.value = true;
+  setTimeout(() => {
+    isLogoEnter.value = false;
+  }, 500);
+}
+
+/**
+ * 鼠标点击 LOGO 图标事件
+ */
+const onMouseClickLogo = () => {
+  if (isLogoClick.value || isLogoEnter.value) return;
+  isLogoClick.value = true;
+  setTimeout(() => {
+    isLogoClick.value = false;
+  }, 1500);
+}
 </script>
 
 <template>
@@ -461,11 +484,15 @@ function onReLoginDialogLoginClick() {
             "
           >
             <n-image
+              class="animate__animated blog-logo"
+              :class="{ animate__flip: isLogoEnter, animate__hinge: isLogoClick}"
               :src="NolaIcon"
               preview-disabled
               :width="!isSiderCollapsed ? 64 : 42"
               :height="!isSiderCollapsed ? 64 : 42"
               alt="Nola"
+              @mouseenter="onMouseEnterLogo"
+              @click="onMouseClickLogo"
             />
           </div>
           <n-menu
@@ -631,5 +658,9 @@ function onReLoginDialogLoginClick() {
   border-radius: 999px;
   color: white;
   font-size: 0.8em;
+}
+
+.blog-logo {
+  cursor: pointer;
 }
 </style>

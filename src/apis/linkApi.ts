@@ -47,12 +47,7 @@ export function getLinks(
   sort: LinkSort = LinkSort.PRIORITY_DESC
 ) {
   return service({
-    url: '/admin/link',
-    method: 'GET',
-    data: {
-      page: page,
-      size: size,
-      sort: sort
-    }
+    url: `/admin/link?page=${page}&size=${size}&sort=${sort}`,
+    method: 'GET'
   });
 }

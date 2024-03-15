@@ -147,9 +147,18 @@ export const router = createRouter({
 });
 
 /**
+ * 该事件可以在用户刷新页面的时候提示页面内容可能不会保存
+ * @param event
+ */
+const handleBeforeunload = (event: BeforeUnloadEvent) =>{
+  // 提示用户关闭或刷新浏览器的话当前页内容可能不会保存
+  event.preventDefault();
+}
+
+/**
  * 导航守卫
  */
-router.beforeEach(async (to, _from) => {
+router.beforeEach(async (to, from) => {
   const user = localStorage.getItem(StoreEnum.USER);
   // 已登录就跳转到控制台主页
   if (to.name === RouterViews.LOGIN.name && user !== null) {
@@ -159,6 +168,18 @@ router.beforeEach(async (to, _from) => {
   // 未登录的话跳转到登录页面
   if (to.name !== RouterViews.LOGIN.name && user === null) {
     return { name: RouterViews.LOGIN.name };
+  }
+
+  // 如果是编辑页面，监听 beforeunload 事件
+  if (to.name === RouterViews.EDITOR.name) {
+    // 监听 beforeunload 事件
+    window.addEventListener('beforeunload', handleBeforeunload);
+  }
+
+  // 如果离开编辑页面，取消监听 beforeunload 事件
+  // 取消监听 beforeunload 事件
+  if (from.name === RouterViews.EDITOR.name && to.name !== RouterViews.EDITOR.name) {
+    window.removeEventListener('beforeunload', handleBeforeunload);
   }
 
   document.title = to.meta.displayName?.toString() + ' - Nola';

@@ -235,12 +235,6 @@ onMounted(() => {
     bus.emit(status ? BusEnum.HIDDEN_SIDER : BusEnum.VISIBLE_SIDER);
   });
 
-  // 监听 beforeunload 事件
-  window.addEventListener('beforeunload', (event) => {
-    // 提示用户关闭或刷新浏览器的话当前页内容可能不会保存
-    event.preventDefault();
-  });
-
   // 当前页面获取到文章 ID 参数
   let postId = route.query.postId as string | null;
   if (postId !== null && isNumber(postId)) {
@@ -279,8 +273,6 @@ onMounted(() => {
 onBeforeUnmount(() => {
   // 退出前保存一下当前编辑内容
   postContentSave(text.value, false, false);
-  // 取消监听 beforeunload 事件
-  window.removeEventListener('beforeunload', () => {});
 });
 
 /**
