@@ -442,6 +442,7 @@ const onLinkCancelChecked = () => {
             :options="linkSortSelectOptions"
             v-model:value="linkSort"
             @update:value="refreshLinks"
+            placeholder="排序方式"
             style="width: 130px"
           />
           <n-button type="primary" @click="onAddLinkClick">
