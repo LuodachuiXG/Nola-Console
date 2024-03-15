@@ -4,6 +4,7 @@ import {
   NBadge,
   NButton,
   NButtonGroup,
+  NCheckbox,
   NCol,
   NIcon,
   NListItem,
@@ -19,7 +20,9 @@ import {
   LibraryOutline as CategoryIcon,
   LockClosedOutline as LockClosedIcon,
   SettingsOutline as SettingIcon,
-  TrashOutline as TrashIcon
+  TrashOutline as TrashIcon,
+  RocketOutline as PublishIcon,
+  FileTrayFullOutline as DraftIcon
 } from '@vicons/ionicons5';
 import { Post } from '../../models/Post.ts';
 import { formatTimestamp } from '../../utils/MyUtils.ts';
@@ -35,6 +38,8 @@ import { RouterViews } from '../../router/RouterViews.ts';
 interface Props {
   /** 文章接口 */
   post: Post;
+  /** 是否选中 **/
+  isChecked: boolean;
 }
 
 const globalVars: GlobalVars = inject('globalVars')!!;
@@ -45,10 +50,15 @@ const emit = defineEmits<{
   (e: 'onEditPost', post: Post): void;
   (e: 'onSettingPost', post: Post): void;
   (e: 'onDeletePost', post: Post): void;
+  (e: 'onRestorePost', post: Post, status: PostStatus): void;
   (e: 'onPostStatusBadgeClick', post: Post): void;
   (e: 'onPostPinnedBadgeClick', post: Post): void;
   (e: 'onPostVisibleBadgeClick', post: Post): void;
   (e: 'onPostEncryptedBadgeClick', post: Post): void;
+  // 选择框选中事件
+  (e: 'onChecked', post: Post): void;
+  // 选择框取消选中事件
+  (e: 'onUnChecked', post: Post): void;
 }>();
 
 // 文章状态 badge 类型
@@ -166,11 +176,38 @@ const onPostPinnedBadgeClick = () => {
 const onPostEncryptedBadgeClick = () => {
   emit('onPostEncryptedBadgeClick', props.post);
 };
+
+/**
+ * 选择框选中事件
+ * @param checked
+ */
+const onCheckboxChecked = (checked: boolean) => {
+  if (checked) {
+    emit('onChecked', props.post);
+  } else {
+    emit('onUnChecked', props.post);
+  }
+};
+
+/**
+ * 将回收站中的文章还原到指定状态
+ * @param status
+ */
+const onRestorePost = (status: PostStatus) => {
+  emit('onRestorePost', props.post, status);
+};
 </script>
 
 <template>
   <n-list-item>
     <n-thing class="animate__animated animate__fadeIn">
+      <template #avatar>
+        <n-checkbox
+          :checked="isChecked"
+          style="margin-left: -4px; margin-right: 5px"
+          @update-checked="onCheckboxChecked"
+        />
+      </template>
       <template #header>
         <n-popover :keep-alive-on-hover="false">
           <template #trigger>
@@ -238,7 +275,7 @@ const onPostEncryptedBadgeClick = () => {
       </template>
       <template #description>
         <n-row style="margin-left: 13px">
-          <n-col :span="16">
+          <n-col :span="15">
             <div style="font-size: 0.9em">
               <n-text depth="3">浏览量：{{ post.visit }}</n-text>
               <n-text depth="3" style="margin-left: 10px"
@@ -272,7 +309,7 @@ const onPostEncryptedBadgeClick = () => {
               </n-space>
             </div>
           </n-col>
-          <n-col :span="8">
+          <n-col :span="9">
             <div class="post-time-div">
               <n-text
                 class="post-time-div-text"
@@ -286,7 +323,12 @@ const onPostEncryptedBadgeClick = () => {
       </template>
       <template #header-extra>
         <n-button-group size="small">
-          <n-button type="default" tertiary @click="onEditPost(post)">
+          <n-button
+            type="default"
+            tertiary
+            @click="onEditPost(post)"
+            v-if="post.status !== PostStatus.DELETED"
+          >
             <template #icon>
               <n-icon>
                 <EditIcon />
@@ -294,7 +336,12 @@ const onPostEncryptedBadgeClick = () => {
             </template>
             <span v-if="!globalVars.isSmallWindow">编辑</span>
           </n-button>
-          <n-button type="default" tertiary @click="onSettingPost(post)">
+          <n-button
+            type="default"
+            tertiary
+            @click="onSettingPost(post)"
+            v-if="post.status !== PostStatus.DELETED"
+          >
             <template #icon>
               <n-icon>
                 <SettingIcon />
@@ -302,6 +349,34 @@ const onPostEncryptedBadgeClick = () => {
             </template>
             <span v-if="!globalVars.isSmallWindow">设置</span>
           </n-button>
+
+          <n-button
+            type="default"
+            tertiary
+            @click="onRestorePost(PostStatus.DRAFT)"
+            v-if="post.status === PostStatus.DELETED"
+          >
+            <template #icon>
+              <n-icon>
+                <DraftIcon />
+              </n-icon>
+            </template>
+            <span v-if="!globalVars.isSmallWindow">转草稿</span>
+          </n-button>
+          <n-button
+            type="default"
+            tertiary
+            @click="onRestorePost(PostStatus.PUBLISHED)"
+            v-if="post.status === PostStatus.DELETED"
+          >
+            <template #icon>
+              <n-icon>
+                <PublishIcon />
+              </n-icon>
+            </template>
+            <span v-if="!globalVars.isSmallWindow">发布</span>
+          </n-button>
+
           <n-button type="error" tertiary @click="onDeletePost(post)">
             <template #icon>
               <n-icon>
@@ -309,7 +384,8 @@ const onPostEncryptedBadgeClick = () => {
               </n-icon>
             </template>
             <span v-if="!globalVars.isSmallWindow">{{
-              post.status === PostStatus.DELETED ? '删除' : '回收'}}</span>
+              post.status === PostStatus.DELETED ? '删除' : '回收'
+            }}</span>
           </n-button>
         </n-button-group>
       </template>

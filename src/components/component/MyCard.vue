@@ -1,8 +1,22 @@
 <script setup lang="ts">
 import MyNumberAnimation from './MyNumberAnimation.vue';
 import MyEmptyResult from './MyEmptyResult.vue';
-import { NCard, NCol, NRow, NScrollbar, NText } from 'naive-ui';
+import {
+  NCard,
+  NCol,
+  NRow,
+  NScrollbar,
+  NText,
+  NCheckbox,
+  NSpace,
+  NButton,
+  NIcon
+} from 'naive-ui';
 import MyPagination from './MyPagination.vue';
+import { inject } from 'vue';
+import { TrashOutline as TrashIcon } from '@vicons/ionicons5';
+
+const globalVars: GlobalVars = inject('globalVars')!!;
 
 interface Props {
   /** 使用更深的背景色展现嵌入效果，只对亮色主题生效（默认 true） **/
@@ -25,13 +39,27 @@ interface Props {
   currentPageItemCount?: number;
   /** 每页条数（默认 10） **/
   pageSize?: number;
+  /** 是否显示选择框（默认 false） **/
+  showCheckbox?: boolean;
+  /** 选择框是否选中（默认 false） **/
+  isChecked?: boolean;
+  /** 是否显示删除按钮（默认 false） **/
+  showDeleteButton?: boolean;
 }
 
 defineProps<Props>();
 
 const emit = defineEmits<{
+  // 当前页数改变事件
   (e: 'onPageUpdate', page: number): void;
+  // 每页大小改变事件
   (e: 'onPageSizeUpdate', size: number): void;
+  // 选择框选择事件
+  (e: 'onChecked'): void;
+  // 选择框取消选择事件
+  (e: 'onCheckboxCancel'): void;
+  // 选择框旁的删除按钮点击事件
+  (e: 'onDeleteButtonClick'): void;
 }>();
 
 /**
@@ -49,6 +77,25 @@ const onPaginationUpdate = (page: number) => {
 const onPaginationSizeUpdate = (size: number) => {
   emit('onPageSizeUpdate', size);
 };
+
+/**
+ * 多选框选中事件
+ * @param checked 是否选中
+ */
+const onCheckBoxChecked = (checked: boolean) => {
+  if (checked) {
+    emit('onChecked');
+  } else {
+    emit('onCheckboxCancel');
+  }
+};
+
+/**
+ * 删除按钮点击事件
+ */
+const onDeleteBtnClick = () => {
+  emit('onDeleteButtonClick');
+};
 </script>
 
 <template>
@@ -62,18 +109,43 @@ const onPaginationSizeUpdate = (size: number) => {
     :size="size ?? 'small'"
   >
     <template #header>
-      <slot name="header">
-        <span>
-          共
-          <MyNumberAnimation :to="dataCount ?? 0" />
-          个{{ itemString ?? '项目' }}
-        </span>
-        <span v-if="showPagination ?? true">
-          ，当前页
-          <MyNumberAnimation :to="currentPageItemCount ?? 0" />
-          个
-        </span>
-      </slot>
+      <n-space style="line-height: 32px; height: 32px" inline>
+        <n-checkbox
+          v-if="showCheckbox ?? false"
+          :checked="isChecked"
+          :on-update-checked="onCheckBoxChecked"
+        />
+        <slot name="header-checkbox-button">
+          <n-button
+            type="error"
+            size="small"
+            style="margin-top: 2px"
+            @click="onDeleteBtnClick"
+            v-if="showDeleteButton"
+          >
+            <template #icon>
+              <n-icon>
+                <TrashIcon />
+              </n-icon>
+            </template>
+          </n-button>
+        </slot>
+
+        <slot name="header">
+          <div v-if="!globalVars.isSmallWindow">
+            <span v-if="showPagination ?? true">
+              当前页
+              <MyNumberAnimation :to="currentPageItemCount ?? 0" />
+              项
+            </span>
+            <span>
+              ，共
+              <MyNumberAnimation :to="dataCount ?? 0" />
+              项
+            </span>
+          </div>
+        </slot>
+      </n-space>
     </template>
     <template #header-extra>
       <slot name="header-extra" />

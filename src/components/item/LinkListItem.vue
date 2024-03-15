@@ -12,7 +12,8 @@ import {
   NRow,
   NCol,
   NPopover,
-  NBadge
+  NBadge,
+  NCheckbox
 } from 'naive-ui';
 import {
   TrashOutline as TrashIcon,
@@ -25,20 +26,26 @@ import { formatTimestamp } from '../../utils/MyUtils.ts';
 interface Props {
   /** 链接接口 **/
   link: Link;
+  /** 是否选中 **/
+  isChecked: boolean
 }
 
-defineProps<Props>();
-
-// 鼠标是否进入头像
-const isMouseEnterAvatar = ref(false);
-
-// 全局响应式变量
-const globalVars: GlobalVars = inject('globalVars')!!;
+const props = defineProps<Props>();
 
 const emit = defineEmits<{
   (e: 'onSettingLink', link: Link): void;
   (e: 'onDeleteLink', link: Link): void;
+  // 选择框选中事件
+  (e: 'onChecked', link: Link): void;
+  // 选择框取消选中事件
+  (e: 'onUnChecked', link: Link): void;
 }>();
+
+// 全局响应式变量
+const globalVars: GlobalVars = inject('globalVars')!!;
+
+// 鼠标是否进入头像
+const isMouseEnterAvatar = ref(false);
 
 /**
  * 设置链接事件
@@ -66,12 +73,29 @@ const onAvatarEnter = () => {
     isMouseEnterAvatar.value = false;
   }, 500);
 };
+
+/**
+ * 选择框选中事件
+ * @param checked
+ */
+const onCheckboxChecked = (checked: boolean) => {
+  if (checked) {
+    emit('onChecked', props.link);
+  } else {
+    emit('onUnChecked', props.link);
+  }
+};
 </script>
 
 <template>
   <n-list-item>
     <n-thing class="animate__animated animate__fadeIn">
       <template #avatar>
+        <n-checkbox
+          :checked="isChecked"
+          style="margin-left: -4px; margin-right: 12px"
+          @update-checked="onCheckboxChecked"
+        />
         <n-badge
           :value="link.priority"
           class="animate__animated none-select"

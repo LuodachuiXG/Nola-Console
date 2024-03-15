@@ -48,6 +48,9 @@ const linkSort = ref<LinkSort | null>(null);
 // 链接列表
 const links = ref<Array<Link> | null>(null);
 
+// 当前选中的链接 ID 数组
+const currentSelectLinkIds = ref(Array<number>());
+
 // 链接对话框引用
 const linkDialogRef = ref<FormInst | null>(null);
 // 是否显示添加 / 修改链接对话框
@@ -178,13 +181,39 @@ const onAddLinkClick = () => {
  */
 const onDeleteLink = (link: Link) => {
   confirmDialog(`确定要删除链接 [${link.displayName}] 吗？`, () => {
-    delLink([link.linkId])
-      .then(() => {
-        optionSuccessMsg();
-        refreshLinks();
-      })
-      .catch((err) => errorMsg(err));
+    deleteLinks([link.linkId]);
   });
+};
+
+/**
+ * 链接多选删除点击事件
+ */
+const onLinksDeleteClick = () => {
+  let ids = Array<number>();
+  currentSelectLinkIds.value.forEach((id) => {
+    ids.push(id);
+  });
+  confirmDialog(`确定要删除选择的 ${ids.length} 个链接吗？`, () => {
+    deleteLinks(ids);
+  });
+};
+
+/**
+ * 删除链接
+ * @param ids 链接 ID 数组
+ */
+const deleteLinks = (ids: Array<number>) => {
+  delLink(ids)
+    .then(() => {
+      // 删除选择的链接
+      currentSelectLinkIds.value = currentSelectLinkIds.value.filter((id) => {
+        return !ids.includes(id);
+      });
+
+      optionSuccessMsg();
+      refreshLinks();
+    })
+    .catch((err) => errorMsg(err));
 };
 
 /**
@@ -265,6 +294,41 @@ const onLinkDialogSubmit = () => {
     }
   });
   return false;
+};
+
+/**
+ * 链接项选中事件
+ * @param link
+ */
+const onLinkItemChecked = (link: Link) => {
+  currentSelectLinkIds.value.push(link.linkId);
+};
+
+/**
+ * 链接项取消选中事件
+ * @param link
+ */
+const onLinkItemUnChecked = (link: Link) => {
+  currentSelectLinkIds.value = currentSelectLinkIds.value.filter((id) => {
+    return id !== link.linkId;
+  });
+};
+
+/**
+ * 链接全选事件
+ */
+const onLinkCheckedAll = () => {
+  currentSelectLinkIds.value = [];
+  links.value?.forEach((link) => {
+    currentSelectLinkIds.value.push(link.linkId);
+  });
+};
+
+/**
+ * 链接取消全选事件
+ */
+const onLinkCancelChecked = () => {
+  currentSelectLinkIds.value = [];
 };
 </script>
 
@@ -361,10 +425,16 @@ const onLinkDialogSubmit = () => {
       :page-size="pageSize"
       :page-count="totalPages"
       :current-page-item-count="links?.length ?? 0"
+      :is-checked="currentSelectLinkIds.length === links?.length && links.length !== 0"
       show-pagination
+      show-checkbox
+      :show-delete-button="currentSelectLinkIds.length > 0"
       item-string="链接"
       @on-page-update="onPageUpdate"
       @on-page-size-update="onPageSizeUpdate"
+      @on-checked="onLinkCheckedAll"
+      @on-checkbox-cancel="onLinkCancelChecked"
+      @on-delete-button-click="onLinksDeleteClick"
     >
       <template #header-extra>
         <n-space>
@@ -390,9 +460,13 @@ const onLinkDialogSubmit = () => {
           <n-list hoverable>
             <link-list-item
               v-for="link in links"
+              :key="link.linkId"
               :link="link"
+              :is-checked="currentSelectLinkIds.includes(link.linkId)"
               @on-delete-link="onDeleteLink"
               @on-setting-link="onSettingLink"
+              @on-checked="onLinkItemChecked"
+              @on-un-checked="onLinkItemUnChecked"
             />
           </n-list>
         </div>

@@ -43,6 +43,19 @@ export function recyclePosts(ids: Array<number>) {
 }
 
 /**
+ * 恢复文章，将文章从回收站中改为指定状态
+ * @param ids 文章 ID 数组
+ * @param status 文章状态（PUBLISHED、DRAFT）
+ */
+export function restorePosts(ids: Array<number>, status: PostStatus) {
+  return service({
+    url: `/admin/post/restore/${status}`,
+    method: 'PUT',
+    data: ids
+  });
+}
+
+/**
  * 修改文章
  * @param postRequest 文章请求接口
  */
