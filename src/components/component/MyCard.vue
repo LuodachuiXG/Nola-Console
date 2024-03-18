@@ -136,10 +136,10 @@ const onDeleteBtnClick = () => {
             <span v-if="showPagination ?? true">
               当前页
               <MyNumberAnimation :to="currentPageItemCount ?? 0" />
-              项
+              项，
             </span>
             <span>
-              ，共
+              共
               <MyNumberAnimation :to="dataCount ?? 0" />
               项
             </span>
