@@ -200,7 +200,7 @@ const onRestorePost = (status: PostStatus) => {
 
 <template>
   <n-list-item>
-    <n-thing class="animate__animated animate__fadeIn">
+    <n-thing class="animate__animated animate__fadeIn" draggable="true">
       <template #avatar>
         <n-checkbox
           :checked="isChecked"
