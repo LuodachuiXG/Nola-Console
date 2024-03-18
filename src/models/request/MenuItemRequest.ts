@@ -9,7 +9,7 @@ export interface MenuItemRequest {
   /** 菜单名称 **/
   displayName: string;
   /** 链接地址 **/
-  href: string | null;
+  href: string;
   /** 菜单打开方式 **/
   target: MenuItemTarget | null;
   /** 父菜单 ID **/

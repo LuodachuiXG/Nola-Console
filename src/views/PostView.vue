@@ -796,7 +796,7 @@ const onPostItemUnChecked = (post: Post) => {
       <template #header-extra>
         <n-space>
           <n-select
-            v-if="queryPostStatus !== PostStatus.DELETED"
+            v-if="queryPostStatus !== PostStatus.DELETED && !globalVars.isSmallWindow"
             style="min-width: 140px"
             :options="queryPostSortSelectOptions"
             v-model:value="querySort"

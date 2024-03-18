@@ -695,9 +695,7 @@ const onSettingPostDialogClose = () => {
                   "
                   maxlength="128"
                   clearable
-                  type="password"
                   :disabled="formSettingPost.encrypted"
-                  show-password-on="mousedown"
                 />
                 <n-popover v-if="formSettingPost.encrypted">
                   <template #trigger>

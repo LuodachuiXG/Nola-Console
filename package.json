@@ -15,7 +15,8 @@
     "md-editor-v3": "^4.12.1",
     "mitt": "^3.0.1",
     "vue": "^3.3.11",
-    "vue-router": "^4.2.5"
+    "vue-router": "^4.2.5",
+    "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
     "@vicons/ionicons5": "^0.12.0",

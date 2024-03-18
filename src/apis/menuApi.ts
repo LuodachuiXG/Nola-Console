@@ -113,6 +113,8 @@ export function updateMenuItem(menuItemRequest: MenuItemRequest) {
 
 /**
  * 获取菜单项
+ * @param menuId 菜单 ID
+ * @param tree 是否为树形结构
  */
 export function getMenuItems(menuId: number, tree: boolean = true) {
   return service({
