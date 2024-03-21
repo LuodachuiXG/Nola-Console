@@ -8,7 +8,8 @@ import {
   NThing,
   NText,
   NRow,
-  NCol
+  NCol,
+  NCheckbox
 } from 'naive-ui';
 import { Category } from '../../models/Category.ts';
 import {
@@ -16,13 +17,16 @@ import {
   TrashOutline as TrashIcon
 } from '@vicons/ionicons5';
 import { inject } from 'vue';
+import { Tag } from '../../models/Tag.ts';
 
 interface Props {
   /** 分类接口 */
   category: Category;
+  /** 是否选中 **/
+  isChecked: boolean;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
 // 全局响应式变量
 const globalVars: GlobalVars = inject('globalVars')!!;
@@ -30,6 +34,8 @@ const globalVars: GlobalVars = inject('globalVars')!!;
 const emit = defineEmits<{
   (e: 'onEditCategory', category: Category): void;
   (e: 'onDeleteCategory', category: Category): void;
+  (e: 'onChecked', category: Category): void;
+  (e: 'onUnChecked', category: Category): void;
 }>();
 
 const onEditCategory = (category: Category) => {
@@ -39,11 +45,32 @@ const onEditCategory = (category: Category) => {
 const onDeleteCategory = (category: Category) => {
   emit('onDeleteCategory', category);
 };
+
+/**
+ * 选择框选中事件
+ * @param checked
+ */
+const onCheckboxChecked = (checked: boolean) => {
+  if (checked) {
+    emit('onChecked', props.category);
+  } else {
+    emit('onUnChecked', props.category);
+  }
+};
 </script>
 
 <template>
   <n-list-item>
     <n-thing class="animate__animated animate__fadeIn">
+      <template #avatar>
+        <div style="margin-right: -10px">
+          <n-checkbox
+            :checked="isChecked"
+            style="margin-left: -4px; margin-right: 12px"
+            @update-checked="onCheckboxChecked"
+          />
+        </div>
+      </template>
       <template #header>
         <n-text strong>{{ category.displayName }}</n-text>
       </template>
@@ -53,8 +80,10 @@ const onDeleteCategory = (category: Category) => {
             <n-text depth="3">{{ category.slug }}</n-text>
           </n-col>
           <n-col :span="4">
-            <div style="display: flex;justify-content: end;">
-              <n-text depth="3" style="font-size: 1em">{{ category.postCount ?? 0 }} 篇文章</n-text>
+            <div style="display: flex; justify-content: end">
+              <n-text depth="3" style="font-size: 1em"
+                >{{ category.postCount ?? 0 }} 篇文章</n-text
+              >
             </div>
           </n-col>
         </n-row>

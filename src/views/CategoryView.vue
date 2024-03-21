@@ -35,6 +35,9 @@ const globalVars: GlobalVars = inject('globalVars')!!;
 // 分类集合
 const categories = ref<Array<Category> | null>(null);
 
+// 当前选择的分类 ID 数组
+const currentSelectCategoryIds = ref(Array<number>());
+
 // 当前页
 const currentPage = ref(1);
 // 每页条数
@@ -86,7 +89,6 @@ onMounted(() => {
   refreshCategories();
 });
 
-
 /**
  * 刷新分类数据
  */
@@ -122,19 +124,44 @@ const onDeleteCategory = (category: Category) => {
   confirmDialog(
     '确定要删除分类 [' + category?.displayName + '] 吗？此操作不可逆。',
     () => {
-      // 删除分类
-      delCategoriesByIds([category?.categoryId!!])
-        .then(() => {
-          // 删除成功
-          successMsg('删除成功');
-          // 刷新分类列表
-          refreshCategories();
-        })
-        .catch((err) => {
-          errorMsg(err);
-        });
+      deleteCategories([category.categoryId!!]);
     }
   );
+};
+
+/**
+ * 分类多选删除点击事件
+ */
+const onCategoriesDeleteClick = () => {
+  let ids = Array<number>();
+  currentSelectCategoryIds.value.forEach((id) => {
+    ids.push(id);
+  });
+  confirmDialog(`确定要删除选择的 ${ids.length} 个分类吗？`, () => {
+    deleteCategories(ids);
+  });
+};
+
+/**
+ * 批量删除分类
+ * @param ids
+ */
+const deleteCategories = (ids: Array<number>) => {
+  // 删除分类
+  delCategoriesByIds(ids)
+    .then(() => {
+      // 删除成功
+      successMsg('删除成功');
+      // 删除选择的分类数组项
+      currentSelectCategoryIds.value = currentSelectCategoryIds.value.filter((id) => {
+        return !ids.includes(id);
+      });
+      // 刷新分类列表
+      refreshCategories();
+    })
+    .catch((err) => {
+      errorMsg(err);
+    });
 };
 
 /**
@@ -276,6 +303,43 @@ const onPageSizeUpdate = (size: number) => {
   // 刷新分类
   refreshCategories();
 };
+
+/**
+ * 分类选中事件
+ * @param category
+ */
+const onCategoryChecked = (category: Category) => {
+  currentSelectCategoryIds.value.push(category.categoryId!!);
+};
+
+/**
+ * 分类取消选中事件
+ * @param category
+ */
+const onCategoryUnChecked = (category: Category) => {
+  currentSelectCategoryIds.value = currentSelectCategoryIds.value.filter(
+    (id) => {
+      return id !== category.categoryId;
+    }
+  );
+};
+
+/**
+ * 分类全选事件
+ */
+const onCategoryCheckedAll = () => {
+  currentSelectCategoryIds.value = [];
+  categories.value?.forEach((category) => {
+    currentSelectCategoryIds.value.push(category.categoryId!!);
+  });
+};
+
+/**
+ * 标签取消全选事件
+ */
+const onCategoryCancelChecked = () => {
+  currentSelectCategoryIds.value = [];
+};
 </script>
 
 <template>
@@ -303,7 +367,6 @@ const onPageSizeUpdate = (size: number) => {
               placeholder="分类名"
               @update-value="onAddEditDialogDisplayNameUpdate"
               maxlength="50"
-
             />
           </n-form-item>
           <n-form-item
@@ -315,7 +378,6 @@ const onPageSizeUpdate = (size: number) => {
               v-model:value="formAddEdit.slug"
               placeholder="分类别名"
               maxlength="50"
-
             />
           </n-form-item>
           <n-form-item
@@ -327,13 +389,10 @@ const onPageSizeUpdate = (size: number) => {
               v-model:value="formAddEdit.cover"
               placeholder="分类封面地址"
               maxlength="256"
-
             />
           </n-form-item>
           <n-form-item label="统一封面" path="unifiedCover">
-            <n-switch
-              v-model:value="formAddEdit.unifiedCover"
-            />
+            <n-switch v-model:value="formAddEdit.unifiedCover" />
           </n-form-item>
         </n-form>
       </template>
@@ -350,6 +409,15 @@ const onPageSizeUpdate = (size: number) => {
       item-string="分类"
       @on-page-update="onPageUpdate"
       @on-page-size-update="onPageSizeUpdate"
+      show-checkbox
+      @on-checked="onCategoryCheckedAll"
+      @on-checkbox-cancel="onCategoryCancelChecked"
+      :is-checked="
+        currentSelectCategoryIds.length === categories?.length &&
+        categories.length !== 0
+      "
+      :show-delete-button="currentSelectCategoryIds.length > 0"
+      @on-delete-button-click="onCategoriesDeleteClick"
     >
       <template #header-extra>
         <n-button type="primary" @click="onAddCategoryClick">
@@ -370,6 +438,9 @@ const onPageSizeUpdate = (size: number) => {
             :category="category"
             @on-delete-category="onDeleteCategory"
             @on-edit-category="onEditCategory"
+            :is-checked="currentSelectCategoryIds.includes(category.categoryId!!)"
+            @on-checked="onCategoryChecked"
+            @on-un-checked="onCategoryUnChecked"
           />
         </n-list>
       </template>
