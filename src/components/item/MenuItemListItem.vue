@@ -9,11 +9,12 @@ import {
 } from 'naive-ui';
 import { MenuItem } from '../../models/MenuItem.ts';
 import {
-  ArrowBackOutline as LeftArrowIcon,
-  ArrowForwardOutline as RightArrowIcon
+  SettingsOutline as SettingIcon,
+  TrashOutline as TrashIcon,
+  AddOutline as AddIcon
 } from '@vicons/ionicons5';
-
 import draggable from 'vuedraggable';
+import { inject } from 'vue';
 
 interface Props {
   menuItemLevel: Map<number, number>;
@@ -21,9 +22,14 @@ interface Props {
 
 const emit = defineEmits<{
   (e: 'onMenuItemMoved', menuItem: MenuItem): void;
+  (e: 'onSettingMenuItem', menuItem: MenuItem): void;
+  (e: 'onAddSubMenuItem', menuItem: MenuItem): void;
+  (e: 'onDelMenuItem', menuItem: MenuItem): void;
 }>();
 
 defineProps<Props>();
+
+const globalVars: GlobalVars = inject('globalVars')!!;
 
 const menuItems = defineModel('menuItems', {
   type: Array<MenuItem>,
@@ -84,19 +90,29 @@ const onDraggableEnd = (event: MoveChangeEvent<MenuItem>) => {
             </template>
             <template #header-extra>
               <n-button-group size="small">
-                <n-button tertiary :disabled="element.parentMenuItemId === null">
+                <n-button tertiary @click="emit('onSettingMenuItem', element)">
                   <template #icon>
                     <n-icon>
-                      <LeftArrowIcon />
+                      <SettingIcon />
                     </n-icon>
                   </template>
+                  <span v-if="!globalVars.isSmallWindow">设置</span>
                 </n-button>
-                <n-button tertiary>
+                <n-button tertiary @click="emit('onAddSubMenuItem', element)">
                   <template #icon>
                     <n-icon>
-                      <RightArrowIcon />
+                      <AddIcon />
                     </n-icon>
                   </template>
+                  <span v-if="!globalVars.isSmallWindow">添加</span>
+                </n-button>
+                <n-button tertiary type="error" @click="emit('onDelMenuItem', element)">
+                  <template #icon>
+                    <n-icon>
+                      <TrashIcon />
+                    </n-icon>
+                  </template>
+                  <span v-if="!globalVars.isSmallWindow">删除</span>
                 </n-button>
               </n-button-group>
             </template>
@@ -106,6 +122,9 @@ const onDraggableEnd = (event: MoveChangeEvent<MenuItem>) => {
           :menu-items="element.children"
           :menu-item-level="menuItemLevel"
           @on-menu-item-moved="emit('onMenuItemMoved', $event)"
+          @on-setting-menu-item="emit('onSettingMenuItem', $event)"
+          @on-add-sub-menu-item="emit('onAddSubMenuItem', $event)"
+          @on-del-menu-item="emit('onDelMenuItem', $event)"
         />
       </div>
     </template>

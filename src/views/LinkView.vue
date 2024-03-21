@@ -210,7 +210,7 @@ const deleteLinks = (ids: Array<number>) => {
         return !ids.includes(id);
       });
 
-      optionSuccessMsg();
+      successMsg('删除成功');
       refreshLinks();
     })
     .catch((err) => errorMsg(err));

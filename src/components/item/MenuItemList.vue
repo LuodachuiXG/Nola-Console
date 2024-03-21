@@ -20,6 +20,9 @@ const menuItemLevel = new Map<number, number>();
 
 const emit = defineEmits<{
   (e: 'onMenuItemUpdate', menuItem: MenuItem): void;
+  (e: 'onSettingMenuItem', menuItem: MenuItem): void;
+  (e: 'onAddSubMenuItem', menuItem: MenuItem): void;
+  (e: 'onDelMenuItem', menuItem: MenuItem): void;
 }>();
 
 onMounted(() => {
@@ -142,6 +145,9 @@ const searchInChildren = (
         :menu-item-level="menuItemLevel"
         :menu-items="menuItemsTree"
         @on-menu-item-moved="onMenuItemMoved"
+        @on-setting-menu-item="emit('onSettingMenuItem', $event)"
+        @on-add-sub-menu-item="emit('onAddSubMenuItem', $event)"
+        @on-del-menu-item="emit('onDelMenuItem', $event)"
       />
     </n-list>
   </div>
