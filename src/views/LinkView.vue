@@ -43,8 +43,8 @@ const totalPages = ref(0);
 const currentPage = ref(1);
 // 每页条数
 const pageSize = ref(10);
-// 链接查询排序方式
-const linkSort = ref<LinkSort | null>(null);
+// 链接查询排序方式，默认按照优先级降序
+const linkSort = ref<LinkSort | null>(LinkSort.PRIORITY_DESC);
 // 链接列表
 const links = ref<Array<Link> | null>(null);
 
@@ -425,7 +425,9 @@ const onLinkCancelChecked = () => {
       :page-size="pageSize"
       :page-count="totalPages"
       :current-page-item-count="links?.length ?? 0"
-      :is-checked="currentSelectLinkIds.length === links?.length && links.length !== 0"
+      :is-checked="
+        currentSelectLinkIds.length === links?.length && links.length !== 0
+      "
       show-pagination
       show-checkbox
       :show-delete-button="currentSelectLinkIds.length > 0"

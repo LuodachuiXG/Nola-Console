@@ -1,7 +1,9 @@
 <!-- 自定义分页组件 -->
 <script setup lang="ts">
 import { NButton, NPagination, NPopselect } from 'naive-ui';
+import { inject } from 'vue';
 
+const globalVars: GlobalVars = inject('globalVars')!!;
 // 分页大小
 const pageSizes = [
   {
@@ -74,6 +76,7 @@ const onPaginationSizeUpdate = (size: number) => {
     :page-count="totalPage"
     @update:page="onPaginationUpdate"
     style="margin-right: 10px"
+    :simple="globalVars.isSmallWindow"
   />
   <!-- 上面的分页组件自带的每页大小选项器有问题，所以用下面的弹出选择替代 -->
   <n-popselect

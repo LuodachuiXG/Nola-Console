@@ -7,7 +7,8 @@ import {
   NListItem,
   NThing,
   NBadge,
-  NText
+  NText,
+  NCheckbox
 } from 'naive-ui';
 import {
   SettingsOutline as SettingIcon,
@@ -20,9 +21,11 @@ import { inject } from 'vue';
 interface Props {
   /** 标签接口 **/
   tag: Tag;
+  /** 是否选中 **/
+  isChecked: boolean;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
 // 全局响应式变量
 const globalVars: GlobalVars = inject('globalVars')!!;
@@ -30,6 +33,8 @@ const globalVars: GlobalVars = inject('globalVars')!!;
 const emit = defineEmits<{
   (e: 'onEditTag', tag: Tag): void;
   (e: 'onDeleteTag', tag: Tag): void;
+  (e: 'onChecked', tag: Tag): void;
+  (e: 'onUnChecked', tag: Tag): void;
 }>();
 
 /**
@@ -47,11 +52,32 @@ const onEditTag = (tag: Tag) => {
 const onDeleteTag = (tag: Tag) => {
   emit('onDeleteTag', tag);
 };
+
+/**
+ * 选择框选中事件
+ * @param checked
+ */
+const onCheckboxChecked = (checked: boolean) => {
+  if (checked) {
+    emit('onChecked', props.tag);
+  } else {
+    emit('onUnChecked', props.tag);
+  }
+};
 </script>
 
 <template>
   <n-list-item>
     <n-thing class="animate__animated animate__fadeIn">
+      <template #avatar>
+        <div style="margin-right: -10px;">
+          <n-checkbox
+            :checked="isChecked"
+            style="margin-left: -4px; margin-right: 12px"
+            @update-checked="onCheckboxChecked"
+          />
+        </div>
+      </template>
       <template #header>
         <n-badge :value="tag.postCount ?? 0" type="info">
           <tag-component size="medium" :tag="tag" />

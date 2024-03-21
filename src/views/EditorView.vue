@@ -25,11 +25,7 @@ import {
   NSwitch,
   SelectOption
 } from 'naive-ui';
-import {
-  getCurrentTheme,
-  isNumber,
-  renderIcon
-} from '../utils/MyUtils.ts';
+import { getCurrentTheme, isNumber, renderIcon } from '../utils/MyUtils.ts';
 import {
   FileTrayFullOutline as DraftIcon,
   HammerOutline as HammerIcon,
@@ -685,6 +681,7 @@ const onSubmitClick = () => {
     // 先添加文章，调用右上角保存内容按钮点击事件
     onSaveContentClick(() => {
       // 保存成功，显示文章设置对话框
+      currentPost.value!!.status = PostStatus.PUBLISHED;
       visiblePostSetting.value = true;
     });
   }

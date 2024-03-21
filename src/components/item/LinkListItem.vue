@@ -27,7 +27,7 @@ interface Props {
   /** 链接接口 **/
   link: Link;
   /** 是否选中 **/
-  isChecked: boolean
+  isChecked: boolean;
 }
 
 const props = defineProps<Props>();
@@ -93,7 +93,7 @@ const onCheckboxChecked = (checked: boolean) => {
       <template #avatar>
         <n-checkbox
           :checked="isChecked"
-          style="margin-left: -4px; margin-right: 12px;"
+          style="margin-left: -4px; margin-right: 12px"
           @update-checked="onCheckboxChecked"
         />
         <n-badge

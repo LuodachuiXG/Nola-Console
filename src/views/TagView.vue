@@ -39,6 +39,7 @@ import TagListItem from '../components/item/TagListItem.vue';
 import TagComponent from '../components/component/MyTag.vue';
 import MyCard from '../components/component/MyCard.vue';
 import { useRoute } from 'vue-router';
+import LinkListItem from '../components/item/LinkListItem.vue';
 
 // 标记当前标签显示模式的枚举类
 enum TagMode {
@@ -68,6 +69,8 @@ const totalPages = ref(0);
 
 // 当前点击的菜单索引
 const currentClickMenuIndex = ref(-1);
+// 当前选择的标签 ID 数组
+const currentSelectTagIds = ref(Array<number>());
 
 // 标签点击显示的菜单项
 const tagMenuOptions = [
@@ -208,19 +211,44 @@ const onDeleteTag = (tag: Tag) => {
   confirmDialog(
     '确定要删除标签 [' + tag?.displayName + '] 吗？此操作不可逆。',
     () => {
-      // 删除标签
-      delTagsByIds([tag?.tagId!!])
-        .then(() => {
-          // 删除成功
-          successMsg('删除成功');
-          // 刷新标签列表
-          refreshTags();
-        })
-        .catch((err) => {
-          errorMsg(err);
-        });
+      deleteTags([tag.tagId!!]);
     }
   );
+};
+
+/**
+ * 标签多选删除点击事件
+ */
+const onTagsDeleteClick = () => {
+  let ids = Array<number>();
+  currentSelectTagIds.value.forEach((id) => {
+    ids.push(id);
+  });
+  confirmDialog(`确定要删除选择的 ${ids.length} 个标签吗？`, () => {
+    deleteTags(ids);
+  });
+};
+
+/**
+ * 批量删除标签
+ * @param ids 标签 ID 数组
+ */
+const deleteTags = (ids: Array<number>) => {
+  // 删除标签
+  delTagsByIds(ids)
+    .then(() => {
+      // 删除成功
+      successMsg('删除成功');
+      // 删除选择的标签数组项
+      currentSelectTagIds.value = currentSelectTagIds.value.filter((id) => {
+        return !ids.includes(id);
+      });
+      // 刷新标签列表
+      refreshTags();
+    })
+    .catch((err) => {
+      errorMsg(err);
+    });
 };
 
 /**
@@ -371,6 +399,41 @@ const onPageSizeUpdate = (size: number) => {
   // 刷新标签
   refreshTags();
 };
+
+/**
+ * 标签选中事件
+ * @param tag
+ */
+const onTagChecked = (tag: Tag) => {
+  currentSelectTagIds.value.push(tag.tagId!!);
+};
+
+/**
+ * 标签取消选中事件
+ * @param tag
+ */
+const onTagUnChecked = (tag: Tag) => {
+  currentSelectTagIds.value = currentSelectTagIds.value.filter((id) => {
+    return id !== tag.tagId;
+  });
+};
+
+/**
+ * 标签全选事件
+ */
+const onTagCheckedAll = () => {
+  currentSelectTagIds.value = [];
+  tags.value?.forEach((tag) => {
+    currentSelectTagIds.value.push(tag.tagId!!);
+  });
+};
+
+/**
+ * 标签取消全选事件
+ */
+const onTagCancelChecked = () => {
+  currentSelectTagIds.value = [];
+};
 </script>
 
 <template>
@@ -434,6 +497,14 @@ const onPageSizeUpdate = (size: number) => {
       item-string="标签"
       @on-page-update="onPageUpdate"
       @on-page-size-update="onPageSizeUpdate"
+      show-checkbox
+      @on-checked="onTagCheckedAll"
+      @on-checkbox-cancel="onTagCancelChecked"
+      :is-checked="
+        currentSelectTagIds.length === tags?.length && tags.length !== 0
+      "
+      :show-delete-button="currentSelectTagIds.length > 0"
+      @on-delete-button-click="onTagsDeleteClick"
     >
       <template #header-extra>
         <n-button type="primary" @click="onAddTagClick">
@@ -477,8 +548,11 @@ const onPageSizeUpdate = (size: number) => {
             <tag-list-item
               v-for="tag in tags"
               :tag="tag"
+              :is-checked="currentSelectTagIds.includes(tag.tagId!!)"
               @on-delete-tag="onDeleteTag"
               @on-edit-tag="onEditTag"
+              @on-checked="onTagChecked"
+              @on-un-checked="onTagUnChecked"
             />
           </n-list>
         </div>

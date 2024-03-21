@@ -4,9 +4,10 @@ import { NSelect, MenuOption, NInputGroup, NButton } from 'naive-ui';
 import { onMounted, ref } from 'vue';
 import { MenuItem } from '../models/MenuItem.ts';
 import { Menu } from '../models/Menu.ts';
-import { getMenuItems, getMenus } from '../apis/menuApi.ts';
+import { getMenuItems, getMenus, updateMenuItem } from '../apis/menuApi.ts';
 import { errorMsg } from '../utils/Message.ts';
 import MenuItemList from '../components/item/MenuItemList.vue';
+import { MenuItemRequest } from '../models/request/MenuItemRequest.ts';
 
 // 所有菜单
 const menus = ref<Array<Menu> | null>(null);
@@ -16,7 +17,7 @@ const mainMenuId = ref(0);
 // 菜单选择器选项
 const menuOptions = ref<Array<MenuOption>>([]);
 // 菜单选择器当前选择的菜单
-const currentSelectMenu = ref<number | null>();
+const currentSelectMenu = ref<number | null>(null);
 
 // 菜单项（非树形）
 const menuItems = ref<Array<MenuItem>>([]);
@@ -74,12 +75,47 @@ const refreshMenuItems = (menuId: number) => {
 };
 
 /**
+ * 修改菜单项
+ * @param menuItem 菜单项
+ * @param onSuccess 成功回调
+ */
+const updateMItem = (menuItem: MenuItem, onSuccess?: () => void) => {
+  let menuItemRequest: MenuItemRequest = {
+    menuItemId: menuItem.menuItemId,
+    displayName: menuItem.displayName,
+    href: menuItem.href,
+    target: menuItem.target,
+    parentMenuId: menuItem.parentMenuId,
+    parentMenuItemId: menuItem.parentMenuItemId,
+    index: menuItem.index
+  };
+  updateMenuItem(menuItemRequest)
+    .then(() => {
+      // 修改成功
+      onSuccess?.();
+      // 刷新菜单
+      refreshMenuItems(currentSelectMenu.value!!);
+    })
+    .catch((err) => errorMsg(err));
+};
+
+/**
  * 菜单选择器选项改变事件
  * @param value 菜单项数据（这里是菜单 ID）
  */
 const onMenuSelectChang = (value: number) => {
   currentSelectMenu.value = value;
   refreshMenuItems(value);
+};
+
+/**
+ * 菜单项更新事件
+ * 包括：父菜单变更、索引位置变更
+ * @param menuItem 改变后的菜单项
+ */
+const onMenuItemUpdate = (menuItem: MenuItem) => {
+  // 更新菜单项
+  updateMItem(menuItem);
 };
 </script>
 
@@ -101,12 +137,14 @@ const onMenuSelectChang = (value: number) => {
       </template>
       <template #content>
         <div class="content">
-          <menu-item-list :menu-items="menuItems"/>
+          <menu-item-list
+            :menu-items="menuItems"
+            @on-menu-item-update="onMenuItemUpdate"
+          />
         </div>
       </template>
     </my-card>
   </div>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>
