@@ -7,9 +7,8 @@ import {
   NListItem,
   NThing,
   NText,
-  NRow,
-  NCol,
-  NCheckbox
+  NCheckbox,
+  NBadge
 } from 'naive-ui';
 import { Category } from '../../models/Category.ts';
 import {
@@ -17,7 +16,8 @@ import {
   TrashOutline as TrashIcon
 } from '@vicons/ionicons5';
 import { inject } from 'vue';
-import { Tag } from '../../models/Tag.ts';
+import router from '../../router';
+import { RouterViews } from '../../router/RouterViews.ts';
 
 interface Props {
   /** 分类接口 */
@@ -57,6 +57,19 @@ const onCheckboxChecked = (checked: boolean) => {
     emit('onUnChecked', props.category);
   }
 };
+
+/**
+ * 文章数量 badge 点击事件
+ */
+const onPostCountBadgeClick = () => {
+  // 跳转文章页并筛选当前分类
+  router.push({
+    name: RouterViews.POST.name,
+    query: {
+      categoryId: props.category.categoryId
+    }
+  });
+};
 </script>
 
 <template>
@@ -72,21 +85,20 @@ const onCheckboxChecked = (checked: boolean) => {
         </div>
       </template>
       <template #header>
-        <n-text strong>{{ category.displayName }}</n-text>
+        <n-badge
+          class="none-select pointer"
+          :value="category.postCount ?? 0"
+          :offset="[10, 0]"
+          type="info"
+          @click="onPostCountBadgeClick"
+        >
+          <div>
+            <n-text strong>{{ category.displayName }}</n-text>
+          </div>
+        </n-badge>
       </template>
       <template #description>
-        <n-row>
-          <n-col :span="20">
-            <n-text depth="3">{{ category.slug }}</n-text>
-          </n-col>
-          <n-col :span="4">
-            <div style="display: flex; justify-content: end">
-              <n-text depth="3" style="font-size: 1em"
-                >{{ category.postCount ?? 0 }} 篇文章</n-text
-              >
-            </div>
-          </n-col>
-        </n-row>
+        <n-text depth="3">{{ category.slug }}</n-text>
       </template>
       <template #header-extra>
         <n-button-group size="small">

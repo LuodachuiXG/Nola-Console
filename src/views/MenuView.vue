@@ -246,7 +246,7 @@ const onMenuSelectChang = (value: number) => {
  * @param menuId
  */
 const getMenuById = (menuId: number): Menu | null => {
-  for (let i = 0; i < menus.value!!.length ?? 0; i++) {
+  for (let i = 0; i < menus.value!!.length; i++) {
     const menu = menus.value!![i];
     if (menu.menuId === menuId) return menu;
   }

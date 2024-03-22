@@ -58,7 +58,7 @@ const mouseLeave = () => {
             : ''
         "
       >
-        {{ tag.displayName }}</span
+        {{ tag.displayName }}({{tag.postCount}})</span
       >
     </n-tag>
   </div>

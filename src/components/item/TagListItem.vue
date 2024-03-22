@@ -17,6 +17,8 @@ import {
 import { Tag } from '../../models/Tag.ts';
 import TagComponent from '../component/MyTag.vue';
 import { inject } from 'vue';
+import router from '../../router';
+import { RouterViews } from '../../router/RouterViews.ts';
 
 interface Props {
   /** 标签接口 **/
@@ -64,13 +66,26 @@ const onCheckboxChecked = (checked: boolean) => {
     emit('onUnChecked', props.tag);
   }
 };
+
+/**
+ * 文章数量 Badge 点击事件
+ */
+const onPostCountBadgeClick = () => {
+  // 跳转到文章列表页面
+  router.push({
+    name: RouterViews.POST.name,
+    query: {
+      tagId: props.tag.tagId
+    }
+  });
+};
 </script>
 
 <template>
   <n-list-item>
     <n-thing class="animate__animated animate__fadeIn">
       <template #avatar>
-        <div style="margin-right: -10px;">
+        <div style="margin-right: -10px">
           <n-checkbox
             :checked="isChecked"
             style="margin-left: -4px; margin-right: 12px"
@@ -79,7 +94,12 @@ const onCheckboxChecked = (checked: boolean) => {
         </div>
       </template>
       <template #header>
-        <n-badge :value="tag.postCount ?? 0" type="info">
+        <n-badge
+          class="none-select pointer"
+          :value="tag.postCount ?? 0"
+          type="info"
+          @click="onPostCountBadgeClick"
+        >
           <tag-component size="medium" :tag="tag" />
         </n-badge>
       </template>

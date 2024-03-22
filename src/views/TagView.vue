@@ -39,6 +39,8 @@ import TagListItem from '../components/item/TagListItem.vue';
 import TagComponent from '../components/component/MyTag.vue';
 import MyCard from '../components/component/MyCard.vue';
 import { useRoute } from 'vue-router';
+import router from '../router';
+import { RouterViews } from '../router/RouterViews.ts';
 
 // 标记当前标签显示模式的枚举类
 enum TagMode {
@@ -198,6 +200,15 @@ const onTagMenuSelect = (key: string) => {
     case 'edit':
       // 编辑标签
       onEditTag(currentTag);
+      break;
+    case 'viewPost':
+      // 查看文章
+      router.push({
+        name: RouterViews.POST.name,
+        query: {
+          tagId: currentTag.tagId
+        }
+      })
       break;
   }
 };

@@ -49,12 +49,15 @@ import { RouterViews } from '../router/RouterViews.ts';
 import MyTag from '../components/component/MyTag.vue';
 import { Tag } from '../models/Tag.ts';
 import { tags } from '../apis/tagApi.ts';
-import { categories } from '../apis/categoryApi.ts';
+import { categories, category } from '../apis/categoryApi.ts';
 import { Category } from '../models/Category.ts';
 import MyPostSettingModal from '../components/component/MyPostSettingModal.vue';
+import { useRoute } from 'vue-router';
 
 // 全局响应式变量
 const globalVars: GlobalVars = inject('globalVars')!!;
+
+const route = useRoute();
 
 // 总文章数
 const totalPosts = ref(0);
@@ -164,6 +167,18 @@ const currentSelectedPostIds = ref(Array<number>());
 onMounted(() => {
   // 读取以前是否设置过每页大小
   pageSize.value = Number(localStorage.getItem(StoreEnum.POST_PAGE_SIZE) ?? 10);
+
+  // 查看路由是否传参分类
+  let categoryId = Number(route.query.categoryId);
+  if (!isNaN(categoryId)) {
+    queryCategoryId.value = categoryId;
+  }
+
+  // 查看路由是否传参标签
+  let tagId = Number(route.query.tagId);
+  if (!isNaN(tagId)) {
+    queryTagId.value = tagId;
+  }
 
   // 刷新文章数据
   refreshPosts();
