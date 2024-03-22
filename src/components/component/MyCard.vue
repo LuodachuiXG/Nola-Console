@@ -160,7 +160,7 @@ const onDeleteBtnClick = () => {
       </n-scrollbar>
     </template>
     <template #action>
-      <n-row style="margin-bottom: -4px">
+      <n-row :style="{marginBottom: showPagination ? '-4px' : '0px'}">
         <n-col :span="6">
           <slot name="action-left">
             <n-text style="margin-top: 1px" tag="div">

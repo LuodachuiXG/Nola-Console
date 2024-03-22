@@ -5,7 +5,8 @@ import {
   NText,
   NThing,
   NButtonGroup,
-  NIcon
+  NIcon,
+  NCheckbox
 } from 'naive-ui';
 import { MenuItem } from '../../models/MenuItem.ts';
 import {
@@ -17,7 +18,10 @@ import draggable from 'vuedraggable';
 import { inject } from 'vue';
 
 interface Props {
+  /** 菜单项层级 **/
   menuItemLevel: Map<number, number>;
+  /** 选择的菜单项 **/
+  selectedMenuItem: Array<number>;
 }
 
 const emit = defineEmits<{
@@ -25,6 +29,8 @@ const emit = defineEmits<{
   (e: 'onSettingMenuItem', menuItem: MenuItem): void;
   (e: 'onAddSubMenuItem', menuItem: MenuItem): void;
   (e: 'onDelMenuItem', menuItem: MenuItem): void;
+  (e: 'onChecked', menuItem: MenuItem): void;
+  (e: 'onUnChecked', menuItem: MenuItem): void;
 }>();
 
 defineProps<Props>();
@@ -52,6 +58,19 @@ const onDraggableEnd = (event: MoveChangeEvent<MenuItem>) => {
     return;
   }
 };
+
+/**
+ * 选择框选中事件
+ * @param checked 是否选中
+ * @param menuItem 触发事件的菜单项
+ */
+const onCheckboxChecked = (checked: boolean, menuItem: MenuItem) => {
+  if (checked) {
+    emit('onChecked', menuItem);
+  } else {
+    emit('onUnChecked', menuItem);
+  }
+};
 </script>
 
 <template>
@@ -72,6 +91,11 @@ const onDraggableEnd = (event: MoveChangeEvent<MenuItem>) => {
         >
           <n-thing class="animate__animated animate__fadeIn">
             <template #avatar>
+              <n-checkbox
+                :checked="selectedMenuItem.includes(element.menuItemId)"
+                style="margin-left: -4px; margin-right: 12px"
+                @update-checked="onCheckboxChecked($event, element)"
+              />
               <n-text class="move-icon">: :</n-text>
             </template>
             <template #header>
@@ -106,7 +130,11 @@ const onDraggableEnd = (event: MoveChangeEvent<MenuItem>) => {
                   </template>
                   <span v-if="!globalVars.isSmallWindow">添加</span>
                 </n-button>
-                <n-button tertiary type="error" @click="emit('onDelMenuItem', element)">
+                <n-button
+                  tertiary
+                  type="error"
+                  @click="emit('onDelMenuItem', element)"
+                >
                   <template #icon>
                     <n-icon>
                       <TrashIcon />
@@ -121,10 +149,13 @@ const onDraggableEnd = (event: MoveChangeEvent<MenuItem>) => {
         <menu-item-list-item
           :menu-items="element.children"
           :menu-item-level="menuItemLevel"
+          :selected-menu-item="selectedMenuItem"
           @on-menu-item-moved="emit('onMenuItemMoved', $event)"
           @on-setting-menu-item="emit('onSettingMenuItem', $event)"
           @on-add-sub-menu-item="emit('onAddSubMenuItem', $event)"
           @on-del-menu-item="emit('onDelMenuItem', $event)"
+          @on-checked="emit('onChecked', $event)"
+          @on-un-checked="emit('onUnChecked', $event)"
         />
       </div>
     </template>

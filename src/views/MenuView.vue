@@ -25,10 +25,13 @@ import { inject, onMounted, reactive, ref } from 'vue';
 import { MenuItem } from '../models/MenuItem.ts';
 import { Menu } from '../models/Menu.ts';
 import {
+  addMenu,
   addMenuItem,
+  delMenu,
   delMenuItem,
   getMenuItems,
   getMenus,
+  updateMenu,
   updateMenuItem
 } from '../apis/menuApi.ts';
 import { confirmDialog, errorMsg, successMsg } from '../utils/Message.ts';
@@ -45,7 +48,7 @@ const menus = ref<Array<Menu> | null>(null);
 // 菜单项（非树形）
 const menuItems = ref<Array<MenuItem>>([]);
 // 主菜单 ID
-const mainMenuId = ref(0);
+const mainMenuId = ref<number | null>(null);
 
 // 菜单选择器选项
 const menuOptions = ref<Array<MenuOption>>([]);
@@ -135,6 +138,9 @@ const menuItemTargetOptions = [
 // 菜单项父菜单项选择器选项
 const menuItemParentMenuItemsOptions = ref(Array<SelectOption>());
 
+// 当前选择的菜单项 ID 数组
+const currentSelectMenuItemIds = ref(Array<number>());
+
 onMounted(() => {
   // 获取所有菜单
   refreshMenus();
@@ -142,15 +148,32 @@ onMounted(() => {
 
 /**
  * 获取所有菜单
+ * @param showMenuId 刷新时，显示那个菜单的菜单项
+ *                   number: 显示给定的菜单 ID 的菜单项。
+ *                   null: 自动获取主菜单，并显示主菜单的菜单项
  */
-const refreshMenus = () => {
+const refreshMenus = (showMenuId: number | null = null) => {
   getMenus()
     .then((res) => {
       menus.value = res.data.data as Array<Menu>;
-      // 获取主菜单
-      menus.value.forEach((menu) => {
-        if (menu.isMain) mainMenuId.value = menu.menuId;
-      });
+      if (showMenuId === null) {
+        // 获取主菜单
+        menus.value.forEach((menu) => {
+          if (menu.isMain) mainMenuId.value = menu.menuId;
+        });
+        // 如果主菜单不存在，则默认选择第一个菜单
+        if (mainMenuId.value === null && menus.value?.length > 0) {
+          mainMenuId.value = menus.value[0].menuId;
+        }
+
+        // 菜单选择器默认选择主菜单
+        currentSelectMenu.value = mainMenuId.value;
+      } else {
+        // 菜单选择器默认选择给定的菜单
+        currentSelectMenu.value = showMenuId;
+      }
+      // 获取当前选择的菜单的所有菜单项
+      refreshMenuItems(currentSelectMenu.value);
 
       menuOptions.value = [];
       // 将菜单添加到菜单选择器
@@ -160,12 +183,6 @@ const refreshMenus = () => {
           value: menu.menuId
         });
       });
-
-      // 菜单选择器默认选择主菜单
-      currentSelectMenu.value = mainMenuId.value;
-
-      // 获取主菜单所有菜单项
-      refreshMenuItems(mainMenuId.value);
     })
     .catch((err) => errorMsg(err));
 };
@@ -174,12 +191,15 @@ const refreshMenus = () => {
  * 获取所有菜单项
  * @param menuId 菜单 ID
  */
-const refreshMenuItems = (menuId: number) => {
+const refreshMenuItems = (menuId: number | null) => {
+  if (menuId === null) return;
   window.$loadingBar.start();
   getMenuItems(menuId, false)
     .then((res) => {
       window.$loadingBar.finish();
       menuItems.value = res.data as Array<MenuItem>;
+      // 刷新菜单项成功后清空选择的菜单项
+      currentSelectMenuItemIds.value = [];
     })
     .catch((err) => {
       window.$loadingBar.error();
@@ -222,20 +242,82 @@ const onMenuSelectChang = (value: number) => {
 };
 
 /**
+ * 根据菜单 ID 获取菜单
+ * @param menuId
+ */
+const getMenuById = (menuId: number): Menu | null => {
+  for (let i = 0; i < menus.value!!.length ?? 0; i++) {
+    const menu = menus.value!![i];
+    if (menu.menuId === menuId) return menu;
+  }
+  return null;
+};
+
+/**
  * 菜单项选择器管理器选项选择事件
  * @param value
  */
 const onMenuManagerSelect = (value: string) => {
+  let menu = getMenuById(currentSelectMenu.value!!);
+  if (menu === null && value !== 'add') {
+    errorMsg('请先选择菜单');
+    return;
+  }
   switch (value) {
     case 'add':
+      initMenuDialog();
+      menuDialogMode.value = DialogFormMode.ADD;
       break;
     case 'del':
+      confirmDialog(
+        `确定要删除菜单 [${menu!!.displayName}] 吗？该菜单的子菜单项也会一并删除`,
+        () => deleteMenus([menu!!.menuId])
+      );
       break;
     case 'update':
+      initMenuDialog();
+      menuDialogMode.value = DialogFormMode.EDIT;
+      formMenu.menuId = menu!!.menuId;
+      formMenu.displayName = menu!!.displayName;
+      formMenu.isMain = menu!!.isMain;
       break;
     case 'main':
+      updateMenu(menu!!.menuId, menu!!.displayName, true)
+        .then(() => {
+          // 更新成功，刷新菜单
+          refreshMenus();
+        })
+        .catch((err) => errorMsg(err));
       break;
   }
+};
+
+/**
+ * 批量删除菜单
+ * @param ids 菜单 ID 数组
+ */
+const deleteMenus = (ids: Array<number>) => {
+  delMenu(ids)
+    .then(() => {
+      successMsg('删除成功');
+      // 如果主菜单被删除，则当前主菜单变量设为为 null
+      if (ids.includes(mainMenuId.value ?? -1)) {
+        mainMenuId.value = null;
+      }
+      // 刷新菜单
+      refreshMenus();
+    })
+    .catch((err) => errorMsg(err));
+};
+
+/**
+ * 初始化（显示）菜单模态框
+ */
+const initMenuDialog = () => {
+  // 先清空表单
+  clearFormMenu();
+  // 显示模态框
+  visibleMenuDialog.value = true;
 };
 
 /**
@@ -251,9 +333,46 @@ const onMenuItemUpdate = (menuItem: MenuItem) => {
 /**
  * 菜单模态框提交事件
  */
-const onMenuDialogSubmit  = () => {
-
-}
+const onMenuDialogSubmit = () => {
+  // 验证表单
+  menuDialogRef.value
+    ?.validate((error) => {
+      if (!error) {
+        isMenuDialogLoading.value = true;
+        if (menuDialogMode.value === DialogFormMode.ADD) {
+          // 添加菜单
+          addMenu(formMenu.displayName, formMenu.isMain)
+            .then((res) => {
+              const newMenu = res.data as Menu;
+              isMenuDialogLoading.value = false;
+              visibleMenuDialog.value = false;
+              successMsg('添加成功');
+              // 刷新菜单
+              refreshMenus(newMenu.menuId);
+            })
+            .catch((err) => {
+              isMenuDialogLoading.value = false;
+              errorMsg(err);
+            });
+        } else {
+          // 修改菜单
+          updateMenu(formMenu.menuId, formMenu.displayName, formMenu.isMain)
+            .then(() => {
+              isMenuDialogLoading.value = false;
+              visibleMenuDialog.value = false;
+              successMsg('修改成功');
+              // 刷新菜单
+              refreshMenus(formMenu.menuId);
+            })
+            .catch((err) => {
+              isMenuDialogLoading.value = false;
+              errorMsg(err);
+            });
+        }
+      }
+    })
+    .catch(() => {});
+};
 
 /**
  * 清空菜单表单
@@ -417,6 +536,53 @@ const deleteMenuItems = (ids: Array<number>) => {
     .catch((err) => errorMsg(err));
 };
 
+/**
+ * 菜单项全选事件
+ */
+const onMenuItemCheckedAll = () => {
+  currentSelectMenuItemIds.value = [];
+  menuItems.value?.forEach((menuItem) => {
+    currentSelectMenuItemIds.value.push(menuItem.menuItemId);
+  });
+};
+
+/**
+ * 菜单项取消全选事件
+ */
+const onMenuItemCancelChecked = () => {
+  currentSelectMenuItemIds.value = [];
+};
+
+/**
+ * 菜单项多选删除点击事件
+ */
+const onMenuItemsDeleteClick = () => {
+  let ids = Array<number>();
+  currentSelectMenuItemIds.value.forEach((id) => {
+    ids.push(id);
+  });
+  confirmDialog(`确定要删除选择的 ${ids.length} 个菜单项吗？子菜单项将会一并删除。`, () => {
+    deleteMenuItems(ids);
+  });
+};
+
+/**
+ * 菜单项选中事件
+ * @param menuItem
+ */
+const onMenuItemChecked = (menuItem: MenuItem) => {
+  currentSelectMenuItemIds.value.push(menuItem.menuItemId);
+};
+
+/**
+ * 菜单项取消选中事件
+ * @param menuItem
+ */
+const onMenuItemUnChecked = (menuItem: MenuItem) => {
+  currentSelectMenuItemIds.value = currentSelectMenuItemIds.value.filter((id) => {
+    return id !== menuItem.menuItemId;
+  });
+};
 </script>
 
 <template>
@@ -425,23 +591,15 @@ const deleteMenuItems = (ids: Array<number>) => {
     <n-modal
       v-model:show="visibleMenuDialog"
       preset="dialog"
-      :title="
-        menuDialogMode == DialogFormMode.ADD ? '添加菜单' : '菜单设置'
-      "
-      :positive-text="
-        menuDialogMode == DialogFormMode.ADD ? '添加' : '保存'
-      "
+      :title="menuDialogMode == DialogFormMode.ADD ? '添加菜单' : '菜单设置'"
+      :positive-text="menuDialogMode == DialogFormMode.ADD ? '添加' : '保存'"
       negative-text="取消"
       :loading="isMenuDialogLoading"
       @positiveClick="onMenuDialogSubmit"
       @keydown.enter="onMenuDialogSubmit"
     >
       <template #default>
-        <n-form
-          ref="menuDialogRef"
-          class="dialog-form"
-          :model="formMenu"
-        >
+        <n-form ref="menuDialogRef" class="dialog-form" :model="formMenu">
           <n-form-item
             label="菜单名"
             path="displayName"
@@ -453,20 +611,12 @@ const deleteMenuItems = (ids: Array<number>) => {
               maxlength="256"
             />
           </n-form-item>
-          <n-form-item
-            label="是否是主菜单"
-            path="isMain"
-          >
+          <n-form-item label="是否是主菜单" path="isMain">
             <n-switch v-model:value="formMenu.isMain" />
           </n-form-item>
         </n-form>
       </template>
     </n-modal>
-
-
-
-
-
 
     <!-- 添加 / 设置菜单项模态框 -->
     <n-modal
@@ -528,7 +678,18 @@ const deleteMenuItems = (ids: Array<number>) => {
       </template>
     </n-modal>
 
-    <my-card item-string="菜单">
+    <my-card
+      item-string="菜单"
+      :show-empty-status="menuItems.length === 0"
+      show-checkbox
+      @on-checked="onMenuItemCheckedAll"
+      @on-checkbox-cancel="onMenuItemCancelChecked"
+      :is-checked="
+        currentSelectMenuItemIds.length === menuItems?.length && menuItems.length !== 0
+      "
+      :show-delete-button="currentSelectMenuItemIds.length > 0"
+      @on-delete-button-click="onMenuItemsDeleteClick"
+    >
       <template #header>
         <n-input-group>
           <n-select
@@ -564,10 +725,13 @@ const deleteMenuItems = (ids: Array<number>) => {
         <div class="content">
           <menu-item-list
             :menu-items="menuItems"
+            :selected-menu-item="currentSelectMenuItemIds"
             @on-menu-item-update="onMenuItemUpdate"
             @on-setting-menu-item="onMenuItemSettingClick"
             @on-add-sub-menu-item="onMenuItemAddSubMenuItemClick"
             @on-del-menu-item="onMenuItemDeleteClick"
+            @on-un-checked="onMenuItemUnChecked"
+            @on-checked="onMenuItemChecked"
           />
         </div>
       </template>

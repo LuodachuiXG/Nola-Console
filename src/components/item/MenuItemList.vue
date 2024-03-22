@@ -8,6 +8,8 @@ import { cloneDeep } from 'lodash';
 interface Props {
   /** 菜单项列表 */
   menuItems: Array<MenuItem>;
+  /** 选中的菜单项 */
+  selectedMenuItem: Array<number>;
 }
 
 const props = defineProps<Props>();
@@ -23,6 +25,8 @@ const emit = defineEmits<{
   (e: 'onSettingMenuItem', menuItem: MenuItem): void;
   (e: 'onAddSubMenuItem', menuItem: MenuItem): void;
   (e: 'onDelMenuItem', menuItem: MenuItem): void;
+  (e: 'onChecked', menuItem: MenuItem): void;
+  (e: 'onUnChecked', menuItem: MenuItem): void;
 }>();
 
 onMounted(() => {
@@ -32,7 +36,8 @@ onMounted(() => {
       if (props.menuItems.length > 0) {
         handleMenuItemChange();
       }
-    }
+    },
+    { immediate: true }
   );
 });
 
@@ -136,6 +141,7 @@ const searchInChildren = (
   // 未找到目标菜单项
   return { parentId: null, index: -1 };
 };
+
 </script>
 
 <template>
@@ -144,6 +150,9 @@ const searchInChildren = (
       <menu-item-list-item
         :menu-item-level="menuItemLevel"
         :menu-items="menuItemsTree"
+        :selected-menu-item="selectedMenuItem"
+        @on-checked="emit('onChecked', $event);"
+        @on-un-checked="emit('onUnChecked', $event)"
         @on-menu-item-moved="onMenuItemMoved"
         @on-setting-menu-item="emit('onSettingMenuItem', $event)"
         @on-add-sub-menu-item="emit('onAddSubMenuItem', $event)"
