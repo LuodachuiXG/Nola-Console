@@ -15,6 +15,8 @@ import {
   FormItemRule
 } from 'naive-ui';
 import { errorMsg, successMsg } from '../utils/Message.ts';
+import { formatTimestamp } from '../utils/MyUtils.ts';
+import { User } from '../models/User.ts';
 
 /**
  * 标记当前模式的枚举类
@@ -203,6 +205,12 @@ const onFormLoginSubmit = () => {
             // 登录成功
             // 将返回的用户信息和 Token 令牌存储
             localStorage.setItem(StoreEnum.USER, JSON.stringify(res.data));
+            const user = res.data as User;
+            if (user.lastLoginDate === null) {
+              successMsg('欢迎使用 Nola 博客 ^_^')
+            } else {
+              successMsg(`上次登录时间：${formatTimestamp(user.lastLoginDate)}`)
+            }
             // 跳转控制台页面
             router.push(RouterViews.MAIN.name);
             isLogin.value = false;

@@ -1,3 +1,4 @@
+<!-- 管理员个人信息模态框 -->
 <script setup lang="ts">
 import { onMounted, reactive, ref, watch } from 'vue';
 import {
@@ -22,7 +23,7 @@ const show = defineModel('show', {
 });
 
 const emit = defineEmits<{
-  (e: 'onClose'): void
+  (e: 'onClose'): void;
 }>();
 
 const formRef = ref<FormInst | null>(null);
@@ -120,6 +121,7 @@ const onClose = () => {
 const onSubmit = () => {
   formRef.value?.validate((errors) => {
     if (!errors) {
+      isLoading.value = true;
       updateUserInfo(
         form.username,
         form.email,
@@ -128,10 +130,13 @@ const onSubmit = () => {
         form.avatar.length === 0 ? null : form.avatar
       )
         .then(() => {
+          isLoading.value = false;
           // 修改成功
           optionSuccessMsg();
           // 同步修改本地缓存
-          const user = JSON.parse(localStorage.getItem(StoreEnum.USER)!!) as User;
+          const user = JSON.parse(
+            localStorage.getItem(StoreEnum.USER)!!
+          ) as User;
           user.avatar = form.avatar;
           user.description = form.description;
           user.displayName = form.displayName;
@@ -141,7 +146,10 @@ const onSubmit = () => {
           // 关闭模态框
           onClose();
         })
-        .catch((err) => errorMsg(err));
+        .catch((err) => {
+          isLoading.value = false;
+          errorMsg(err);
+        });
     }
   });
   return false;
@@ -149,7 +157,7 @@ const onSubmit = () => {
 </script>
 
 <template>
-  <!-- 重新登录模态框 -->
+  <!-- 管理员个人信息模态框 -->
   <n-modal
     ref="reLoginDialog"
     v-model:show="_show"

@@ -57,6 +57,7 @@ import bus from './utils/EventBus.ts';
 import { login } from './apis/userApi.ts';
 import { BusEnum } from './models/enum/BusEnum.ts';
 import MyAdminInfoModal from './components/component/MyAdminInfoModal.vue';
+import MyAdminUpdatePasswordModal from './components/component/MyAdminUpdatePasswordModal.vue';
 
 // 全局响应式变量
 const globalVars: GlobalVars = inject('globalVars')!!;
@@ -96,8 +97,11 @@ const formReLogin = reactive({
   password: ''
 });
 
-// 是否显示管理员信息对话框
+// 是否显示管理员信息模态框
 const visibleUserInfoDialog = ref(false);
+
+// 是否显示修改密码模态框
+const visibleUpdatePasswordDialog = ref(false);
 
 // 左侧菜单选项
 const menuOptions = [
@@ -327,7 +331,12 @@ const onSiderMenuUpdate = (key: string) => {
 const onAvatarSelect = (key: string | number) => {
   switch (key) {
     case 'admin_info':
+      // 弹出管理员信息模态框
       visibleUserInfoDialog.value = true;
+      break;
+    case 'update_password':
+      // 弹出修改密码模态框
+      visibleUpdatePasswordDialog.value = true;
       break;
     case 'logout':
       // 弹出确认对话框
@@ -438,10 +447,15 @@ const onAdminInfoModalClose = () => {
     :date-locale="dateZhCN"
   >
     <AppProvider>
-      <!- 管理员信息模态框 -->
+      <!-- 管理员信息模态框 -->
       <my-admin-info-modal
         v-model:show="visibleUserInfoDialog"
         @on-close="onAdminInfoModalClose"
+      />
+
+      <!-- 修改密码模态框 -->
+      <my-admin-update-password-modal
+        v-model:show="visibleUpdatePasswordDialog"
       />
 
       <!-- 重新登录模态框 -->
