@@ -49,7 +49,7 @@ import { RouterViews } from '../router/RouterViews.ts';
 import MyTag from '../components/component/MyTag.vue';
 import { Tag } from '../models/Tag.ts';
 import { tags } from '../apis/tagApi.ts';
-import { categories, category } from '../apis/categoryApi.ts';
+import { categories } from '../apis/categoryApi.ts';
 import { Category } from '../models/Category.ts';
 import MyPostSettingModal from '../components/component/MyPostSettingModal.vue';
 import { useRoute } from 'vue-router';

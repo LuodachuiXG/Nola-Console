@@ -56,6 +56,7 @@ import { confirmDialog, errorMsg, successMsg } from './utils/Message.ts';
 import bus from './utils/EventBus.ts';
 import { login } from './apis/userApi.ts';
 import { BusEnum } from './models/enum/BusEnum.ts';
+import MyAdminInfoModal from './components/component/MyAdminInfoModal.vue';
 
 // 全局响应式变量
 const globalVars: GlobalVars = inject('globalVars')!!;
@@ -63,7 +64,7 @@ const globalVars: GlobalVars = inject('globalVars')!!;
 // 鼠标是否进入 LOGO
 const isLogoEnter = ref(false);
 // 鼠标是否点击 LOGO
-const isLogoClick = ref(false)
+const isLogoClick = ref(false);
 
 // 当前登录用户
 const user = ref<User | null>(null);
@@ -94,6 +95,9 @@ const formReLogin = reactive({
   username: '',
   password: ''
 });
+
+// 是否显示管理员信息对话框
+const visibleUserInfoDialog = ref(false);
 
 // 左侧菜单选项
 const menuOptions = [
@@ -198,14 +202,8 @@ onMounted(() => {
   watch(route, (e: RouteLocationNormalizedLoaded) => {
     // 如果当前是登录页面，就隐藏侧边菜单
     hideSider.value = e.name === RouterViews.LOGIN.name;
-
     // 刷新当前登录用户
-    let _user = localStorage.getItem(StoreEnum.USER);
-    if (_user !== null) {
-      user.value = JSON.parse(_user) as User;
-    } else {
-      user.value = null;
-    }
+    refreshCurrentLoginUser();
   });
 
   // 添加窗口大小改变事件监听器，动态修改侧边栏是否展开
@@ -243,6 +241,19 @@ onUnmounted(() => {
   // 移除窗口大小改变监听器
   window.removeEventListener('resize', handlerWindowResize);
 });
+
+/**
+ * 刷新当前登录用户
+ */
+const refreshCurrentLoginUser = () => {
+  // 刷新当前登录用户
+  let _user = localStorage.getItem(StoreEnum.USER);
+  if (_user !== null) {
+    user.value = JSON.parse(_user) as User;
+  } else {
+    user.value = null;
+  }
+};
 
 /**
  * 窗口大小改变监听器
@@ -315,6 +326,9 @@ const onSiderMenuUpdate = (key: string) => {
  */
 const onAvatarSelect = (key: string | number) => {
   switch (key) {
+    case 'admin_info':
+      visibleUserInfoDialog.value = true;
+      break;
     case 'logout':
       // 弹出确认对话框
       confirmDialog('确定要注销登录吗', () => {
@@ -392,7 +406,7 @@ const onMouseEnterLogo = () => {
   setTimeout(() => {
     isLogoEnter.value = false;
   }, 500);
-}
+};
 
 /**
  * 鼠标点击 LOGO 图标事件
@@ -403,7 +417,16 @@ const onMouseClickLogo = () => {
   setTimeout(() => {
     isLogoClick.value = false;
   }, 1500);
-}
+};
+
+/**
+ * 管理员模态框关闭事件
+ */
+const onAdminInfoModalClose = () => {
+  // 因为用户信息可能更改，所以需要刷新当前登录用户
+  // 不然顶栏用户信息可能显示错误
+  refreshCurrentLoginUser();
+};
 </script>
 
 <template>
@@ -415,6 +438,12 @@ const onMouseClickLogo = () => {
     :date-locale="dateZhCN"
   >
     <AppProvider>
+      <!- 管理员信息模态框 -->
+      <my-admin-info-modal
+        v-model:show="visibleUserInfoDialog"
+        @on-close="onAdminInfoModalClose"
+      />
+
       <!-- 重新登录模态框 -->
       <n-modal
         ref="reLoginDialog"
@@ -486,7 +515,10 @@ const onMouseClickLogo = () => {
           >
             <n-image
               class="animate__animated blog-logo"
-              :class="{ animate__flip: isLogoEnter, animate__hinge: isLogoClick}"
+              :class="{
+                animate__flip: isLogoEnter,
+                animate__hinge: isLogoClick
+              }"
               :src="NolaIcon"
               preview-disabled
               :width="!isSiderCollapsed ? 64 : 42"
