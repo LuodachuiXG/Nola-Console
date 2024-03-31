@@ -83,7 +83,7 @@ export const router = createRouter({
     {
       path: RouterViews.DAILY.path,
       name: RouterViews.DAILY.name,
-      component: () => import('../views/DailyView.vue'),
+      component: () => import('../views/DiaryView.vue'),
       meta: {
         displayName: RouterViews.DAILY.displayName,
         menuName: RouterViews.DAILY.menuName
