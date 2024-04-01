@@ -1,9 +1,9 @@
-import { createRouter, createWebHashHistory } from 'vue-router';
+import { createRouter, createWebHistory } from 'vue-router';
 import { RouterViews } from './RouterViews';
 import { StoreEnum } from '../models/enum/StoreEnum.ts';
 
 export const router = createRouter({
-  history: createWebHashHistory(),
+  history: createWebHistory("/console"),
   routes: [
     {
       path: '/404',
@@ -92,7 +92,7 @@ export const router = createRouter({
     {
       path: RouterViews.ATTACHMENT.path,
       name: RouterViews.ATTACHMENT.name,
-      component: () => import('../views/AttachmentView.vue'),
+      component: () => import('../views/FileView.vue'),
       meta: {
         displayName: RouterViews.ATTACHMENT.displayName,
         menuName: RouterViews.ATTACHMENT.menuName

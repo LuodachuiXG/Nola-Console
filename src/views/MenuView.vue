@@ -19,7 +19,8 @@ import {
   AddOutline as AddIcon,
   BrushOutline as EditIcon,
   TrashOutline as TrashIcon,
-  SettingsOutline as SettingIcon
+  SettingsOutline as SettingIcon,
+  MenuOutline as MenuIcon
 } from '@vicons/ionicons5';
 import { inject, onMounted, reactive, ref } from 'vue';
 import { MenuItem } from '../models/MenuItem.ts';
@@ -707,7 +708,13 @@ const onMenuItemUnChecked = (menuItem: MenuItem) => {
             show-arrow
             @select="onMenuManagerSelect"
           >
-            <n-button>管理</n-button>
+            <n-button>
+              <template #icon>
+                <n-icon>
+                  <MenuIcon />
+                </n-icon>
+              </template>
+            </n-button>
           </n-dropdown>
         </n-input-group>
       </template>

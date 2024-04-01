@@ -21,5 +21,7 @@ export enum StoreEnum {
   /** 链接页每页大小 **/
   LINK_PAGE_SIZE = 'link_page_size',
   /** 日记页每页大小 **/
-  DIARY_PAGE_SIZE = 'diary_page_size'
+  DIARY_PAGE_SIZE = 'diary_page_size',
+  /** 附件显示模式 **/
+  ATTACHMENT_MODE = 'attachment_mode'
 }

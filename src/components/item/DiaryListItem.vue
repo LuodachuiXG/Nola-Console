@@ -73,22 +73,15 @@ const onCheckboxChecked = (checked: boolean) => {
       <template #avatar>
         <n-checkbox
           :checked="isChecked"
-          style="margin-left: -4px; margin-right: 12px"
+          style="margin-left: -4px;"
           @update-checked="onCheckboxChecked"
         />
       </template>
       <template #header>
-        {{ diary.content }}
+        {{ formatTimestamp(diary.createTime) }}
       </template>
       <template #description>
-        <div class="time-div">
-          <n-text
-            class="time-div-text"
-            depth="3"
-            style="font-size: 0.9em"
-          >{{ formatTimestamp(diary.createTime) }}
-          </n-text>
-        </div>
+        <n-text depth="2">{{ diary.content }}</n-text>
       </template>
       <template #header-extra>
         <n-button-group size="small">

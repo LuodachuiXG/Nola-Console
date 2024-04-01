@@ -282,7 +282,7 @@ const onDiaryDialogSubmit = () => {
         updateDiary(formDiary.diaryId, formDiary.content)
           .then(() => {
             // 编辑成功
-            successMsg('编辑成功');
+            successMsg('修改成功');
             // 刷新日常
             refreshDiaries();
             // 关闭对话框

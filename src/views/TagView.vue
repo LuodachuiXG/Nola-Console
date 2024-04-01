@@ -114,13 +114,8 @@ const formAddEdit = reactive({
 const route = useRoute();
 
 onMounted(() => {
-  // 读取以前是否设置过标签显示模式
-  currentTagMode.value = Number(
-    localStorage.getItem(StoreEnum.TAG_MODE) ?? TagMode.BLOCK
-  );
-
-  // 读取以前是否设置过每页大小
-  pageSize.value = Number(localStorage.getItem(StoreEnum.TAG_PAGE_SIZE) ?? 10);
+  // 读取设置
+  loadSetting();
 
   // 查看路由是否传参
   let tagId = Number(route.query.tagId);
@@ -136,6 +131,19 @@ onMounted(() => {
   // 刷新标签数据
   refreshTags();
 });
+
+/**
+ * 读取设置
+ */
+const loadSetting = () => {
+  // 读取以前是否设置过标签显示模式
+  currentTagMode.value = Number(
+    localStorage.getItem(StoreEnum.TAG_MODE) ?? TagMode.BLOCK
+  );
+
+  // 读取以前是否设置过每页大小
+  pageSize.value = Number(localStorage.getItem(StoreEnum.TAG_PAGE_SIZE) ?? 10);
+}
 
 /**
  * 刷新标签数据
