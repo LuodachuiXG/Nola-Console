@@ -3,7 +3,7 @@ import { FileStorageMode } from './enum/FileStorageMode.ts';
 /**
  * 文件接口
  */
-export interface File {
+export interface MFile {
   /** 文件 ID **/
   fileId: number;
   /** 文件组 ID **/

@@ -98,11 +98,15 @@ export function updateFileGroup(fileGroupId: number, displayName: string) {
 
 /**
  * 根据文件存储策略获取文件组
- * @param fileStorageMode 文件存储策略
+ * @param fileStorageMode 文件存储策略（为 null 就获取所有文件组）
  */
-export function getFileGroups(fileStorageMode: FileStorageMode) {
+export function getFileGroups(fileStorageMode: FileStorageMode | null) {
+  let url = '/admin/file/group';
+  if (fileStorageMode != null) {
+    url += `?fileStorageMode=${fileStorageMode}`;
+  }
   return service({
-    url: `/admin/file/group/${fileStorageMode}`,
+    url: url,
     method: 'GET'
   });
 }
