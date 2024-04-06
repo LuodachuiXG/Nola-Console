@@ -31,6 +31,7 @@ import { MFile } from '../../models/MFile.ts';
 import { FileSort } from '../../models/enum/FileSort.ts';
 import { Pager } from '../../models/Pager.ts';
 import FileItem from '../item/FileItem.vue';
+import MyFileInfoModal from './MyFileInfoModal.vue';
 
 // 当前页
 const currentPage = ref(1);
@@ -82,6 +83,11 @@ const fileSortSelectOptions = [
   }
 ];
 
+// 当前点击的文件
+const currentClickFile = ref<MFile | null>(null);
+// 是否显示文件信息模态框
+const visibleFileInfoModal = ref(false);
+
 onMounted(() => {
   // 获取所有文件
   refreshFiles();
@@ -109,7 +115,6 @@ const refreshFiles = () => {
       totalFiles.value = pager.totalData;
       totalPages.value = pager.totalPages;
       files.value = pager.data;
-      console.log(files.value);
     })
     .catch((err) => {
       window.$loadingBar.error();
@@ -187,10 +192,21 @@ const onFileKeyClear = () => {
   fileKey.value = '';
   refreshFiles();
 };
+
+/**
+ * 文件项标题点击事件
+ * @param file 文件接口
+ */
+const onFileItemTitleClick = (file: MFile) => {
+  currentClickFile.value = file;
+  visibleFileInfoModal.value = true;
+};
 </script>
 
 <template>
   <div class="container">
+    <my-file-info-modal :file="currentClickFile" v-model:show="visibleFileInfoModal"/>
+
     <!-- 工具栏 -->
     <div class="toolbar">
       <n-space>
@@ -281,6 +297,7 @@ const onFileKeyClear = () => {
             :file="file"
             :key="index"
             show-checkbox
+            @on-title-click="onFileItemTitleClick"
           />
         </n-space>
       </div>

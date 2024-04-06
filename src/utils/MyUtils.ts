@@ -100,9 +100,38 @@ export const isNumber = (str: string): boolean => {
 };
 
 /**
+ * 判断文件名是否是图片
+ * @param filename 文件名
+ */
+export const isImage = (filename: string): boolean => {
+  // 常见的图片扩展名
+  const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp'];
+  const extension = filename.split('.').pop();
+  if (!extension) return false;
+  return imageExtensions.includes(extension.toLowerCase());
+};
+
+/**
  * 渲染图标
  * @param icon 图标组件
  */
-export function renderIcon(icon: Component) {
+export const renderIcon = (icon: Component) => {
   return () => h(NIcon, null, { default: () => h(icon) });
 }
+
+/**
+ * 格式化文件大小
+ * @param byteSize
+ */
+export const formatFileSize = (byteSize: number): string => {
+  const units = ['B', 'KB', 'MB', 'GB'];
+  let index = 0;
+
+  while (byteSize >= 1024 && index < units.length - 1) {
+    byteSize /= 1024;
+    index++;
+  }
+
+  return `${byteSize.toFixed(2)} ${units[index]}`;
+}
+

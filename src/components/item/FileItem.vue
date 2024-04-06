@@ -1,8 +1,18 @@
 <!-- 文件项组件 -->
 <script setup lang="ts">
 import { MFile } from '../../models/MFile.ts';
-import { NCard, NImage, NEllipsis, NCheckbox } from 'naive-ui';
-import { onMounted } from 'vue';
+import {
+  NCard,
+  NImage,
+  NEllipsis,
+  NCheckbox,
+  NIcon,
+  NText,
+  NSpace
+} from 'naive-ui';
+import { onMounted, ref } from 'vue';
+import { isImage } from '../../utils/MyUtils.ts';
+import { DocumentOutline as FileIcon } from '@vicons/ionicons5';
 
 interface Props {
   file: MFile;
@@ -25,7 +35,17 @@ const emit = defineEmits<{
   (e: 'onTitleClick', file: MFile): void;
 }>();
 
-onMounted(() => {});
+// 当前文件的扩展名
+const currentFileExtension = ref('');
+
+onMounted(() => {
+  const ex = props.file.displayName.split('.').pop();
+  if (ex) {
+    currentFileExtension.value = ex.toUpperCase();
+  } else {
+    currentFileExtension.value = '未知类型';
+  }
+});
 
 /**
  * 复选框改变事件
@@ -49,10 +69,21 @@ const onTitleClick = () => {
       <n-image
         :class="{ dark: checked }"
         class="img"
+        v-if="isImage(file.displayName)"
         object-fit="cover"
         :src="file.url.includes('http') ? file.url : imgBaseUrl + file.url"
         :alt="file.displayName"
       />
+      <div v-else class="img file-div">
+        <n-space vertical>
+          <n-icon size="42">
+            <FileIcon />
+          </n-icon>
+          <div style="text-align: center; margin-top: -10px">
+            <n-text>{{ currentFileExtension }}</n-text>
+          </div>
+        </n-space>
+      </div>
     </template>
     <template #header>
       <div class="header">
@@ -61,16 +92,22 @@ const onTitleClick = () => {
           @update:checked="onCheckBoxChange"
           v-model:checked="checked"
         />
-        <n-ellipsis
+        <div
           class="pointer"
+          style="display: inline"
           @click="onTitleClick"
           :style="{
-            marginLeft: showCheckbox ? '5px' : '0px',
-            width: showCheckbox ? '83%' : '100%'
+            marginLeft: showCheckbox ? '5px' : '0px'
           }"
         >
-          {{ file.displayName }}
-        </n-ellipsis>
+          <n-ellipsis
+            :style="{
+              width: showCheckbox ? '83%' : '100%'
+            }"
+          >
+            {{ file.displayName }}
+          </n-ellipsis>
+        </div>
       </div>
     </template>
   </n-card>
@@ -82,7 +119,7 @@ const onTitleClick = () => {
   height: 150px;
 
   .img {
-    height: 130px;
+    height: 120px;
     width: 100%;
   }
 
@@ -91,6 +128,12 @@ const onTitleClick = () => {
     height: 14px;
     line-height: 16px;
     font-size: 0.8em;
+  }
+
+  .file-div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 }
 
