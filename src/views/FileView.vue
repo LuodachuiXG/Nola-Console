@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import MyCard from '../components/component/MyCard.vue';
-import { NButton, NIcon, NSelect, NSpace } from 'naive-ui';
+import { NButton, NIcon, NSpace } from 'naive-ui';
 import {
   AppsOutline as BlockIcon,
   CloudUploadOutline as UploadIcon,
@@ -8,8 +8,7 @@ import {
 } from '@vicons/ionicons5';
 import { inject, onMounted, ref } from 'vue';
 import { StoreEnum } from '../models/enum/StoreEnum.ts';
-import { FileSort } from '../models/enum/FileSort.ts';
-import MyFile from '../components/component/MyFile.vue';
+import MyFile from '../components/component/MyFilePanel.vue';
 
 // 标记当前附件显示模式的枚举类
 enum FileMode {
@@ -24,29 +23,6 @@ const globalVars: GlobalVars = inject('globalVars')!!;
 // 当前附件显示模式
 const currentFileMode = ref<FileMode>(FileMode.BLOCK);
 
-// 附件查询排序方式，默认按照创建时间降序
-const fileSort = ref<FileSort | null>(
-  FileSort.CREATE_TIME_DESC
-);
-// 附件排序下拉框选项
-const fileSortSelectOptions = [
-  {
-    label: '创建时间降序',
-    value: FileSort.CREATE_TIME_DESC
-  },
-  {
-    label: '创建时间升序',
-    value: FileSort.CREATE_TIME_ASC
-  },
-  {
-    label: '附件大小降序',
-    value: FileSort.SIZE_DESC
-  },
-  {
-    label: '附件大小升序',
-    value: FileSort.SIZE_ASC
-  }
-];
 
 onMounted(() => {
   // 读取设置
@@ -93,13 +69,6 @@ const onUploadClick = () => {};
     <my-card item-string="附件">
       <template #header-extra>
         <n-space>
-          <n-select
-            :options="fileSortSelectOptions"
-            v-model:value="fileSort"
-            @update:value="refreshFiles"
-            placeholder="排序方式"
-            style="width: 130px"
-          />
           <n-button type="primary" @click="onUploadClick">
             <template #icon>
               <n-icon>

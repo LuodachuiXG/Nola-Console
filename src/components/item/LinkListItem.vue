@@ -30,6 +30,9 @@ interface Props {
   isChecked: boolean;
 }
 
+// 全局响应式变量
+const globalVars: GlobalVars = inject('globalVars')!!;
+
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
@@ -40,9 +43,6 @@ const emit = defineEmits<{
   // 选择框取消选中事件
   (e: 'onUnChecked', link: Link): void;
 }>();
-
-// 全局响应式变量
-const globalVars: GlobalVars = inject('globalVars')!!;
 
 // 鼠标是否进入头像
 const isMouseEnterAvatar = ref(false);
