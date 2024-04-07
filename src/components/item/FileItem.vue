@@ -67,7 +67,6 @@ const onTitleClick = () => {
   <n-card class="file-card" header-style="padding:0;margin:0;">
     <template #cover>
       <n-image
-        :class="{ dark: checked }"
         class="img"
         v-if="isImage(file.displayName)"
         object-fit="cover"
@@ -135,9 +134,5 @@ const onTitleClick = () => {
     justify-content: center;
     align-items: center;
   }
-}
-
-.dark {
-  filter: brightness(0.6);
 }
 </style>

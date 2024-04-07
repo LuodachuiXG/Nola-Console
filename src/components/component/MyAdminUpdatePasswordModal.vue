@@ -100,7 +100,6 @@ const validatePasswordSame = (_: FormItemRule, value: string) => {
 <template>
   <!-- 修改密码模态框 -->
   <n-modal
-    ref="reLoginDialog"
     v-model:show="_show"
     preset="dialog"
     title="修改密码"

@@ -161,6 +161,7 @@ export function moveFiles(
  * @param size 每页数量
  * @param sort 排序（null 默认为创建时间降序）
  * @param mode 文件存储策略（null 默认为所有策略）
+ * @param groupId 文件组 ID （null 默认为所有分组）
  * @param key 搜索关键字
  */
 export function getFiles(
@@ -168,6 +169,7 @@ export function getFiles(
   size: number,
   sort: FileSort | null,
   mode: FileStorageMode | null,
+  groupId: number | null,
   key: string | null
 ) {
   let url = `/admin/file?page=${page}&size=${size}`;
@@ -176,6 +178,9 @@ export function getFiles(
   }
   if (mode) {
     url += `&mode=${mode}`;
+  }
+  if (groupId) {
+    url += `&groupId=${groupId}`;
   }
   if (key) {
     url += `&key=${key}`;

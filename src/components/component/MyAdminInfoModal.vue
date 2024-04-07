@@ -159,7 +159,6 @@ const onSubmit = () => {
 <template>
   <!-- 管理员个人信息模态框 -->
   <n-modal
-    ref="reLoginDialog"
     v-model:show="_show"
     preset="dialog"
     title="个人信息"

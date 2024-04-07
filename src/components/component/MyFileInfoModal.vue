@@ -36,6 +36,11 @@ const show = defineModel('show', {
   default: false
 });
 
+const emit = defineEmits<{
+  (e: 'onStorageModeClick', file: MFile): void;
+  (e: 'onFileGroupClick', file: MFile): void;
+}>();
+
 // HTMl 和 Markdown 格式的文件链接
 const htmlUrl = ref('');
 const markdownUrl = ref('');
@@ -77,16 +82,62 @@ const onCopyText = (str: string | null | undefined) => {
     })
     .catch((err) => errorMsg(`复制失败：${err}`));
 };
+
+/**
+ * 下载文件按钮点击事件
+ */
+const onDownloadClick = () => {
+  const file = props.file;
+  if (file) {
+    downloadFile(file.url, file.displayName);
+  }
+};
+
+/**
+ * 下载文件（跨域无效）
+ * @param url
+ * @param fileName
+ */
+const downloadFile = (url: string, fileName: string) => {
+  // 创建隐藏的可下载链接
+  const a = document.createElement('a');
+  a.style.display = 'none';
+  a.href = url;
+  a.download = fileName;
+
+  // 触发点击下载
+  document.body.appendChild(a);
+  a.click();
+
+  // 清理
+  window.URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+};
+
+/**
+ * 存储策略点击事件
+ */
+const onStorageModeClick = () => {
+  emit('onStorageModeClick', props.file!!);
+};
+
+/**
+ * 文件组点击事件
+ */
+const onFileGroupClick = () => {
+  emit('onFileGroupClick', props.file!!);
+};
 </script>
 
 <template>
   <!-- 管理员个人信息模态框 -->
   <n-modal
-    ref="reLoginDialog"
     v-model:show="show"
     preset="dialog"
     title="文件信息"
+    :positive-text="file?.storageMode === FileStorageMode.LOCAL ? '下载' : ''"
     negative-text="关闭"
+    @positive-click="onDownloadClick"
     @negativeClick="show = false"
   >
     <template #default>
@@ -99,15 +150,6 @@ const onCopyText = (str: string | null | undefined) => {
               </template>
             </n-thing>
           </n-list-item>
-          <n-list-item v-if="file?.fileGroupName">
-            <n-thing title="文件组">
-              <template #description>
-                <n-text class="pointer" type="primary">
-                  {{ file?.fileGroupName }}
-                </n-text>
-              </template>
-            </n-thing>
-          </n-list-item>
           <n-list-item>
             <n-thing title="文件大小">
               <template #description>
@@ -115,10 +157,27 @@ const onCopyText = (str: string | null | undefined) => {
               </template>
             </n-thing>
           </n-list-item>
+          <n-list-item v-if="file?.fileGroupName">
+            <n-thing title="文件组">
+              <template #description>
+                <n-text
+                  class="pointer"
+                  type="primary"
+                  @click="onFileGroupClick"
+                >
+                  {{ file?.fileGroupName }}
+                </n-text>
+              </template>
+            </n-thing>
+          </n-list-item>
           <n-list-item>
             <n-thing title="存储策略">
               <template #description>
-                <n-text type="primary" class="pointer">
+                <n-text
+                  type="primary"
+                  class="pointer"
+                  @click="onStorageModeClick"
+                >
                   {{
                     FileStorageDisplayName[
                       file?.storageMode ?? FileStorageMode.LOCAL

@@ -10,6 +10,6 @@ export interface FileGroup {
   displayName: string,
   /** 文件分组路径 **/
   path: string,
-  /** 文件分组存储方式 **/
+  /** 文件分组存储策略 **/
   storageMode: FileStorageMode
 }
