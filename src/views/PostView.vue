@@ -758,7 +758,6 @@ const onPostItemUnChecked = (post: Post) => {
       :current-page-item-count="posts?.length ?? 0"
       show-pagination
       show-checkbox
-      :show-delete-button="currentSelectedPostIds.length > 0"
       item-string="文章"
       :is-checked="
         currentSelectedPostIds.length === posts?.length && posts.length !== 0

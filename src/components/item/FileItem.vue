@@ -17,6 +17,7 @@ import { DocumentOutline as FileIcon } from '@vicons/ionicons5';
 interface Props {
   file: MFile;
   showCheckbox?: boolean;
+  isChecked?: boolean
 }
 
 // 图片基地址
@@ -24,15 +25,11 @@ const imgBaseUrl = import.meta.env.VITE_IMG_BASE_URL;
 
 const props = defineProps<Props>();
 
-// 复选框是否选中
-const checked = defineModel('checked', {
-  type: Boolean,
-  default: false
-});
-
 const emit = defineEmits<{
   (e: 'onCheckboxChange', value: boolean, fileId: number): void;
   (e: 'onTitleClick', file: MFile): void;
+  (e: 'onChecked', file: MFile): void;
+  (e: 'onUnChecked', file: MFile): void;
 }>();
 
 // 当前文件的扩展名
@@ -52,7 +49,11 @@ onMounted(() => {
  * @param value
  */
 const onCheckBoxChange = (value: boolean) => {
-  emit('onCheckboxChange', value, props.file.fileId);
+  if (value) {
+    emit('onChecked', props.file);
+  } else {
+    emit('onUnChecked', props.file);
+  }
 };
 
 /**
@@ -89,7 +90,7 @@ const onTitleClick = () => {
         <n-checkbox
           v-if="showCheckbox"
           @update:checked="onCheckBoxChange"
-          v-model:checked="checked"
+          :checked="isChecked"
         />
         <div
           class="pointer"

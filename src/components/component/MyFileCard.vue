@@ -1,4 +1,3 @@
-<!-- 文件面板组件 -->
 <script setup lang="ts">
 import {
   NSpace,
@@ -15,7 +14,7 @@ import {
   NModal,
   FormInst
 } from 'naive-ui';
-import { onMounted, reactive, ref } from 'vue';
+import { inject, onMounted, reactive, ref } from 'vue';
 import {
   MenuOutline as MenuIcon,
   CloudUploadOutline as UploadIcon,
@@ -23,7 +22,8 @@ import {
   SettingsOutline as SettingIcon,
   TrashOutline as TrashIcon,
   AddOutline as AddIcon,
-  BrushOutline as EditIcon
+  BrushOutline as EditIcon,
+  SendOutline as MoveIcon
 } from '@vicons/ionicons5';
 import {
   FileStorageDisplayName,
@@ -32,10 +32,12 @@ import {
 import {
   addFileGroup,
   delFileGroup,
+  delFilesByIds,
   delTencentCOS,
   getFileGroups,
   getFiles,
   getStorageModes,
+  moveFiles,
   updateFileGroup
 } from '../../apis/fileApi.ts';
 import { confirmDialog, errorMsg, successMsg } from '../../utils/Message.ts';
@@ -48,6 +50,10 @@ import MyFileInfoModal from './MyFileInfoModal.vue';
 import { renderIcon } from '../../utils/MyUtils.ts';
 import MyFileStorageModeConfigModal from './MyFileStorageModeConfigModal.vue';
 import { DialogFormMode } from '../../models/enum/DialogFormMode.ts';
+import MyCard from './MyCard.vue';
+import { StoreEnum } from '../../models/enum/StoreEnum.ts';
+
+const globalVars: GlobalVars = inject('globalVars')!!;
 
 // 当前页
 const currentPage = ref(1);
@@ -157,12 +163,38 @@ const visibleFileInfoModal = ref(false);
 // 是否显示文件存储策略配置模态框
 const visibleFileStorageModeConfigModal = ref(false);
 
+// 当前选中的文件 ID 数组
+const currentSelectFileIds = ref(Array<number>());
+
+// 是否显示文件移动模态框
+const visibleFileMoveModal = ref(false);
+// 移动文件模态框是否正在加载中
+const formFileMoveIsLoading = ref(false);
+// 移动文件模态框表单引用
+const formFileMoveRef = ref<FormInst | null>(null);
+// 移动文件模态框表单
+const formFileMove: { targetFileGroupId: number | null } = reactive({
+  targetFileGroupId: null
+});
+// 移动文件模态框文件组选择项
+const formFileMoveFileGroupSelectOptions = ref<Array<SelectOption>>([]);
+
 onMounted(() => {
+  // 读取以前的设置
+  loadSettings();
   // 获取所有文件
   refreshFiles();
   // 获取所有已经启用的存储策略
   refreshFileStorageMode();
 });
+
+/**
+ * 加载设置
+ */
+const loadSettings = () => {
+  // 读取以前是否设置过每页大小
+  pageSize.value = Number(localStorage.getItem(StoreEnum.FILE_PAGE_SIZE) ?? 10);
+};
 
 /**
  * 刷新文件列表
@@ -179,6 +211,8 @@ const refreshFiles = () => {
   )
     .then((res) => {
       window.$loadingBar.finish();
+      // 清空已经选择的文件
+      currentSelectFileIds.value = [];
       const pager = res.data as Pager<MFile>;
       currentPage.value = pager.page;
       pageSize.value = pager.size;
@@ -220,6 +254,8 @@ const refreshFileGroups = () => {
   fileGroups.value = [];
   fileGroupSelectOptions.value = [];
   fileGroupValue.value = null;
+  // 清空已经选择的文件
+  currentSelectFileIds.value = [];
   getFileGroups(storageModeValue.value)
     .then((res) => {
       fileGroups.value = res.data;
@@ -236,6 +272,63 @@ const refreshFileGroups = () => {
       });
     })
     .catch((err) => errorMsg(err));
+};
+
+/**
+ * 分页组件当前页改变事件
+ * @param page 当前页
+ */
+const onPageUpdate = (page: number) => {
+  currentPage.value = page;
+  // 刷新文件
+  refreshFiles();
+};
+
+/**
+ * 分页组件每页大小改变事件
+ * @param size 每页大小
+ */
+const onPageSizeUpdate = (size: number) => {
+  pageSize.value = size;
+  // 将每页大小存储
+  localStorage.setItem(StoreEnum.FILE_PAGE_SIZE, size.toString());
+  // 刷新文件
+  refreshFiles();
+};
+
+/**
+ * 文件全选事件
+ */
+const onFileCheckedAll = () => {
+  currentSelectFileIds.value = [];
+  files.value?.forEach((file) => {
+    currentSelectFileIds.value.push(file.fileId);
+  });
+};
+
+/**
+ * 文件取消全选事件
+ */
+const onFileCancelChecked = () => {
+  currentSelectFileIds.value = [];
+};
+
+/**
+ * 文件选中事件
+ * @param file
+ */
+const onFileChecked = (file: MFile) => {
+  currentSelectFileIds.value.push(file.fileId!!);
+};
+
+/**
+ * 文件取消选中事件
+ * @param file
+ */
+const onFileUnChecked = (file: MFile) => {
+  currentSelectFileIds.value = currentSelectFileIds.value.filter((id) => {
+    return id !== file.fileId;
+  });
 };
 
 /**
@@ -388,13 +481,13 @@ const onFileGroupManagerSelect = (value: string) => {
         errorMsg('请先选择要修改的分组');
         return;
       }
-      var fileGroup = fileGroups.value.find(
+      let selectedFileGroup = fileGroups.value.find(
         (fg) => fg.fileGroupId === fileGroupValue.value
       )!!;
-      formFileGroup.fileGroupId = fileGroup.fileGroupId;
-      formFileGroup.displayName = fileGroup.displayName;
-      formFileGroup.path = fileGroup.path;
-      formFileGroup.storageMode = fileGroup.storageMode;
+      formFileGroup.fileGroupId = selectedFileGroup.fileGroupId;
+      formFileGroup.displayName = selectedFileGroup.displayName;
+      formFileGroup.path = selectedFileGroup.path;
+      formFileGroup.storageMode = selectedFileGroup.storageMode;
       visibleFileGroupModal.value = true;
       break;
     case 'delete':
@@ -404,7 +497,7 @@ const onFileGroupManagerSelect = (value: string) => {
         return;
       }
 
-      var fileGroup = fileGroups.value.find(
+      let fileGroup = fileGroups.value.find(
         (fg) => fg.fileGroupId === fileGroupValue.value
       )!!;
       confirmDialog(
@@ -414,6 +507,8 @@ const onFileGroupManagerSelect = (value: string) => {
             .then(() => {
               // 删除成功
               successMsg('删除成功');
+              // 刷新文件
+              refreshFiles();
               // 刷新文件分组列表
               refreshFileGroups();
             })
@@ -477,6 +572,8 @@ const onFileGroupModalSubmit = () => {
           .then(() => {
             // 修改成功
             successMsg('修改成功');
+            // 刷新文件
+            refreshFiles();
             // 刷新文件组列表
             refreshFileGroups();
             // 关闭模态框
@@ -492,6 +589,101 @@ const onFileGroupModalSubmit = () => {
   });
   return false;
 };
+
+/**
+ * 多选文件删除按钮点击事件
+ */
+const onDeleteFilesClick = () => {
+  confirmDialog(
+    `确定要删除选择的 ${currentSelectFileIds.value.length} 个附件吗？此操作不可逆`,
+    () => {
+      delFilesByIds(currentSelectFileIds.value)
+        .then(() => {
+          // 删除成功
+          successMsg('删除成功');
+          // 刷新文件
+          refreshFiles();
+        })
+        .catch((err) => errorMsg(`删除失败：${err}`));
+    }
+  );
+};
+
+/**
+ * 多选文件移动按钮点击事件
+ * 只能在相同存储策略中移动
+ */
+const onMoveFilesClick = () => {
+  // 先根据选择的文件的 ID，获取所有文件实体类
+  let selectedFiles = files.value.filter((file) =>
+    currentSelectFileIds.value.includes(file.fileId)
+  );
+
+  // 判断选择的所有文件是否是属于同一个存储策略
+  if (selectedFiles.length >= 2) {
+    // 选择的文件至少有两个
+    const firstFile = selectedFiles[0];
+    for (let i = 1; i < selectedFiles.length; i++) {
+      if (firstFile.storageMode !== selectedFiles[i].storageMode) {
+        // 不是同一个存储策略
+        errorMsg('待移动的文件必须处于相同的存储策略中');
+        return;
+      }
+    }
+  }
+
+  // 获取当前存储策略下所有文件组
+  formFileMoveFileGroupSelectOptions.value = [];
+  getFileGroups(selectedFiles[0].storageMode)
+    .then((res) => {
+      const fileGroups = res.data as Array<FileGroup>;
+      fileGroups.forEach((fileGroup) => {
+        formFileMoveFileGroupSelectOptions.value.push({
+          label: fileGroup.displayName,
+          value: fileGroup.fileGroupId
+        });
+      });
+    })
+    .catch((err) => errorMsg(`获取文件组失败：${err}`));
+
+  formFileMove.targetFileGroupId = null;
+  // 显示文件移动模态框
+  visibleFileMoveModal.value = true;
+};
+
+/**
+ * 移动文件模态框提交事件
+ */
+const onFileMoveModalSubmit = () => {
+  formFileMoveRef.value?.validate((errors) => {
+    if (!errors) {
+      formFileMoveIsLoading.value = true;
+      moveFiles(
+        currentSelectFileIds.value,
+        formFileMove.targetFileGroupId
+      ).then(() => {
+        // 移动成功
+        successMsg('移动成功');
+        // 刷新文件
+        refreshFiles();
+        // 停止模态框加载状态
+        formFileMoveIsLoading.value = false;
+        // 关闭模态框
+        visibleFileMoveModal.value = false;
+      }).catch((err) => {
+        // 停止模态框加载状态
+        formFileMoveIsLoading.value = false;
+        errorMsg(`移动失败：${err}`);
+      });
+    }
+  });
+  return false;
+};
+
+/**
+ * 上传附件按钮点击事件
+ */
+const onUploadClick = () => {};
 </script>
 
 <template>
@@ -509,6 +701,34 @@ const onFileGroupModalSubmit = () => {
       @on-file-group-click="onFileInfoModalFileGroupClick"
       @on-storage-mode-click="onFileInfoModalStorageModeClick"
     />
+
+    <!-- 移动文件模态框 -->
+    <n-modal
+      v-model:show="visibleFileMoveModal"
+      preset="dialog"
+      title="移动文件"
+      positive-text="确定"
+      negative-text="关闭"
+      :loading="formFileMoveIsLoading"
+      @positive-click="onFileMoveModalSubmit"
+      @negativeClick="visibleFileMoveModal = false"
+    >
+      <template #default>
+        <n-form ref="formFileMoveRef" class="dialog-form" :model="formFileMove">
+          <n-form-item
+            path="targetFileGroupId"
+            label="移动到分组"
+          >
+            <n-select
+              :options="formFileMoveFileGroupSelectOptions"
+              v-model:value="formFileMove.targetFileGroupId"
+              placeholder="留空移动到默认分组（根目录）"
+              clearable
+            />
+          </n-form-item>
+        </n-form>
+      </template>
+    </n-modal>
 
     <!-- 文件分组模态框 -->
     <n-modal
@@ -571,122 +791,184 @@ const onFileGroupModalSubmit = () => {
       </template>
     </n-modal>
 
-    <!-- 工具栏 -->
-    <div class="toolbar">
-      <n-space>
-        <n-input-group>
-          <n-select
-            style="width: 150px"
-            :options="storageModeSelectOptions"
-            v-model:value="storageModeValue"
-            placeholder="全部存储策略"
-            @update:value="onStorageModeSelectChange"
-            clearable
-          />
-
-          <n-dropdown
-            trigger="click"
-            :options="storageModeManagerSelectOptions"
-            @select="onStorageModeManagerSelect"
-            show-arrow
-          >
-            <n-button>
+    <my-card
+      :data-count="totalFiles"
+      :current-page="currentPage"
+      :page-size="pageSize"
+      :page-count="totalPages"
+      :current-page-item-count="files?.length ?? 0"
+      :is-checked="
+        currentSelectFileIds.length === files?.length && files.length !== 0
+      "
+      show-pagination
+      show-checkbox
+      :show-delete-button="currentSelectFileIds.length > 0"
+      item-string="附件"
+      @on-page-update="onPageUpdate"
+      @on-page-size-update="onPageSizeUpdate"
+      @on-checked="onFileCheckedAll"
+      @on-checkbox-cancel="onFileCancelChecked"
+    >
+      <template #header-checkbox-button>
+        <div style="margin-top: 2px">
+          <n-space v-if="currentSelectFileIds.length > 0">
+            <!-- 删除多选文件按钮 -->
+            <n-button type="error" @click="onDeleteFilesClick" size="small">
               <template #icon>
                 <n-icon>
-                  <MenuIcon />
+                  <TrashIcon />
                 </n-icon>
               </template>
             </n-button>
-          </n-dropdown>
-        </n-input-group>
 
-        <n-input-group>
-          <n-select
-            style="width: 250px"
-            :options="fileGroupSelectOptions"
-            v-model:value="fileGroupValue"
-            placeholder="全部分组"
-            @update:value="onFileGroupSelectChange"
-            clearable
-          />
-
-          <n-dropdown
-            trigger="click"
-            :options="fileGroupManagerSelectOptions"
-            @select="onFileGroupManagerSelect"
-            show-arrow
-          >
-            <n-button>
+            <!-- 移动多选文件按钮 -->
+            <n-button type="primary" @click="onMoveFilesClick" size="small">
               <template #icon>
                 <n-icon>
-                  <MenuIcon />
+                  <MoveIcon />
                 </n-icon>
               </template>
             </n-button>
-          </n-dropdown>
-        </n-input-group>
-
-        <n-input-group>
-          <n-input
-            placeholder="关键字"
-            v-model:value="fileKey"
-            clearable
-            @clear="onFileKeyClear"
-          />
-          <n-button @click="refreshFiles">
-            <template #icon>
-              <n-icon>
-                <SearchIcon />
-              </n-icon>
-            </template>
-          </n-button>
-        </n-input-group>
-
-        <n-select
-          :options="fileSortSelectOptions"
-          v-model:value="fileSort"
-          @update:value="refreshFiles"
-          placeholder="排序方式"
-          style="width: 130px"
-        />
-      </n-space>
-    </div>
-    <div class="content">
-      <n-result
-        style="margin: 40px 0"
-        status="500"
-        title="这里什么都没有"
-        v-if="files.length === 0"
-      >
-        <template #footer>
-          <n-button>
+          </n-space>
+        </div>
+      </template>
+      <template #header-extra>
+        <n-space>
+          <n-button type="primary" @click="onUploadClick">
             <template #icon>
               <n-icon>
                 <UploadIcon />
               </n-icon>
             </template>
-            上传附件
+            <span v-if="!globalVars.isSmallWindow">上传附件</span>
           </n-button>
-        </template>
-      </n-result>
-
-      <div v-else style="margin-top: 10px">
-        <n-space>
-          <file-item
-            v-for="(file, index) in files"
-            :file="file"
-            :key="index"
-            show-checkbox
-            @on-title-click="onFileItemTitleClick"
-          />
         </n-space>
-      </div>
-    </div>
+      </template>
+      <template #content>
+        <div class="content-container">
+          <!-- 工具栏 -->
+          <div class="toolbar">
+            <n-space>
+              <n-input-group>
+                <n-select
+                  style="width: 150px"
+                  :options="storageModeSelectOptions"
+                  v-model:value="storageModeValue"
+                  placeholder="全部存储策略"
+                  @update:value="onStorageModeSelectChange"
+                  clearable
+                />
+
+                <n-dropdown
+                  trigger="click"
+                  :options="storageModeManagerSelectOptions"
+                  @select="onStorageModeManagerSelect"
+                  show-arrow
+                >
+                  <n-button>
+                    <template #icon>
+                      <n-icon>
+                        <MenuIcon />
+                      </n-icon>
+                    </template>
+                  </n-button>
+                </n-dropdown>
+              </n-input-group>
+
+              <n-input-group>
+                <n-select
+                  style="width: 250px"
+                  :options="fileGroupSelectOptions"
+                  v-model:value="fileGroupValue"
+                  placeholder="全部分组"
+                  @update:value="onFileGroupSelectChange"
+                  clearable
+                />
+
+                <n-dropdown
+                  trigger="click"
+                  :options="fileGroupManagerSelectOptions"
+                  @select="onFileGroupManagerSelect"
+                  show-arrow
+                >
+                  <n-button>
+                    <template #icon>
+                      <n-icon>
+                        <MenuIcon />
+                      </n-icon>
+                    </template>
+                  </n-button>
+                </n-dropdown>
+              </n-input-group>
+
+              <n-input-group>
+                <n-input
+                  placeholder="关键字"
+                  v-model:value="fileKey"
+                  clearable
+                  @clear="onFileKeyClear"
+                />
+                <n-button @click="refreshFiles">
+                  <template #icon>
+                    <n-icon>
+                      <SearchIcon />
+                    </n-icon>
+                  </template>
+                </n-button>
+              </n-input-group>
+
+              <n-select
+                :options="fileSortSelectOptions"
+                v-model:value="fileSort"
+                @update:value="refreshFiles"
+                placeholder="排序方式"
+                style="width: 130px"
+              />
+            </n-space>
+          </div>
+
+          <div class="content">
+            <n-result
+              style="margin: 40px 0"
+              status="500"
+              title="这里什么都没有"
+              v-if="files.length === 0"
+            >
+              <template #footer>
+                <n-button>
+                  <template #icon>
+                    <n-icon>
+                      <UploadIcon />
+                    </n-icon>
+                  </template>
+                  上传附件
+                </n-button>
+              </template>
+            </n-result>
+
+            <div v-else style="margin-top: 10px">
+              <n-space>
+                <file-item
+                  v-for="(file, index) in files"
+                  :file="file"
+                  :key="index"
+                  :is-checked="currentSelectFileIds.includes(file.fileId)"
+                  show-checkbox
+                  @on-title-click="onFileItemTitleClick"
+                  @on-checked="onFileChecked"
+                  @on-un-checked="onFileUnChecked"
+                />
+              </n-space>
+            </div>
+          </div>
+        </div>
+      </template>
+    </my-card>
   </div>
 </template>
 
 <style scoped>
-.container {
+.content-container {
   padding: 10px;
 }
 </style>
