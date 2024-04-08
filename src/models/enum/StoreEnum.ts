@@ -23,5 +23,9 @@ export enum StoreEnum {
   /** 日记页每页大小 **/
   DIARY_PAGE_SIZE = 'diary_page_size',
   /** 文件页每页大小 **/
-  FILE_PAGE_SIZE = 'file_page_size'
+  FILE_PAGE_SIZE = 'file_page_size',
+  /** 文件上传存储策略 **/
+  FILE_UPLOAD_STORAGE_MODE = 'file_upload_storage_mode',
+  /** 文件上传文件组 **/
+  FILE_UPLOAD_FILE_GROUP = 'file_upload_file_group'
 }

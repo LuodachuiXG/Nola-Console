@@ -52,6 +52,7 @@ import MyFileStorageModeConfigModal from './MyFileStorageModeConfigModal.vue';
 import { DialogFormMode } from '../../models/enum/DialogFormMode.ts';
 import MyCard from './MyCard.vue';
 import { StoreEnum } from '../../models/enum/StoreEnum.ts';
+import MyFileUploadModal from './MyFileUploadModal.vue';
 
 const globalVars: GlobalVars = inject('globalVars')!!;
 
@@ -178,6 +179,9 @@ const formFileMove: { targetFileGroupId: number | null } = reactive({
 });
 // 移动文件模态框文件组选择项
 const formFileMoveFileGroupSelectOptions = ref<Array<SelectOption>>([]);
+
+// 是否显示文件上传模态框
+const visibleFileUploadModal = ref(false);
 
 onMounted(() => {
   // 读取以前的设置
@@ -683,11 +687,17 @@ const onFileMoveModalSubmit = () => {
 /**
  * 上传附件按钮点击事件
  */
-const onUploadClick = () => {};
+const onUploadClick = () => {
+  // 显示文件上传模态框
+  visibleFileUploadModal.value = true;
+};
 </script>
 
 <template>
   <div class="container">
+    <!-- 上传文件模态框 -->
+    <my-file-upload-modal v-model:show="visibleFileUploadModal"/>
+
     <!-- 存储策略配置模态框 -->
     <my-file-storage-mode-config-modal
       v-model:show="visibleFileStorageModeConfigModal"
