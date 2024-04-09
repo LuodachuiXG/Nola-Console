@@ -8,7 +8,7 @@ import {
 } from '../../models/enum/FileStorageMode.ts';
 import { FileGroup } from '../../models/FileGroup.ts';
 import { getFileGroups, getStorageModes } from '../../apis/fileApi.ts';
-import { errorMsg } from '../../utils/Message.ts';
+import { errorMsg, successMsg } from '../../utils/Message.ts';
 import { StoreEnum } from '../../models/enum/StoreEnum.ts';
 import { isNumber } from '../../utils/MyUtils.ts';
 import {
@@ -21,9 +21,12 @@ import {
   NUploadDragger,
   NText,
   NIcon,
-  NScrollbar, UploadInst
+  NScrollbar,
+  UploadInst,
+  UploadFileInfo
 } from 'naive-ui';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
+import { User } from '../../models/User.ts';
 
 const show = defineModel('show', {
   type: Boolean,
@@ -32,6 +35,10 @@ const show = defineModel('show', {
 
 // 实际控制模态框是否显示的变量
 const _show = ref(false);
+
+const emit = defineEmits<{
+  (e: 'onClose'): void;
+}>();
 
 // 可用的文件存储策略
 const availableStorageModes = ref<FileStorageMode[]>([]);
@@ -53,6 +60,15 @@ const isLoading = ref(false);
 // 上传组件的引用
 const uploadRef = ref<UploadInst | null>(null);
 
+// 基地址
+const baseUrl = import.meta.env.VITE_BASE_URL;
+
+// 上传组件当前的文件数量
+const fileLength = ref(0);
+
+// 当前登录的用户
+const user = ref<User | null>(null);
+
 onMounted(() => {
   // 监听父组件的 show 属性
   watch(
@@ -66,6 +82,11 @@ onMounted(() => {
         refreshFileGroups();
         // 读取以前的设置
         loadSetting();
+        // 读取当前登录用户
+        const u = localStorage.getItem(StoreEnum.USER);
+        if (u) {
+          user.value = JSON.parse(u) as User;
+        }
         // 显示模态框
         _show.value = true;
       } else {
@@ -146,6 +167,7 @@ const refreshFileGroups = () => {
  * 模态框关闭事件
  */
 const onClose = () => {
+  emit('onClose');
   show.value = false;
   isLoading.value = false;
 };
@@ -154,6 +176,11 @@ const onClose = () => {
  * 上传文件按钮点击事件
  */
 const onSubmit = () => {
+  if (fileLength.value <= 0) {
+    errorMsg('你还没有选择任何文件');
+    return false;
+  }
+  isLoading.value = true;
   uploadRef.value?.submit();
   return false;
 };
@@ -172,6 +199,37 @@ const onStorageModeSelect = (value: FileStorageMode) => {
   // 刷新文件组
   refreshFileGroups();
 };
+
+/**
+ * 文件上传组件选择的文件改变事件
+ * @param options
+ */
+const handleUploadChange = (options: { fileList: UploadFileInfo[] }) => {
+  fileLength.value = options.fileList.length;
+};
+
+/**
+ * 文件上传组件上传完成事件
+ * @param file
+ */
+const handleFinish = ({
+  event
+}: {
+  file: UploadFileInfo;
+  event?: ProgressEvent;
+}) => {
+  const response = JSON.parse((event?.target as XMLHttpRequest).response)
+  const fileName = response.data.displayName;
+  const errMsg = response.errMsg;
+  if (response.code === 200) {
+    successMsg(`${fileName} 上传成功`)
+  } else if (response.code === 409 && errMsg) {
+    errorMsg(`${fileName} 上传失败：${errMsg}`)
+  } else {
+    errMsg('未知错误，请查看服务端日志')
+  }
+  isLoading.value = false;
+};
 </script>
 
 <template>
@@ -180,7 +238,7 @@ const onStorageModeSelect = (value: FileStorageMode) => {
     v-model:show="_show"
     preset="dialog"
     title="上传附件"
-    positive-text="上传"
+    :positive-text="isLoading ? '正在上传' : '上传'"
     negative-text="取消"
     :loading="isLoading"
     @maskClick="onClose"
@@ -214,9 +272,18 @@ const onStorageModeSelect = (value: FileStorageMode) => {
               ref="uploadRef"
               multiple
               directory-dnd
-              action="https://www.mocky.io/v2/5e4bafc63100007100d8b70f"
               :max="5"
               :default-upload="false"
+              :action="baseUrl + '/admin/file'"
+              :headers="{
+                Authorization: `Bearer ${user?.token ?? ''}`
+              }"
+              :data="{
+                storageMode: storageModeValue ?? '',
+                fileGroupId: (fileGroupValue ?? '').toString()
+              }"
+              @change="handleUploadChange"
+              @finish="handleFinish"
             >
               <n-upload-dragger>
                 <div style="margin-bottom: 12px">

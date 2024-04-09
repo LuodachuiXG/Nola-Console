@@ -691,12 +691,20 @@ const onUploadClick = () => {
   // 显示文件上传模态框
   visibleFileUploadModal.value = true;
 };
+
+/**
+ * 上传文件模态框关闭事件
+ */
+const onFileUploadModalClose = () => {
+  // 刷新文件
+  refreshFiles();
+}
 </script>
 
 <template>
   <div class="container">
     <!-- 上传文件模态框 -->
-    <my-file-upload-modal v-model:show="visibleFileUploadModal"/>
+    <my-file-upload-modal v-model:show="visibleFileUploadModal" @on-close="onFileUploadModalClose"/>
 
     <!-- 存储策略配置模态框 -->
     <my-file-storage-mode-config-modal

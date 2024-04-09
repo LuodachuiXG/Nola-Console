@@ -1,8 +1,8 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
-  /** 图片基地址（用于在开发环境下让相对地址的图片可以正确显示） */
-  readonly VITE_IMG_BASE_URL: string
+  /** 基地址（用于在开发环境使用绝对地址，生产环境使用相对地址） */
+  readonly VITE_BASE_URL: string
 }
 
 interface ImportMeta {

@@ -1,15 +1,15 @@
 <!-- 文件信息模态框 -->
 <script setup lang="ts">
 import {
+  NButton,
+  NCard,
   NList,
   NListItem,
   NModal,
   NScrollbar,
-  NThing,
+  NSpace,
   NText,
-  NCard,
-  NButton,
-  NSpace
+  NThing
 } from 'naive-ui';
 import { MFile } from '../../models/MFile.ts';
 import {
@@ -45,6 +45,9 @@ const emit = defineEmits<{
 const htmlUrl = ref('');
 const markdownUrl = ref('');
 
+// 基地址
+const baseUrl = import.meta.env.VITE_BASE_URL;
+
 onMounted(() => {
   watch(
     () => props.file,
@@ -67,7 +70,11 @@ onMounted(() => {
  * 文件链接点击事件
  */
 const onFileUrlClick = () => {
-  window.open(props.file?.url, '_blank');
+  window.open(
+    (props.file?.storageMode === FileStorageMode.LOCAL ? baseUrl : '') +
+      props.file?.url,
+    '_blank'
+  );
 };
 
 /**
@@ -191,7 +198,7 @@ const onFileGroupClick = () => {
             <n-thing title="文件地址">
               <template #description>
                 <n-text class="pointer" type="primary" @click="onFileUrlClick">
-                  {{ file?.url }}
+                  {{ (props.file?.storageMode === FileStorageMode.LOCAL ? baseUrl : '') + file?.url }}
                 </n-text>
               </template>
             </n-thing>
@@ -216,9 +223,11 @@ const onFileGroupClick = () => {
                     <template #header>
                       <n-text class="url-title">URL</n-text>
                     </template>
-                    {{ file?.url }}
+                    {{ (props.file?.storageMode === FileStorageMode.LOCAL ? baseUrl : '') + file?.url }}
                     <template #header-extra>
-                      <n-button size="tiny" @click="onCopyText(file?.url)"
+                      <n-button
+                        size="tiny"
+                        @click="onCopyText(baseUrl + file?.url)"
                         >复制
                       </n-button>
                     </template>

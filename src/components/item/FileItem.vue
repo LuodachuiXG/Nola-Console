@@ -21,7 +21,7 @@ interface Props {
 }
 
 // 图片基地址
-const imgBaseUrl = import.meta.env.VITE_IMG_BASE_URL;
+const imgBaseUrl = import.meta.env.VITE_BASE_URL;
 
 const props = defineProps<Props>();
 
@@ -73,6 +73,7 @@ const onTitleClick = () => {
         object-fit="cover"
         :src="file.url.includes('http') ? file.url : imgBaseUrl + file.url"
         :alt="file.displayName"
+        lazy
       />
       <div v-else class="img file-div">
         <n-space vertical>
