@@ -18,7 +18,8 @@ import {
   NText,
   SelectRenderTag,
   SelectOption,
-  NSpace
+  NSpace,
+  NImage
 } from 'naive-ui';
 import {
   FileTrayFullOutline as FileIcon,
@@ -28,7 +29,7 @@ import {
   RefreshOutline as RefreshIcon
 } from '@vicons/ionicons5';
 import { updatePost } from '../../apis/postApi.ts';
-import { displayNameToSlug, isNumberType } from '../../utils/MyUtils.ts';
+import { displayNameToSlug, isImage, isNumberType } from '../../utils/MyUtils.ts';
 import { defineModel, h, onMounted, reactive, ref, watch } from 'vue';
 import { PostStatus } from '../../models/enum/PostStatus.ts';
 import { PostVisible } from '../../models/enum/PostVisible.ts';
@@ -41,6 +42,8 @@ import { errorMsg, optionSuccessMsg } from '../../utils/Message.ts';
 import { Category } from '../../models/Category.ts';
 import { Tag } from '../../models/Tag.ts';
 import MyTag from './MyTag.vue';
+import MyFileSelectModal from './MyFileSelectModal.vue';
+import { MFile } from '../../models/MFile.ts';
 
 // 是否显示模态框
 const show = defineModel('show', {
@@ -96,6 +99,9 @@ const tagsSelectOptions = ref(Array<SelectOption>());
 const categoriesList = ref(Array<Category>());
 // 分类选择器列表
 const categoriesSelectOptions = ref(Array<SelectOption>());
+
+// 是否显示文件选择模态框
+const visibleFileSelectModal = ref(false);
 
 onMounted(() => {
   // 刷新标签和分类数据
@@ -531,9 +537,30 @@ const onSettingPostDialogClose = () => {
   // 取消对话框显示
   show.value = false;
 };
+
+/**
+ * 选择封面文件确认事件
+ * @param files 因为设置了不可多选，所以这里只会有一个文件
+ */
+const onCoverFileSelectConfirm = (files: Array<MFile>) => {
+  let file = files[0];
+  if (!isImage(file.displayName)) {
+    // 当前选择的文件不是图片
+    errorMsg('只能选择图片文件');
+    return;
+  }
+  formSettingPost.cover = file.url;
+};
 </script>
 
 <template>
+  <!-- 选择文件对话框 -->
+  <my-file-select-modal
+    v-model:show="visibleFileSelectModal"
+    :multiple="false"
+    @on-confirm="onCoverFileSelectConfirm"
+  />
+
   <!-- 设置文章对话框 -->
   <n-modal
     v-model:show="show"
@@ -545,7 +572,6 @@ const onSettingPostDialogClose = () => {
     @positiveClick="onSettingPostDialogSubmit"
     @close="emit('onCancel')"
     :close-on-esc="false"
-    :mask-closable="false"
   >
     <template #default>
       <div>
@@ -660,26 +686,34 @@ const onSettingPostDialogClose = () => {
               />
             </n-form-item>
             <n-form-item label="封面" path="cover">
-              <n-input-group>
-                <n-input
-                  v-model:value="formSettingPost.cover"
-                  placeholder="文章封面地址"
-                  maxlength="256"
-                  clearable
+              <n-space vertical style="width: 100%">
+                <n-input-group>
+                  <n-input
+                    v-model:value="formSettingPost.cover"
+                    placeholder="文章封面地址"
+                    maxlength="256"
+                    clearable
+                  />
+                  <n-popover>
+                    <template #trigger>
+                      <n-button @click="visibleFileSelectModal = true">
+                        <template #icon>
+                          <n-icon>
+                            <FileIcon />
+                          </n-icon>
+                        </template>
+                      </n-button>
+                    </template>
+                    <span>查看附件</span>
+                  </n-popover>
+                </n-input-group>
+                <n-image
+                  :width="380"
+                  object-fit="cover"
+                  v-if="formSettingPost.cover"
+                  :src="formSettingPost.cover"
                 />
-                <n-popover>
-                  <template #trigger>
-                    <n-button @click="">
-                      <template #icon>
-                        <n-icon>
-                          <FileIcon />
-                        </n-icon>
-                      </template>
-                    </n-button>
-                  </template>
-                  <span>查看附件</span>
-                </n-popover>
-              </n-input-group>
+              </n-space>
             </n-form-item>
 
             <n-divider>

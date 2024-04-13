@@ -53,8 +53,22 @@ import { DialogFormMode } from '../../models/enum/DialogFormMode.ts';
 import MyCard from './MyCard.vue';
 import { StoreEnum } from '../../models/enum/StoreEnum.ts';
 import MyFileUploadModal from './MyFileUploadModal.vue';
+import _ from 'lodash';
 
 const globalVars: GlobalVars = inject('globalVars')!!;
+
+interface Props {
+  // 文件是否支持多选（默认 true）
+  multiple?: boolean;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  multiple: true
+});
+
+const emit = defineEmits<{
+  (e: 'onFileSelected', files: Array<MFile>): void;
+}>();
 
 // 当前页
 const currentPage = ref(1);
@@ -166,6 +180,8 @@ const visibleFileStorageModeConfigModal = ref(false);
 
 // 当前选中的文件 ID 数组
 const currentSelectFileIds = ref(Array<number>());
+// 当前选中的文件数组
+const currentSelectFiles = ref<Array<MFile>>([]);
 
 // 是否显示文件移动模态框
 const visibleFileMoveModal = ref(false);
@@ -193,11 +209,16 @@ onMounted(() => {
 });
 
 /**
- * 加载设置
+ * 读取设置
  */
 const loadSettings = () => {
   // 读取以前是否设置过每页大小
-  pageSize.value = Number(localStorage.getItem(StoreEnum.FILE_PAGE_SIZE) ?? 10);
+  let ps = Number(localStorage.getItem(StoreEnum.FILE_PAGE_SIZE) ?? 10);
+  if (isNaN(ps) || ps < 10 || ps > 120) {
+    pageSize.value = 10;
+  } else {
+    pageSize.value = ps;
+  }
 };
 
 /**
@@ -216,7 +237,7 @@ const refreshFiles = () => {
     .then((res) => {
       window.$loadingBar.finish();
       // 清空已经选择的文件
-      currentSelectFileIds.value = [];
+      onFileCancelChecked();
       const pager = res.data as Pager<MFile>;
       currentPage.value = pager.page;
       pageSize.value = pager.size;
@@ -259,7 +280,7 @@ const refreshFileGroups = () => {
   fileGroupSelectOptions.value = [];
   fileGroupValue.value = null;
   // 清空已经选择的文件
-  currentSelectFileIds.value = [];
+  onFileCancelChecked();
   getFileGroups(storageModeValue.value)
     .then((res) => {
       fileGroups.value = res.data;
@@ -305,9 +326,14 @@ const onPageSizeUpdate = (size: number) => {
  */
 const onFileCheckedAll = () => {
   currentSelectFileIds.value = [];
+  currentSelectFiles.value = [];
   files.value?.forEach((file) => {
     currentSelectFileIds.value.push(file.fileId);
   });
+
+  currentSelectFiles.value = _.cloneDeep(files.value);
+
+  emit('onFileSelected', currentSelectFiles.value);
 };
 
 /**
@@ -315,6 +341,8 @@ const onFileCheckedAll = () => {
  */
 const onFileCancelChecked = () => {
   currentSelectFileIds.value = [];
+  currentSelectFiles.value = [];
+  emit('onFileSelected', currentSelectFiles.value);
 };
 
 /**
@@ -322,7 +350,15 @@ const onFileCancelChecked = () => {
  * @param file
  */
 const onFileChecked = (file: MFile) => {
+  // 将当前选择的文件 ID 和文件接口添加到数组中
+  if (!props.multiple) {
+    // 当前是单选
+    // 先清空所有已经选择的文件
+    onFileCancelChecked();
+  }
   currentSelectFileIds.value.push(file.fileId!!);
+  currentSelectFiles.value.push(file);
+  emit('onFileSelected', currentSelectFiles.value);
 };
 
 /**
@@ -330,9 +366,14 @@ const onFileChecked = (file: MFile) => {
  * @param file
  */
 const onFileUnChecked = (file: MFile) => {
+  // 将当前取消选择的文件 ID 和文件接口从数组中移除
   currentSelectFileIds.value = currentSelectFileIds.value.filter((id) => {
     return id !== file.fileId;
   });
+  currentSelectFiles.value = currentSelectFiles.value.filter((file) => {
+    return file.fileId != file.fileId;
+  });
+  emit('onFileSelected', currentSelectFiles.value);
 };
 
 /**
@@ -511,10 +552,10 @@ const onFileGroupManagerSelect = (value: string) => {
             .then(() => {
               // 删除成功
               successMsg('删除成功');
-              // 刷新文件
-              refreshFiles();
               // 刷新文件分组列表
               refreshFileGroups();
+              // 刷新文件
+              refreshFiles();
             })
             .catch((err) => errorMsg(err));
         }
@@ -662,23 +703,22 @@ const onFileMoveModalSubmit = () => {
   formFileMoveRef.value?.validate((errors) => {
     if (!errors) {
       formFileMoveIsLoading.value = true;
-      moveFiles(
-        currentSelectFileIds.value,
-        formFileMove.targetFileGroupId
-      ).then(() => {
-        // 移动成功
-        successMsg('移动成功');
-        // 刷新文件
-        refreshFiles();
-        // 停止模态框加载状态
-        formFileMoveIsLoading.value = false;
-        // 关闭模态框
-        visibleFileMoveModal.value = false;
-      }).catch((err) => {
-        // 停止模态框加载状态
-        formFileMoveIsLoading.value = false;
-        errorMsg(`移动失败：${err}`);
-      });
+      moveFiles(currentSelectFileIds.value, formFileMove.targetFileGroupId)
+        .then(() => {
+          // 移动成功
+          successMsg('移动成功');
+          // 刷新文件
+          refreshFiles();
+          // 停止模态框加载状态
+          formFileMoveIsLoading.value = false;
+          // 关闭模态框
+          visibleFileMoveModal.value = false;
+        })
+        .catch((err) => {
+          // 停止模态框加载状态
+          formFileMoveIsLoading.value = false;
+          errorMsg(`移动失败：${err}`);
+        });
     }
   });
   return false;
@@ -698,13 +738,16 @@ const onUploadClick = () => {
 const onFileUploadModalClose = () => {
   // 刷新文件
   refreshFiles();
-}
+};
 </script>
 
 <template>
   <div class="container">
     <!-- 上传文件模态框 -->
-    <my-file-upload-modal v-model:show="visibleFileUploadModal" @on-close="onFileUploadModalClose"/>
+    <my-file-upload-modal
+      v-model:show="visibleFileUploadModal"
+      @on-close="onFileUploadModalClose"
+    />
 
     <!-- 存储策略配置模态框 -->
     <my-file-storage-mode-config-modal
@@ -733,10 +776,7 @@ const onFileUploadModalClose = () => {
     >
       <template #default>
         <n-form ref="formFileMoveRef" class="dialog-form" :model="formFileMove">
-          <n-form-item
-            path="targetFileGroupId"
-            label="移动到分组"
-          >
+          <n-form-item path="targetFileGroupId" label="移动到分组">
             <n-select
               :options="formFileMoveFileGroupSelectOptions"
               v-model:value="formFileMove.targetFileGroupId"
@@ -819,7 +859,7 @@ const onFileUploadModalClose = () => {
         currentSelectFileIds.length === files?.length && files.length !== 0
       "
       show-pagination
-      show-checkbox
+      :show-checkbox="multiple"
       :show-delete-button="currentSelectFileIds.length > 0"
       item-string="附件"
       @on-page-update="onPageUpdate"

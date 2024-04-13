@@ -8,7 +8,12 @@ import {
   NModal,
   NList,
   NSwitch,
-  NIcon
+  NIcon,
+  NImage,
+  NSpace,
+  NPopover,
+  NInputGroup,
+  NScrollbar
 } from 'naive-ui';
 import { AddOutline as AddIcon } from '@vicons/ionicons5';
 import { inject, onMounted, reactive, ref } from 'vue';
@@ -24,10 +29,13 @@ import { confirmDialog, errorMsg, successMsg } from '../utils/Message.ts';
 import { DialogFormMode } from '../models/enum/DialogFormMode.ts';
 import { StoreEnum } from '../models/enum/StoreEnum.ts';
 import { Pager } from '../models/Pager.ts';
-import { displayNameToSlug } from '../utils/MyUtils.ts';
+import { displayNameToSlug, isImage } from '../utils/MyUtils.ts';
 import CategoryListItem from '../components/item/CategoryListItem.vue';
 import MyCard from '../components/component/MyCard.vue';
 import { useRoute } from 'vue-router';
+import { FileTrayFullOutline as FileIcon } from '@vicons/ionicons5';
+import MyFileSelectModal from '../components/component/MyFileSelectModal.vue';
+import { MFile } from '../models/MFile.ts';
 
 // 全局响应式变量
 const globalVars: GlobalVars = inject('globalVars')!!;
@@ -64,14 +72,15 @@ const formAddEdit = reactive({
   unifiedCover: false
 });
 
+// 是否显示选择文件模态框
+const visibleFileSelectModal = ref(false);
+
 // 路由引用
 const route = useRoute();
 
 onMounted(() => {
-  // 读取以前是否设置过每页大小
-  pageSize.value = Number(
-    localStorage.getItem(StoreEnum.CATEGORY_PAGE_SIZE) ?? 10
-  );
+  // 读取设置
+  loadSetting();
 
   // 查看路由是否传参
   let categoryId = Number(route.query.categoryId);
@@ -88,6 +97,19 @@ onMounted(() => {
   // 刷新分类数据
   refreshCategories();
 });
+
+/**
+ * 读取设置
+ */
+const loadSetting = () => {
+  // 读取以前是否设置过每页大小
+  let ps = Number(localStorage.getItem(StoreEnum.CATEGORY_PAGE_SIZE) ?? 10);
+  if (isNaN(ps) || ps < 10 || ps > 120) {
+    pageSize.value = 10;
+  } else {
+    pageSize.value = ps;
+  }
+};
 
 /**
  * 刷新分类数据
@@ -153,9 +175,11 @@ const deleteCategories = (ids: Array<number>) => {
       // 删除成功
       successMsg('删除成功');
       // 删除选择的分类数组项
-      currentSelectCategoryIds.value = currentSelectCategoryIds.value.filter((id) => {
-        return !ids.includes(id);
-      });
+      currentSelectCategoryIds.value = currentSelectCategoryIds.value.filter(
+        (id) => {
+          return !ids.includes(id);
+        }
+      );
       // 刷新分类列表
       refreshCategories();
     })
@@ -252,8 +276,6 @@ const onAddEditDialogClose = () => {
   isAddEditDialogLoading.value = false;
   // 关闭对话框
   visibleAddEditDialog.value = false;
-  // 清空对话框表单
-  clearAddEditForm();
   // 刷新分类
   refreshCategories();
 };
@@ -340,10 +362,31 @@ const onCategoryCheckedAll = () => {
 const onCategoryCancelChecked = () => {
   currentSelectCategoryIds.value = [];
 };
+
+/**
+ * 选择封面文件确认事件
+ * @param files 因为设置了不可多选，所以这里只会有一个文件
+ */
+const onCoverFileSelectConfirm = (files: Array<MFile>) => {
+  let file = files[0];
+  if (!isImage(file.displayName)) {
+    // 当前选择的文件不是图片
+    errorMsg('只能选择图片文件');
+    return;
+  }
+  formAddEdit.cover = file.url;
+};
 </script>
 
 <template>
   <div class="container">
+    <!-- 选择文件模态框 -->
+    <my-file-select-modal
+      v-model:show="visibleFileSelectModal"
+      :multiple="false"
+      @on-confirm="onCoverFileSelectConfirm"
+    />
+
     <!-- 添加 / 修改分类模态框 -->
     <n-modal
       v-model:show="visibleAddEditDialog"
@@ -356,45 +399,75 @@ const onCategoryCancelChecked = () => {
       @keydown.enter="onAddEditDialogSubmit"
     >
       <template #default>
-        <n-form ref="addEditDialogRef" class="dialog-form" :model="formAddEdit">
-          <n-form-item
-            label="分类名"
-            path="displayName"
-            :rule="{ required: true, message: '请输入分类名' }"
+        <n-scrollbar style="max-height: 70vh; padding-right: 12px">
+          <n-form
+            ref="addEditDialogRef"
+            class="dialog-form"
+            :model="formAddEdit"
+            style="margin: 10px 5px"
           >
-            <n-input
-              v-model:default-value="formAddEdit.displayName"
-              placeholder="分类名"
-              @update-value="onAddEditDialogDisplayNameUpdate"
-              maxlength="50"
-            />
-          </n-form-item>
-          <n-form-item
-            label="分类别名"
-            path="slug"
-            :rule="{ required: true, message: '请输入分类别名' }"
-          >
-            <n-input
-              v-model:value="formAddEdit.slug"
-              placeholder="分类别名"
-              maxlength="50"
-            />
-          </n-form-item>
-          <n-form-item
-            label="封面"
-            path="cover"
-            :rule="{ type: 'url', message: '封面地址有误' }"
-          >
-            <n-input
-              v-model:value="formAddEdit.cover"
-              placeholder="分类封面地址"
-              maxlength="256"
-            />
-          </n-form-item>
-          <n-form-item label="统一封面" path="unifiedCover">
-            <n-switch v-model:value="formAddEdit.unifiedCover" />
-          </n-form-item>
-        </n-form>
+            <n-form-item
+              label="分类名"
+              path="displayName"
+              :rule="{ required: true, message: '请输入分类名' }"
+            >
+              <n-input
+                v-model:default-value="formAddEdit.displayName"
+                placeholder="分类名"
+                @update-value="onAddEditDialogDisplayNameUpdate"
+                maxlength="50"
+              />
+            </n-form-item>
+            <n-form-item
+              label="分类别名"
+              path="slug"
+              :rule="{ required: true, message: '请输入分类别名' }"
+            >
+              <n-input
+                v-model:value="formAddEdit.slug"
+                placeholder="分类别名"
+                maxlength="50"
+              />
+            </n-form-item>
+
+            <n-form-item
+              label="统一封面（如果文章未设置封面）"
+              path="unifiedCover"
+            >
+              <n-switch v-model:value="formAddEdit.unifiedCover" />
+            </n-form-item>
+            <n-form-item label="封面" path="cover">
+              <n-space vertical style="width: 100%">
+                <n-input-group>
+                  <n-input
+                    v-model:value="formAddEdit.cover"
+                    placeholder="分类封面地址"
+                    maxlength="256"
+                    clearable
+                  />
+                  <n-popover>
+                    <template #trigger>
+                      <n-button @click="visibleFileSelectModal = true">
+                        <template #icon>
+                          <n-icon>
+                            <FileIcon />
+                          </n-icon>
+                        </template>
+                      </n-button>
+                    </template>
+                    <span>查看附件</span>
+                  </n-popover>
+                </n-input-group>
+                <n-image
+                  :width="380"
+                  object-fit="cover"
+                  v-if="formAddEdit.cover"
+                  :src="formAddEdit.cover"
+                />
+              </n-space>
+            </n-form-item>
+          </n-form>
+        </n-scrollbar>
       </template>
     </n-modal>
 
@@ -438,7 +511,9 @@ const onCategoryCancelChecked = () => {
             :category="category"
             @on-delete-category="onDeleteCategory"
             @on-edit-category="onEditCategory"
-            :is-checked="currentSelectCategoryIds.includes(category.categoryId!!)"
+            :is-checked="
+              currentSelectCategoryIds.includes(category.categoryId!!)
+            "
             @on-checked="onCategoryChecked"
             @on-un-checked="onCategoryUnChecked"
           />

@@ -1,5 +1,11 @@
 <script setup lang="ts">
-import { ExposeParam, MdEditor, Themes } from 'md-editor-v3';
+import {
+  ExposeParam,
+  MdEditor,
+  Themes,
+  NormalToolbar,
+  ToolbarNames
+} from 'md-editor-v3';
 import { inject, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import {
   confirmDialog,
@@ -25,7 +31,7 @@ import {
   NSwitch,
   SelectOption
 } from 'naive-ui';
-import { getCurrentTheme, isNumber, renderIcon } from '../utils/MyUtils.ts';
+import { getCurrentTheme, isImage, isNumber, renderIcon } from '../utils/MyUtils.ts';
 import {
   FileTrayFullOutline as DraftIcon,
   HammerOutline as HammerIcon,
@@ -34,7 +40,8 @@ import {
   RocketOutline as PublishIcon,
   SaveOutline as SaveIcon,
   SunnyOutline as SunIcon,
-  TrashOutline as TrashIcon
+  TrashOutline as TrashIcon,
+  ImageOutline as ImageIcon
 } from '@vicons/ionicons5';
 import bus from '../utils/EventBus.ts';
 import {
@@ -62,6 +69,8 @@ import { StoreEnum } from '../models/enum/StoreEnum.ts';
 import MyPostSettingModal from '../components/component/MyPostSettingModal.vue';
 import router from '../router';
 import { RouterViews } from '../router/RouterViews.ts';
+import MyFileSelectModal from '../components/component/MyFileSelectModal.vue';
+import { MFile } from '../models/MFile.ts';
 
 /**
  * 标记编辑器当前是添加 / 编辑文章
@@ -80,6 +89,41 @@ enum DraftNameDialogMode {
   /** 添加草稿模式 **/
   ADD_DRAFT
 }
+
+// Markdown 编辑器工具栏
+const mdEditToolbars: Array<ToolbarNames> = [
+  'bold',
+  'underline',
+  'italic',
+  '-',
+  'strikeThrough',
+  'title',
+  'sub',
+  'sup',
+  'quote',
+  'unorderedList',
+  'orderedList',
+  'task', // ^2.4.0
+  '-',
+  'codeRow',
+  'code',
+  'link',
+  'table',
+  0,
+  'mermaid',
+  'katex',
+  '-',
+  'revoke',
+  'next',
+  'save',
+  '=',
+  'pageFullscreen',
+  'fullscreen',
+  'preview',
+  'htmlPreview',
+  'catalog',
+  'github'
+];
 
 // 全局响应式变量
 const globalVars: GlobalVars = inject('globalVars')!!;
@@ -215,6 +259,9 @@ const isDraft2PublishDialogLoading = ref(false);
 
 // 是否显示文章设置模态框
 const visiblePostSetting = ref(false);
+
+// 是否显示选择文件模态框
+const visibleFileSelectModal = ref(false);
 
 onMounted(() => {
   // 读取以前保存的设置
@@ -755,10 +802,42 @@ const onPostUpdate = () => {
   // 跳转文章页面
   router.push(RouterViews.POST.name);
 };
+
+/**
+ * 文章编辑器选择附件按钮点击事件
+ */
+const onSelectFileClick = () => {
+  // 显示选择文件模态框
+  visibleFileSelectModal.value = true;
+};
+
+/**
+ * 选择文件模态框确认事件
+ * @param files 选择的文件数组
+ */
+const onFileSelectConfirm = (files: Array<MFile>) => {
+  // 将文件按照不同类型以 Markdown 格式插入编辑器内容
+  files.forEach((file) => {
+    if (isImage(file.displayName)) {
+      // 当前文件是图片
+      text.value += `![${file.displayName}](${file.url})\n`;
+    } else {
+      // 当前文件不是图片
+      text.value += `[${file.displayName}](${file.url})\n`;
+    }
+  });
+}
 </script>
 
 <template>
   <div class="container">
+    <!-- 选择附件模态框 -->
+    <my-file-select-modal
+      v-model:show="visibleFileSelectModal"
+      @on-confirm="onFileSelectConfirm"
+    />
+
+    <!-- 文章设置模态框 -->
     <my-post-setting-modal
       v-model:show="visiblePostSetting"
       :post="currentPost"
@@ -939,7 +1018,24 @@ const onPostUpdate = () => {
           v-model="text"
           :on-save="onEditorSave"
           :theme="theme"
-        />
+          no-upload-img
+          :toolbars="mdEditToolbars"
+          :table-shape="[10, 10]"
+        >
+          <template #defToolbars>
+            <NormalToolbar
+              title="选择附件"
+              @onClick="onSelectFileClick"
+              style="height: 24px"
+            >
+              <template #trigger>
+                <n-icon :size="18" style="margin-top: 3px">
+                  <ImageIcon />
+                </n-icon>
+              </template>
+            </NormalToolbar>
+          </template>
+        </MdEditor>
       </template>
     </n-card>
   </div>

@@ -115,7 +115,7 @@ const route = useRoute();
 
 onMounted(() => {
   // 读取设置
-  loadSetting();
+  loadSettings();
 
   // 查看路由是否传参
   let tagId = Number(route.query.tagId);
@@ -135,14 +135,26 @@ onMounted(() => {
 /**
  * 读取设置
  */
-const loadSetting = () => {
+const loadSettings = () => {
   // 读取以前是否设置过标签显示模式
-  currentTagMode.value = Number(
+  let mode = Number(
     localStorage.getItem(StoreEnum.TAG_MODE) ?? TagMode.BLOCK
   );
 
+  if (!Object.values(TagMode).includes(mode)) {
+    // 设置值有误，默认为块显示
+    currentTagMode.value = TagMode.BLOCK;
+  } else {
+    currentTagMode.value = mode;
+  }
+
   // 读取以前是否设置过每页大小
-  pageSize.value = Number(localStorage.getItem(StoreEnum.TAG_PAGE_SIZE) ?? 10);
+  let ps = Number(localStorage.getItem(StoreEnum.TAG_PAGE_SIZE) ?? 10);
+  if (isNaN(ps) || ps < 10 || ps > 120) {
+    pageSize.value = 10;
+  } else {
+    pageSize.value = ps;
+  }
 }
 
 /**

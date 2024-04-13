@@ -165,8 +165,8 @@ const visibleSettingPostDialog = ref(false);
 const currentSelectedPostIds = ref(Array<number>());
 
 onMounted(() => {
-  // 读取以前是否设置过每页大小
-  pageSize.value = Number(localStorage.getItem(StoreEnum.POST_PAGE_SIZE) ?? 10);
+  // 读取设置
+  loadSettings();
 
   // 查看路由是否传参分类
   let categoryId = Number(route.query.categoryId);
@@ -186,6 +186,19 @@ onMounted(() => {
   refreshTag();
   refreshCategory();
 });
+
+/**
+ * 读取设置
+ */
+const loadSettings = () => {
+  // 读取以前是否设置过每页大小
+  let ps = Number(localStorage.getItem(StoreEnum.POST_PAGE_SIZE) ?? 10);
+  if (isNaN(ps) || ps < 10 || ps > 120) {
+    pageSize.value = 10;
+  } else {
+    pageSize.value = ps;
+  }
+}
 
 /**
  * 获取标签

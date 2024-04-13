@@ -107,11 +107,12 @@ const onDeleteBtnClick = () => {
     }"
     content-style="padding: 0;"
     :size="size ?? 'small'"
+    header-style="padding: 10px;height:50px;"
   >
     <template #header>
-      <n-space style="line-height: 32px; height: 32px" inline>
+      <n-space style="display: flex;align-items: center">
         <n-checkbox
-          v-if="showCheckbox ?? false"
+          v-if="showCheckbox ?? true"
           :checked="isChecked"
           :on-update-checked="onCheckBoxChecked"
         />
@@ -132,7 +133,7 @@ const onDeleteBtnClick = () => {
         </slot>
 
         <slot name="header">
-          <div v-if="!globalVars.isSmallWindow">
+          <div v-if="!globalVars.isSmallWindow" style="margin-top: 2px;">
             <span v-if="showPagination ?? true">
               当前页
               <MyNumberAnimation :to="currentPageItemCount ?? 0" />

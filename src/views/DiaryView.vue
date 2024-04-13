@@ -97,10 +97,13 @@ onMounted(() => {
  */
 const loadSettings = () => {
   // 读取以前是否设置过每页大小
-  pageSize.value = Number(
-    localStorage.getItem(StoreEnum.DIARY_PAGE_SIZE) ?? 10
-  );
-};
+  let ps = Number(localStorage.getItem(StoreEnum.DIARY_PAGE_SIZE) ?? 10);
+  if (isNaN(ps) || ps < 10 || ps > 120) {
+    pageSize.value = 10;
+  } else {
+    pageSize.value = ps;
+  }
+}
 
 /**
  * 刷新日常

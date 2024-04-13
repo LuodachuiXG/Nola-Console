@@ -272,7 +272,6 @@ const handleFinish = ({
               ref="uploadRef"
               multiple
               directory-dnd
-              :max="5"
               :default-upload="false"
               :action="baseUrl + '/admin/file'"
               :headers="{

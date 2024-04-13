@@ -7,13 +7,22 @@ import {
   NInput,
   NModal,
   FormInst,
-  NScrollbar
+  NScrollbar,
+  NIcon,
+  NImage,
+  NSpace,
+  NButton,
+  NPopover,
+  NInputGroup
 } from 'naive-ui';
 import { User } from '../../models/User.ts';
-import { formatTimestamp } from '../../utils/MyUtils.ts';
+import { formatTimestamp, isImage } from '../../utils/MyUtils.ts';
 import { getUserInfo, updateUserInfo } from '../../apis/userApi.ts';
 import { errorMsg, optionSuccessMsg } from '../../utils/Message.ts';
 import { StoreEnum } from '../../models/enum/StoreEnum.ts';
+import { FileTrayFullOutline as FileIcon } from '@vicons/ionicons5';
+import MyFileSelectModal from './MyFileSelectModal.vue';
+import { MFile } from '../../models/MFile.ts';
 
 // 组件参数。是否显示对话框
 const show = defineModel('show', {
@@ -33,6 +42,9 @@ const _show = ref(false);
 
 // 是否正在加载中
 const isLoading = ref(false);
+
+// 是否显示选择文件模态框
+const visibleFileSelectModal = ref(false);
 
 // 管理员信息表单
 const form = reactive({
@@ -154,9 +166,31 @@ const onSubmit = () => {
   });
   return false;
 };
+
+/**
+ * 选择头像文件确认事件
+ * @param files 因为设置了不可多选，所以这里只会有一个文件
+ */
+const onCoverFileSelectConfirm = (files: Array<MFile>) => {
+  let file = files[0];
+  if (!isImage(file.displayName)) {
+    // 当前选择的文件不是图片
+    errorMsg('只能选择图片文件');
+    return;
+  }
+  form.avatar = file.url;
+};
 </script>
 
 <template>
+  <!-- 选择头像对话框 -->
+  <my-file-select-modal
+    v-model:show="visibleFileSelectModal"
+    :multiple="false"
+    @on-confirm="onCoverFileSelectConfirm"
+  />
+
+
   <!-- 管理员个人信息模态框 -->
   <n-modal
     v-model:show="_show"
@@ -212,11 +246,33 @@ const onSubmit = () => {
           </n-form-item>
 
           <n-form-item path="avatar" label="头像">
-            <n-input
-              placeholder="头像地址"
-              v-model:value="form.avatar"
-              clearable
-            />
+            <n-space vertical style="width: 100%">
+              <n-input-group>
+                <n-input
+                  placeholder="头像地址"
+                  v-model:value="form.avatar"
+                  clearable
+                />
+                <n-popover>
+                  <template #trigger>
+                    <n-button @click="visibleFileSelectModal = true">
+                      <template #icon>
+                        <n-icon>
+                          <FileIcon />
+                        </n-icon>
+                      </template>
+                    </n-button>
+                  </template>
+                  <span>查看附件</span>
+                </n-popover>
+              </n-input-group>
+              <n-image
+                :width="380"
+                object-fit="cover"
+                v-if="form.avatar"
+                :src="form.avatar"
+              />
+            </n-space>
           </n-form-item>
 
           <n-form-item path="description" label="描述">
