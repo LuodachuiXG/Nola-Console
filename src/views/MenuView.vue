@@ -112,20 +112,20 @@ const formMenuItem: MenuItemRequest = reactive({
   menuItemId: undefined,
   displayName: '',
   href: '',
-  target: MenuItemTarget.BLANK,
+  target: MenuItemTarget.SELF,
   parentMenuId: -1,
   parentMenuItemId: null,
   index: 0
 });
 // 菜单项打开方式选择器选项
 const menuItemTargetOptions = [
+{
+    label: '当前窗口',
+    value: MenuItemTarget.SELF
+  },
   {
     label: '新窗口',
     value: MenuItemTarget.BLANK
-  },
-  {
-    label: '当前窗口',
-    value: MenuItemTarget.SELF
   },
   {
     label: '父窗口',
@@ -391,7 +391,7 @@ const clearFormMenuItem = () => {
   formMenuItem.menuItemId = undefined;
   formMenuItem.displayName = '';
   formMenuItem.href = '';
-  formMenuItem.target = MenuItemTarget.BLANK;
+  formMenuItem.target = MenuItemTarget.SELF;
   formMenuItem.parentMenuId = -1;
   formMenuItem.parentMenuItemId = null;
   formMenuItem.index = 0;
