@@ -101,8 +101,8 @@ const refreshTencentCOSConfig = () => {
         formTencentCOS.region = tencentCOSConfig.region;
         formTencentCOS.path = tencentCOSConfig.path;
         formTencentCOS.https = tencentCOSConfig.https;
-        isLoading.value = false;
       }
+      isLoading.value = false;
     })
     .catch((err) => {
       isLoading.value = false;

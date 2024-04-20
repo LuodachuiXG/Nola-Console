@@ -69,6 +69,9 @@ const fileLength = ref(0);
 // 当前登录的用户
 const user = ref<User | null>(null);
 
+// 当前选择的文件
+const currentSelectedFiles = ref<Array<UploadFileInfo>>([]);
+
 onMounted(() => {
   // 监听父组件的 show 属性
   watch(
@@ -176,7 +179,10 @@ const onClose = () => {
  * 上传文件按钮点击事件
  */
 const onSubmit = () => {
-  if (fileLength.value <= 0) {
+  // 判断是否有待上传文件
+  let file = currentSelectedFiles.value.find((file) => file.status === 'pending');
+
+  if (!file) {
     errorMsg('你还没有选择任何文件');
     return false;
   }
@@ -205,7 +211,9 @@ const onStorageModeSelect = (value: FileStorageMode) => {
  * @param options
  */
 const handleUploadChange = (options: { fileList: UploadFileInfo[] }) => {
-  fileLength.value = options.fileList.length;
+  currentSelectedFiles.value = options.fileList;
+  
+  fileLength.value = currentSelectedFiles.value.length;
 };
 
 /**
@@ -218,17 +226,18 @@ const handleFinish = ({
   file: UploadFileInfo;
   event?: ProgressEvent;
 }) => {
-  const response = JSON.parse((event?.target as XMLHttpRequest).response)
+  const response = JSON.parse((event?.target as XMLHttpRequest).response);
   const fileName = response.data.displayName;
   const errMsg = response.errMsg;
   if (response.code === 200) {
-    successMsg(`${fileName} 上传成功`)
+    successMsg(`${fileName} 上传成功`);
   } else if (response.code === 409 && errMsg) {
-    errorMsg(`${fileName} 上传失败：${errMsg}`)
+    errorMsg(`${fileName} 上传失败：${errMsg}`);
   } else {
-    errMsg('未知错误，请查看服务端日志')
+    errMsg('未知错误，请查看服务端日志');
   }
   isLoading.value = false;
+  return undefined;
 };
 </script>
 
