@@ -11,7 +11,7 @@ interface Props {
   multiple?: boolean;
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   multiple: true
 });
 

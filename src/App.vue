@@ -596,6 +596,7 @@ const onAdminInfoModalClose = () => {
                                 'margin-right: ' +
                                 (globalVars?.isSmallWindow ? '0px;' : '6px;')
                               "
+                              object-fit="cover"
                             />
                             <!-- 用户头像为空，显示名称第一个字 -->
                             <div

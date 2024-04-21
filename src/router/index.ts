@@ -1,9 +1,9 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHashHistory } from 'vue-router';
 import { RouterViews } from './RouterViews';
 import { StoreEnum } from '../models/enum/StoreEnum.ts';
 
 export const router = createRouter({
-  history: createWebHistory("/console"),
+  history: createWebHashHistory("/console/"),
   routes: [
     {
       path: '/404',
