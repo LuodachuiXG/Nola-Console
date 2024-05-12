@@ -59,6 +59,8 @@ import { BusEnum } from './models/enum/BusEnum.ts';
 import MyAdminInfoModal from './components/component/MyAdminInfoModal.vue';
 import MyAdminUpdatePasswordModal from './components/component/MyAdminUpdatePasswordModal.vue';
 
+const baseUrl = import.meta.env.VITE_BASE_URL;
+
 // 全局响应式变量
 const globalVars: GlobalVars = inject('globalVars')!!;
 
@@ -588,7 +590,7 @@ const onAdminInfoModalClose = () => {
                             <n-image
                               v-if="user?.avatar !== null"
                               class="avatar"
-                              :src="user?.avatar"
+                              :src="baseUrl + user?.avatar"
                               width="22"
                               height="22"
                               preview-disabled

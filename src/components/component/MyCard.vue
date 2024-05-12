@@ -162,14 +162,14 @@ const onDeleteBtnClick = () => {
     </template>
     <template #action>
       <n-row :style="{marginBottom: showPagination ? '-4px' : '0px'}">
-        <n-col :span="6">
+        <n-col :span="6" v-if="!globalVars.isSmallWindow">
           <slot name="action-left">
             <n-text style="margin-top: 1px" tag="div">
               {{ '所有' + itemString }}
             </n-text>
           </slot>
         </n-col>
-        <n-col :span="18">
+        <n-col :span="globalVars.isSmallWindow ? 24 : 18">
           <div class="pagination-div" v-if="showPagination ?? true">
             <MyPagination
               :current-page="currentPage ?? 1"

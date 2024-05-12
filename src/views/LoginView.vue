@@ -207,9 +207,11 @@ const onFormLoginSubmit = () => {
             localStorage.setItem(StoreEnum.USER, JSON.stringify(res.data));
             const user = res.data as User;
             if (user.lastLoginDate === null) {
-              successMsg('欢迎使用 Nola 博客 ^_^')
+              successMsg('欢迎使用 Nola 博客 ^_^');
             } else {
-              successMsg(`上次登录时间：${formatTimestamp(user.lastLoginDate)}`)
+              successMsg(
+                `上次登录时间：${formatTimestamp(user.lastLoginDate)}`
+              );
             }
             // 跳转控制台页面
             router.push(RouterViews.MAIN.name);
@@ -265,7 +267,7 @@ const validatePasswordSame = (_: FormItemRule, value: string) => {
           v-model:value="formLogin.password"
           placeholder="密码"
           type="password"
-          show-password-on="mousedown"
+          show-password-on="click"
           @keydown.enter.prevent
         />
       </n-form-item>
@@ -275,8 +277,8 @@ const validatePasswordSame = (_: FormItemRule, value: string) => {
           @click="onFormLoginSubmit"
           style="width: 100%"
           :loading="isLogin"
-          >登录</n-button
-        >
+          >登录
+        </n-button>
       </n-form-item>
     </n-form>
 
@@ -298,13 +300,10 @@ const validatePasswordSame = (_: FormItemRule, value: string) => {
           @keydown.enter.prevent
         />
       </n-form-item>
-      <n-form-item
-        path="subtitle"
-        :rule="{ required: true, message: '请输入站点副标题' }"
-      >
+      <n-form-item path="subtitle">
         <n-input
           v-model:value="formCreateBlog.subtitle"
-          placeholder="站点副标题"
+          placeholder="站点副标题（可选）"
           @keydown.enter.prevent
         />
       </n-form-item>
@@ -378,7 +377,7 @@ const validatePasswordSame = (_: FormItemRule, value: string) => {
         <n-input
           v-model:value="formCreateAdmin.password"
           type="password"
-          show-password-on="mousedown"
+          show-password-on="click"
           placeholder="密码"
           @keydown.enter.prevent
         />
@@ -398,7 +397,7 @@ const validatePasswordSame = (_: FormItemRule, value: string) => {
         <n-input
           v-model:value="formCreateAdmin.passwordA"
           type="password"
-          show-password-on="mousedown"
+          show-password-on="click"
           placeholder="重复密码"
           @keydown.enter.prevent
         />

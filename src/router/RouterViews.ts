@@ -86,7 +86,7 @@ export class RouterViews {
     name: 'setting',
     path: '/setting',
     menuName: '设置',
-    displayName: '博客设置'
+    displayName: '设置'
   };
   static readonly BACKUP: RouterItem = {
     name: 'backup',

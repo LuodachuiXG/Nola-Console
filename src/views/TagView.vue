@@ -524,7 +524,7 @@ const onTagCancelChecked = () => {
       :page-count="totalPages"
       :current-page-item-count="tags?.length ?? 0"
       :show-pagination="currentTagMode == TagMode.LIST"
-      item-string="标签"
+      item-string= "标签"
       @on-page-update="onPageUpdate"
       @on-page-size-update="onPageSizeUpdate"
       show-checkbox

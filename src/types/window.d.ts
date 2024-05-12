@@ -5,7 +5,7 @@ import { LoadingBarApiInjection } from 'naive-ui/es/loading-bar/src/LoadingBarPr
 import { MenuItem } from '../models/MenuItem.ts';
 
 /**
- * 声明全局变量
+ * 声明全局类型
  */
 declare global {
   // 在全局作用域的 Window 接口中扩展属性

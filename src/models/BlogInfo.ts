@@ -5,7 +5,7 @@ export interface BlogInfo {
   /** 站点标题 **/
   title: string;
   /** 站点副标题 **/
-  subtitle: string;
+  subtitle: string | null;
   /** 博主名 **/
   blogger: string | null;
   /** LOGO **/

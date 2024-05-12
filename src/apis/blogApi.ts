@@ -11,17 +11,43 @@ export function getBlogInfo() {
 }
 
 /**
+ * 获取博客信息
+ * @param title 站点标题
+ * @param subtitle 站点副标题
+ * @param logo 站点 logo
+ * @param favicon 站点 favicon
+ */
+export function updateBlogInfo(
+  title: string,
+  subtitle?: string | null,
+  logo?: string | null,
+  favicon?: string | null
+) {
+  return service({
+    url: '/admin/config/blog',
+    method: 'PUT',
+    data: {
+      title: title,
+      subtitle: subtitle,
+      logo: logo,
+      favicon: favicon
+    }
+  });
+}
+
+/**
  * 初始化博客
  * @param title 站点标题
  * @param subtitle 站点副标题
  */
-export function initBlogInfo(title: string, subtitle: string) {
+export function initBlogInfo(title: string, subtitle: string | null) {
+  const st = subtitle?.trim().length === 0 || !subtitle ? null : subtitle;
   return service({
     url: '/admin/config/blog',
     method: 'POST',
     data: {
       title: title,
-      subtitle: subtitle
+      subtitle: st
     }
   });
 }
