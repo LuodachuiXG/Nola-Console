@@ -326,7 +326,6 @@ const onAddDiaryClick = () => {
       negative-text="取消"
       :loading="isDiaryDialogLoading"
       @positiveClick="onDiaryDialogSubmit"
-      @keydown.enter="onDiaryDialogSubmit"
     >
       <template #default>
         <n-scrollbar style="max-height: 65vh; padding-right: 12px">

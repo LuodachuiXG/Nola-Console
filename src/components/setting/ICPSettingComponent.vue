@@ -27,9 +27,9 @@ onMounted(() => {
 const initICP = () => {
   getICP()
     .then((res) => {
-      let icp = res.data as ICP;
-      formICP.icp = icp.icp ?? '';
-      formICP.public = icp.public ?? '';
+      let icp: ICP | null = res.data;
+      formICP.icp = icp?.icp ?? '';
+      formICP.public = icp?.public ?? '';
     })
     .catch((err) => errorMsg(err));
 };
