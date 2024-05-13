@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { NTabs, NTabPane, NCard } from 'naive-ui';
 import BlogSettingComponent from '../components/setting/BlogSettingComponent.vue';
+import ICPSettingComponent from '../components/setting/ICPSettingComponent.vue';
 </script>
 
 <template>
@@ -14,7 +15,7 @@ import BlogSettingComponent from '../components/setting/BlogSettingComponent.vue
           <blog-setting-component />
         </n-tab-pane>
         <n-tab-pane name="icpSetting" tab="备案设置">
-          ICP
+          <i-c-p-setting-component />
         </n-tab-pane>
       </n-tabs>
     </n-card>

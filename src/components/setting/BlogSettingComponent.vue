@@ -50,7 +50,6 @@ onMounted(() => {
  * 初始化博客信息
  */
 const initBlogInfo = () => {
-  window.$loadingBar.start();
   getBlogInfo()
     .then((res) => {
       blogInfo.value = res.data;
@@ -63,12 +62,8 @@ const initBlogInfo = () => {
         formBlogInfo.favicon = blogInfo.value?.favicon;
         formBlogInfo.createDate = blogInfo.value?.createDate;
       }
-      window.$loadingBar.finish();
     })
-    .catch((err) => {
-      errorMsg(err);
-      window.$loadingBar.error();
-    });
+    .catch((err) => errorMsg(err));
 };
 
 /**
@@ -152,7 +147,7 @@ const onSubmit = () => {
     @on-confirm="onCoverFileSelectConfirm"
   />
 
-  <n-scrollbar style="max-height: calc(100vh - 240px);">
+  <n-scrollbar style="max-height: calc(100vh - 245px);">
     <n-form
       ref="formRef"
       class="form"
