@@ -48,9 +48,8 @@ import themeOverrides from './theme/theme.ts';
 import type { BuiltInGlobalTheme } from 'naive-ui/es/themes/interface';
 import { getCurrentTheme, renderIcon, setTheme } from './utils/MyUtils.ts';
 import AppProvider from './components/appProvider/AppProvider.vue';
-import { StoreEnum } from './models/enum/StoreEnum.ts';
+import { StoreKey } from './stores/StoreKey.ts';
 import NolaIcon from './assets/nola.png';
-import { User } from './models/User.ts';
 import router from './router';
 import { confirmDialog, errorMsg, successMsg } from './utils/Message.ts';
 import bus from './utils/EventBus.ts';
@@ -59,6 +58,7 @@ import { BusEnum } from './models/enum/BusEnum.ts';
 import MyAdminInfoModal from './components/component/MyAdminInfoModal.vue';
 import MyAdminUpdatePasswordModal from './components/component/MyAdminUpdatePasswordModal.vue';
 import { getRealUrl } from './utils/NetworkUtil.ts';
+import { useUserStore } from './stores/UserStore.ts';
 
 // 全局响应式变量
 const globalVars: GlobalVars = inject('globalVars')!!;
@@ -68,8 +68,8 @@ const isLogoEnter = ref(false);
 // 鼠标是否点击 LOGO
 const isLogoClick = ref(false);
 
-// 当前登录用户
-const user = ref<User | null>(null);
+// 用户 Store
+const userStore = useUserStore();
 
 // 当前主题颜色
 const currentTheme = ref<BuiltInGlobalTheme | undefined>();
@@ -201,14 +201,12 @@ onMounted(() => {
   currentTheme.value = getCurrentTheme() === 'dark' ? darkTheme : undefined;
   // 获取之前侧边栏折叠状态
   isSiderCollapsed.value =
-    localStorage.getItem(StoreEnum.SIDER_COLLAPSED) === 'true';
+    localStorage.getItem(StoreKey.SIDER_COLLAPSED) === 'true';
 
   // 监听路由变化
   watch(route, (e: RouteLocationNormalizedLoaded) => {
     // 如果当前是登录页面，就隐藏侧边菜单
     hideSider.value = e.name === RouterViews.LOGIN.name;
-    // 刷新当前登录用户
-    refreshCurrentLoginUser();
   });
 
   // 添加窗口大小改变事件监听器，动态修改侧边栏是否展开
@@ -246,19 +244,6 @@ onUnmounted(() => {
   // 移除窗口大小改变监听器
   window.removeEventListener('resize', handlerWindowResize);
 });
-
-/**
- * 刷新当前登录用户
- */
-const refreshCurrentLoginUser = () => {
-  // 刷新当前登录用户
-  let _user = localStorage.getItem(StoreEnum.USER);
-  if (_user !== null) {
-    user.value = JSON.parse(_user) as User;
-  } else {
-    user.value = null;
-  }
-};
 
 /**
  * 窗口大小改变监听器
@@ -313,7 +298,7 @@ const onSiderCollapsed = (collapsed: boolean) => {
   isSiderCollapsed.value = collapsed;
   // 将侧边栏折叠状态存储到本地
   localStorage.setItem(
-    StoreEnum.SIDER_COLLAPSED,
+    StoreKey.SIDER_COLLAPSED,
     String(isSiderCollapsed.value)
   );
 };
@@ -341,9 +326,9 @@ const onAvatarSelect = (key: string | number) => {
       break;
     case 'logout':
       // 弹出确认对话框
-      confirmDialog('确定要注销登录吗', () => {
+      confirmDialog('确定要注销登录吗？', () => {
         // 删除登录用户信息
-        localStorage.removeItem(StoreEnum.USER);
+        userStore.logout();
         // 跳转登录页
         router.push(RouterViews.LOGIN.name);
       });
@@ -369,13 +354,16 @@ const onReLoginDialogCancelClick = () => {
     // 清空重新登录对话框表单内容
     clearReLoginForm();
     // 清空登录记录
-    localStorage.removeItem(StoreEnum.USER);
+    userStore.logout();
     // 返回登录页
     router.push(RouterViews.LOGIN.name);
   });
   return false;
 };
 
+/**
+ * 重新登录对话框，登录按钮点击事件
+ */
 function onReLoginDialogLoginClick() {
   // 验证表单是否有错误
   formReLoginRef.value
@@ -387,7 +375,7 @@ function onReLoginDialogLoginClick() {
           .then((res) => {
             // 登录成功
             // 将返回的用户信息和 Token 令牌存储
-            localStorage.setItem(StoreEnum.USER, JSON.stringify(res.data));
+            userStore.login(res.data);
             isReLoginLoading.value = false;
             // 关闭重新登录对话框显示
             visibleReLoginDialog.value = false;
@@ -587,9 +575,9 @@ const onAdminInfoModalClose = () => {
                           >
                             <!-- 用户头像不为空显示头像 -->
                             <n-image
-                              v-if="user?.avatar"
+                              v-if="userStore.user?.avatar"
                               class="avatar"
-                              :src="getRealUrl(user.avatar)"
+                              :src="getRealUrl(userStore.user?.avatar)"
                               width="22"
                               height="22"
                               preview-disabled
@@ -608,10 +596,10 @@ const onAdminInfoModalClose = () => {
                                 (globalVars?.isSmallWindow ? '0px;' : '6px;')
                               "
                             >
-                              {{ user?.displayName[0] }}
+                              {{ userStore.user?.displayName[0] }}
                             </div>
                             <span v-if="!globalVars?.isSmallWindow">{{
-                              user?.displayName
+                              userStore.user?.displayName
                             }}</span>
                           </n-button>
                         </div>

@@ -16,7 +16,7 @@ import MyCard from '../components/component/MyCard.vue';
 import { inject, onMounted, reactive, ref } from 'vue';
 import { DiarySort } from '../models/enum/DiarySort.ts';
 import { Diary } from '../models/Diary.ts';
-import { StoreEnum } from '../models/enum/StoreEnum.ts';
+import { StoreKey } from '../stores/StoreKey.ts';
 import { confirmDialog, errorMsg, successMsg } from '../utils/Message.ts';
 import {
   addDiary,
@@ -97,7 +97,7 @@ onMounted(() => {
  */
 const loadSettings = () => {
   // 读取以前是否设置过每页大小
-  let ps = Number(localStorage.getItem(StoreEnum.DIARY_PAGE_SIZE) ?? 10);
+  let ps = Number(localStorage.getItem(StoreKey.DIARY_PAGE_SIZE) ?? 10);
   if (isNaN(ps) || ps < 10 || ps > 120) {
     pageSize.value = 10;
   } else {
@@ -147,7 +147,7 @@ const onPageUpdate = (page: number) => {
 const onPageSizeUpdate = (size: number) => {
   pageSize.value = size;
   // 将每页大小存储
-  localStorage.setItem(StoreEnum.DIARY_PAGE_SIZE, size.toString());
+  localStorage.setItem(StoreKey.DIARY_PAGE_SIZE, size.toString());
   // 刷新日常
   refreshDiaries();
 };

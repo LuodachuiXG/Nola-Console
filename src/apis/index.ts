@@ -1,8 +1,9 @@
 import axios, { AxiosRequestHeaders } from 'axios';
-import { StoreEnum } from '../models/enum/StoreEnum.ts';
+import { StoreKey } from '../stores/StoreKey.ts';
 import { User } from '../models/User.ts';
 import bus from '../utils/EventBus.ts';
 import { BusEnum } from '../models/enum/BusEnum.ts';
+import { useUserStore } from '../stores/UserStore.ts';
 
 // 创建 axios 实例
 const service = axios.create({
@@ -20,12 +21,11 @@ service.interceptors.request.use(
   (config) => {
     // 确保 headers 对象已初始化
     config.headers = config.headers || ({} as AxiosRequestHeaders);
-    // 检查用户是否已登录（即 localStorage 中有无 user）
-    const _user = localStorage.getItem(StoreEnum.USER);
-    // 如果存在 user，则将用户的 Token 设置到请求头中
-    if (_user) {
-      const user = JSON.parse(_user) as User;
-      config.headers.Authorization = `Bearer ${user.token}`;
+    // 检查用户是否已登录
+    const userStore = useUserStore();
+    if (userStore.isLogin) {
+      // 将用户的 Token 设置到请求头中
+      config.headers.Authorization = `Bearer ${userStore.token}`;
     }
     // 必须返回 config，以便请求能发出
     return config;
@@ -49,8 +49,8 @@ service.interceptors.response.use(
       // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
       if (err.response.data.code === 401) {
         // Token 过期
-        // 移除用户配置信息
-        localStorage.removeItem(StoreEnum.USER);
+        // 用户登出
+        useUserStore().logout();
         // 发送登录过期消息
         bus.emit(BusEnum.LOGIN_EXPIRED);
         return Promise.reject('登录过期');

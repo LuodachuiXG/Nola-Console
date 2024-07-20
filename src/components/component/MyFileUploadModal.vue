@@ -9,7 +9,7 @@ import {
 import { FileGroup } from '../../models/FileGroup.ts';
 import { getFileGroups, getStorageModes } from '../../apis/fileApi.ts';
 import { errorMsg, successMsg } from '../../utils/Message.ts';
-import { StoreEnum } from '../../models/enum/StoreEnum.ts';
+import { StoreKey } from '../../stores/StoreKey.ts';
 import { isNumber } from '../../utils/MyUtils.ts';
 import {
   NForm,
@@ -27,6 +27,7 @@ import {
 } from 'naive-ui';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
 import { User } from '../../models/User.ts';
+import { useUserStore } from '../../stores/UserStore.ts';
 
 const show = defineModel('show', {
   type: Boolean,
@@ -39,6 +40,9 @@ const _show = ref(false);
 const emit = defineEmits<{
   (e: 'onClose'): void;
 }>();
+
+// 用户 Store
+const userStore = useUserStore();
 
 // 可用的文件存储策略
 const availableStorageModes = ref<FileStorageMode[]>([]);
@@ -66,9 +70,6 @@ const baseUrl = import.meta.env.VITE_BASE_URL;
 // 上传组件当前的文件数量
 const fileLength = ref(0);
 
-// 当前登录的用户
-const user = ref<User | null>(null);
-
 // 当前选择的文件
 const currentSelectedFiles = ref<Array<UploadFileInfo>>([]);
 
@@ -85,11 +86,6 @@ onMounted(() => {
         refreshFileGroups();
         // 读取以前的设置
         loadSetting();
-        // 读取当前登录用户
-        const u = localStorage.getItem(StoreEnum.USER);
-        if (u) {
-          user.value = JSON.parse(u) as User;
-        }
         // 显示模态框
         _show.value = true;
       } else {
@@ -109,9 +105,9 @@ const loadSetting = () => {
   // 读取文件存储策略，默认本地存储
   storageModeValue.value =
     (localStorage.getItem(
-      StoreEnum.FILE_UPLOAD_STORAGE_MODE
+      StoreKey.FILE_UPLOAD_STORAGE_MODE
     ) as FileStorageMode) ?? FileStorageMode.LOCAL;
-  const fileGroupId = localStorage.getItem(StoreEnum.FILE_UPLOAD_FILE_GROUP);
+  const fileGroupId = localStorage.getItem(StoreKey.FILE_UPLOAD_FILE_GROUP);
 
   if (fileGroupId && isNumber(fileGroupId)) {
     // 读取的文件组是数字，再判断当前文件组是否还存在
@@ -180,7 +176,9 @@ const onClose = () => {
  */
 const onSubmit = () => {
   // 判断是否有待上传文件
-  let file = currentSelectedFiles.value.find((file) => file.status === 'pending');
+  let file = currentSelectedFiles.value.find(
+    (file) => file.status === 'pending'
+  );
 
   if (!file) {
     errorMsg('你还没有选择任何文件');
@@ -212,7 +210,7 @@ const onStorageModeSelect = (value: FileStorageMode) => {
  */
 const handleUploadChange = (options: { fileList: UploadFileInfo[] }) => {
   currentSelectedFiles.value = options.fileList;
-  
+
   fileLength.value = currentSelectedFiles.value.length;
 };
 
@@ -284,7 +282,7 @@ const handleFinish = ({
               :default-upload="false"
               :action="baseUrl + '/admin/file'"
               :headers="{
-                Authorization: `Bearer ${user?.token ?? ''}`
+                Authorization: `Bearer ${userStore.token}`
               }"
               :data="{
                 storageMode: storageModeValue ?? '',

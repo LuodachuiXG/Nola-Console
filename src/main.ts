@@ -9,6 +9,8 @@ import 'vfonts/Lato.css';
 // 等宽字体
 import 'vfonts/FiraCode.css';
 import { isCurrentSmallWindow } from './utils/MyUtils.ts';
+import { createPinia } from 'pinia';
+import piniaPersist from 'pinia-plugin-persistedstate';
 
 /**
  * 全局响应变量
@@ -29,7 +31,11 @@ window.addEventListener('resize', handleWindowSizeChange);
 // 首次加载时触发一次
 handleWindowSizeChange();
 
+const pinia = createPinia();
+pinia.use(piniaPersist);
+
 const app = createApp(App);
 app.provide('globalVars', globalVars);
+app.use(pinia);
 app.use(router);
 app.mount('#app');

@@ -65,7 +65,7 @@ import { PostStatus } from '../models/enum/PostStatus.ts';
 import { PostVisible } from '../models/enum/PostVisible.ts';
 import { Post } from '../models/Post.ts';
 import { BusEnum } from '../models/enum/BusEnum.ts';
-import { StoreEnum } from '../models/enum/StoreEnum.ts';
+import { StoreKey } from '../stores/StoreKey.ts';
 import MyPostSettingModal from '../components/component/MyPostSettingModal.vue';
 import router from '../router';
 import { RouterViews } from '../router/RouterViews.ts';
@@ -327,7 +327,7 @@ const loadSetting = () => {
 
   // 获取之前是否设置过文章自动保存时间间隔
   postAutoSaveIntervalSelectValue.value =
-    Number(localStorage.getItem(StoreEnum.POST_AUTO_SAVE_INTERVAL) ?? 5000) ||
+    Number(localStorage.getItem(StoreKey.POST_AUTO_SAVE_INTERVAL) ?? 5000) ||
     5000;
 };
 
@@ -791,7 +791,7 @@ const onSaveContentClick = (
 const onPostAutoSaveIntervalSelectUpdate = (value: number) => {
   postAutoSaveIntervalSelectValue.value = value;
   // 将设置保存到本地
-  localStorage.setItem(StoreEnum.POST_AUTO_SAVE_INTERVAL, value.toString());
+  localStorage.setItem(StoreKey.POST_AUTO_SAVE_INTERVAL, value.toString());
 };
 
 /**

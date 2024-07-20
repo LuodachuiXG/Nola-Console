@@ -3,7 +3,6 @@ import { onMounted, onUnmounted, reactive, ref } from 'vue';
 import { getBlogInfo, initBlogInfo, createBlogAdmin } from '../apis/blogApi.ts';
 import { login } from '../apis/userApi.ts';
 import { BlogInfo } from '../models/BlogInfo.ts';
-import { StoreEnum } from '../models/enum/StoreEnum.ts';
 import router from '../router';
 import { RouterViews } from '../router/RouterViews.ts';
 import {
@@ -16,7 +15,7 @@ import {
 } from 'naive-ui';
 import { errorMsg, successMsg } from '../utils/Message.ts';
 import { formatTimestamp } from '../utils/MyUtils.ts';
-import { User } from '../models/User.ts';
+import { useUserStore } from '../stores/UserStore.ts';
 
 /**
  * 标记当前模式的枚举类
@@ -29,6 +28,9 @@ enum Mode {
   // 创建管理员
   CREATE_ADMIN
 }
+
+// 用户 Store
+const userStore = useUserStore();
 
 // 当前模式
 const currentMode = ref(Mode.LOGIN);
@@ -204,13 +206,12 @@ const onFormLoginSubmit = () => {
           .then((res) => {
             // 登录成功
             // 将返回的用户信息和 Token 令牌存储
-            localStorage.setItem(StoreEnum.USER, JSON.stringify(res.data));
-            const user = res.data as User;
-            if (user.lastLoginDate === null) {
+            userStore.login(res.data);
+            if (!userStore.user?.lastLoginDate) {
               successMsg('欢迎使用 Nola 博客 ^_^');
             } else {
               successMsg(
-                `上次登录时间：${formatTimestamp(user.lastLoginDate)}`
+                `上次登录时间：${formatTimestamp(userStore.user.lastLoginDate)}`
               );
             }
             // 跳转控制台页面

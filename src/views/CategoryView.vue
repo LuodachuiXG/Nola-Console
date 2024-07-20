@@ -27,7 +27,7 @@ import {
 import { Category } from '../models/Category.ts';
 import { confirmDialog, errorMsg, successMsg } from '../utils/Message.ts';
 import { DialogFormMode } from '../models/enum/DialogFormMode.ts';
-import { StoreEnum } from '../models/enum/StoreEnum.ts';
+import { StoreKey } from '../stores/StoreKey.ts';
 import { Pager } from '../models/Pager.ts';
 import { displayNameToSlug, isImage } from '../utils/MyUtils.ts';
 import CategoryListItem from '../components/item/CategoryListItem.vue';
@@ -104,7 +104,7 @@ onMounted(() => {
  */
 const loadSetting = () => {
   // 读取以前是否设置过每页大小
-  let ps = Number(localStorage.getItem(StoreEnum.CATEGORY_PAGE_SIZE) ?? 10);
+  let ps = Number(localStorage.getItem(StoreKey.CATEGORY_PAGE_SIZE) ?? 10);
   if (isNaN(ps) || ps < 10 || ps > 120) {
     pageSize.value = 10;
   } else {
@@ -322,7 +322,7 @@ const onPageUpdate = (page: number) => {
 const onPageSizeUpdate = (size: number) => {
   pageSize.value = size;
   // 将每页大小存储
-  localStorage.setItem(StoreEnum.CATEGORY_PAGE_SIZE, size.toString());
+  localStorage.setItem(StoreKey.CATEGORY_PAGE_SIZE, size.toString());
   // 刷新分类
   refreshCategories();
 };

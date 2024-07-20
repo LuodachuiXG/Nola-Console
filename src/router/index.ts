@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { RouterViews } from './RouterViews';
-import { StoreEnum } from '../models/enum/StoreEnum.ts';
+import { useUserStore } from '../stores/UserStore.ts';
 
 export const router = createRouter({
   history: createWebHistory("/console"),
@@ -159,14 +159,14 @@ const handleBeforeunload = (event: BeforeUnloadEvent) =>{
  * 导航守卫
  */
 router.beforeEach(async (to, from) => {
-  const user = localStorage.getItem(StoreEnum.USER);
+  const userStore = useUserStore();
   // 已登录就跳转到控制台主页
-  if (to.name === RouterViews.LOGIN.name && user !== null) {
+  if (to.name === RouterViews.LOGIN.name && userStore.isLogin) {
     return { name: RouterViews.MAIN.name };
   }
 
   // 未登录的话跳转到登录页面
-  if (to.name !== RouterViews.LOGIN.name && user === null) {
+  if (to.name !== RouterViews.LOGIN.name && !userStore.isLogin) {
     return { name: RouterViews.LOGIN.name };
   }
 

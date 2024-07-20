@@ -1,4 +1,4 @@
-import { StoreEnum } from '../models/enum/StoreEnum.ts';
+import { StoreKey } from '../stores/StoreKey.ts';
 import pinyin from 'js-pinyin';
 import { Component, h } from 'vue';
 import { NIcon } from 'naive-ui';
@@ -8,7 +8,7 @@ import { NIcon } from 'naive-ui';
  * @return 返回当前的主题颜色：light / dark
  */
 export const getCurrentTheme = () => {
-  let theme = localStorage.getItem(StoreEnum.THEME) ?? 'light';
+  let theme = localStorage.getItem(StoreKey.THEME) ?? 'light';
   if (theme !== 'light' && theme !== 'dark') {
     theme = 'light';
   }
@@ -20,7 +20,7 @@ export const getCurrentTheme = () => {
  * @param theme light / dark
  */
 export const setTheme = (theme: 'light' | 'dark') => {
-  localStorage.setItem(StoreEnum.THEME, theme);
+  localStorage.setItem(StoreKey.THEME, theme);
 };
 
 /**

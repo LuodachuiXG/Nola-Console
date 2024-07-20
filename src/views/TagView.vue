@@ -32,7 +32,7 @@ import {
 import { Tag } from '../models/Tag.ts';
 import { confirmDialog, errorMsg, successMsg } from '../utils/Message.ts';
 import { DialogFormMode } from '../models/enum/DialogFormMode.ts';
-import { StoreEnum } from '../models/enum/StoreEnum.ts';
+import { StoreKey } from '../stores/StoreKey.ts';
 import { Pager } from '../models/Pager.ts';
 import { displayNameToSlug, renderIcon } from '../utils/MyUtils.ts';
 import TagListItem from '../components/item/TagListItem.vue';
@@ -41,14 +41,7 @@ import MyCard from '../components/component/MyCard.vue';
 import { useRoute } from 'vue-router';
 import router from '../router';
 import { RouterViews } from '../router/RouterViews.ts';
-
-// 标记当前标签显示模式的枚举类
-enum TagMode {
-  // 列表模式
-  LIST,
-  // 块模式
-  BLOCK
-}
+import { TagMode } from '../models/enum/TagMode.ts';
 
 // 全局响应式变量
 const globalVars: GlobalVars = inject('globalVars')!!;
@@ -138,7 +131,7 @@ onMounted(() => {
 const loadSettings = () => {
   // 读取以前是否设置过标签显示模式
   let mode = Number(
-    localStorage.getItem(StoreEnum.TAG_MODE) ?? TagMode.BLOCK
+    localStorage.getItem(StoreKey.TAG_MODE) ?? TagMode.BLOCK
   );
 
   if (!Object.values(TagMode).includes(mode)) {
@@ -149,7 +142,7 @@ const loadSettings = () => {
   }
 
   // 读取以前是否设置过每页大小
-  let ps = Number(localStorage.getItem(StoreEnum.TAG_PAGE_SIZE) ?? 10);
+  let ps = Number(localStorage.getItem(StoreKey.TAG_PAGE_SIZE) ?? 10);
   if (isNaN(ps) || ps < 10 || ps > 120) {
     pageSize.value = 10;
   } else {
@@ -405,7 +398,7 @@ const onTagModeChange = (mode: TagMode) => {
   // 刷新标签
   refreshTags();
   // 将标签模式存储
-  localStorage.setItem(StoreEnum.TAG_MODE, mode.toString());
+  localStorage.setItem(StoreKey.TAG_MODE, mode.toString());
 };
 
 /**
@@ -425,7 +418,7 @@ const onPageUpdate = (page: number) => {
 const onPageSizeUpdate = (size: number) => {
   pageSize.value = size;
   // 将每页大小存储
-  localStorage.setItem(StoreEnum.TAG_PAGE_SIZE, size.toString());
+  localStorage.setItem(StoreKey.TAG_PAGE_SIZE, size.toString());
   // 刷新标签
   refreshTags();
 };

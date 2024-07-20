@@ -19,11 +19,12 @@ import { User } from '../../models/User.ts';
 import { formatTimestamp, isImage } from '../../utils/MyUtils.ts';
 import { getUserInfo, updateUserInfo } from '../../apis/userApi.ts';
 import { errorMsg, optionSuccessMsg } from '../../utils/Message.ts';
-import { StoreEnum } from '../../models/enum/StoreEnum.ts';
+import { StoreKey } from '../../stores/StoreKey.ts';
 import { FileTrayFullOutline as FileIcon } from '@vicons/ionicons5';
 import MyFileSelectModal from './MyFileSelectModal.vue';
 import { MFile } from '../../models/MFile.ts';
 import { getRealUrl } from '../../utils/NetworkUtil.ts';
+import { useUserStore } from '../../stores/UserStore.ts';
 
 // 组件参数。是否显示对话框
 const show = defineModel('show', {
@@ -37,6 +38,9 @@ const emit = defineEmits<{
 }>();
 
 const formRef = ref<FormInst | null>(null);
+
+// 用户 Store
+const userStore = useUserStore();
 
 // 控制模态框是否显示
 const _show = ref(false);
@@ -146,16 +150,14 @@ const onSubmit = () => {
           isLoading.value = false;
           // 修改成功
           optionSuccessMsg();
-          // 同步修改本地缓存
-          const user = JSON.parse(
-            localStorage.getItem(StoreEnum.USER)!!
-          ) as User;
+          // 同步修改用户信息地缓存
+          const user = userStore.user;
           user.avatar = form.avatar;
           user.description = form.description;
           user.displayName = form.displayName;
           user.email = form.email;
           user.username = form.username;
-          localStorage.setItem(StoreEnum.USER, JSON.stringify(user));
+          userStore.login(user);
           // 关闭模态框
           onClose();
         })
@@ -190,7 +192,6 @@ const onCoverFileSelectConfirm = (files: Array<MFile>) => {
     :multiple="false"
     @on-confirm="onCoverFileSelectConfirm"
   />
-
 
   <!-- 管理员个人信息模态框 -->
   <n-modal
