@@ -58,8 +58,7 @@ import { login } from './apis/userApi.ts';
 import { BusEnum } from './models/enum/BusEnum.ts';
 import MyAdminInfoModal from './components/component/MyAdminInfoModal.vue';
 import MyAdminUpdatePasswordModal from './components/component/MyAdminUpdatePasswordModal.vue';
-
-const baseUrl = import.meta.env.VITE_BASE_URL;
+import { getRealUrl } from './utils/NetworkUtil.ts';
 
 // 全局响应式变量
 const globalVars: GlobalVars = inject('globalVars')!!;
@@ -588,9 +587,9 @@ const onAdminInfoModalClose = () => {
                           >
                             <!-- 用户头像不为空显示头像 -->
                             <n-image
-                              v-if="user?.avatar !== null"
+                              v-if="user?.avatar"
                               class="avatar"
-                              :src="baseUrl + user?.avatar"
+                              :src="getRealUrl(user.avatar)"
                               width="22"
                               height="22"
                               preview-disabled

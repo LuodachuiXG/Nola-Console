@@ -23,6 +23,7 @@ import { StoreEnum } from '../../models/enum/StoreEnum.ts';
 import { FileTrayFullOutline as FileIcon } from '@vicons/ionicons5';
 import MyFileSelectModal from './MyFileSelectModal.vue';
 import { MFile } from '../../models/MFile.ts';
+import { getRealUrl } from '../../utils/NetworkUtil.ts';
 
 // 组件参数。是否显示对话框
 const show = defineModel('show', {
@@ -270,7 +271,7 @@ const onCoverFileSelectConfirm = (files: Array<MFile>) => {
                 :width="380"
                 object-fit="cover"
                 v-if="form.avatar"
-                :src="form.avatar"
+                :src="getRealUrl(form.avatar)"
               />
             </n-space>
           </n-form-item>

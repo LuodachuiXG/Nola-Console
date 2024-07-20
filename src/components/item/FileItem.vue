@@ -13,15 +13,13 @@ import {
 import { onMounted, ref } from 'vue';
 import { isImage } from '../../utils/MyUtils.ts';
 import { DocumentOutline as FileIcon } from '@vicons/ionicons5';
+import { getRealUrl } from '../../utils/NetworkUtil.ts';
 
 interface Props {
   file: MFile;
   showCheckbox?: boolean;
   isChecked?: boolean
 }
-
-// 图片基地址
-const imgBaseUrl = import.meta.env.VITE_BASE_URL;
 
 const props = defineProps<Props>();
 
@@ -71,7 +69,7 @@ const onTitleClick = () => {
         class="img"
         v-if="isImage(file.displayName)"
         object-fit="cover"
-        :src="file.url.includes('http') ? file.url : imgBaseUrl + file.url"
+        :src="getRealUrl(file.url)"
         :alt="file.displayName"
         lazy
       />

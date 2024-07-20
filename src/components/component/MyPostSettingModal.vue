@@ -44,6 +44,7 @@ import { Tag } from '../../models/Tag.ts';
 import MyTag from './MyTag.vue';
 import MyFileSelectModal from './MyFileSelectModal.vue';
 import { MFile } from '../../models/MFile.ts';
+import { getRealUrl } from '../../utils/NetworkUtil.ts';
 
 // 是否显示模态框
 const show = defineModel('show', {
@@ -711,7 +712,7 @@ const onCoverFileSelectConfirm = (files: Array<MFile>) => {
                   :width="380"
                   object-fit="cover"
                   v-if="formSettingPost.cover"
-                  :src="formSettingPost.cover"
+                  :src="getRealUrl(formSettingPost.cover)"
                 />
               </n-space>
             </n-form-item>

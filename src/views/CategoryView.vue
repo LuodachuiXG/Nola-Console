@@ -36,6 +36,7 @@ import { useRoute } from 'vue-router';
 import { FileTrayFullOutline as FileIcon } from '@vicons/ionicons5';
 import MyFileSelectModal from '../components/component/MyFileSelectModal.vue';
 import { MFile } from '../models/MFile.ts';
+import { getRealUrl } from '../utils/NetworkUtil.ts';
 
 // 全局响应式变量
 const globalVars: GlobalVars = inject('globalVars')!!;
@@ -462,7 +463,7 @@ const onCoverFileSelectConfirm = (files: Array<MFile>) => {
                   :width="380"
                   object-fit="cover"
                   v-if="formAddEdit.cover"
-                  :src="formAddEdit.cover"
+                  :src="getRealUrl(formAddEdit.cover)"
                 />
               </n-space>
             </n-form-item>

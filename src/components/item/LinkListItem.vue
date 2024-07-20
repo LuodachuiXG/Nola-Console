@@ -22,6 +22,7 @@ import {
 import { inject, ref } from 'vue';
 import { Link } from '../../models/Link.ts';
 import { formatTimestamp } from '../../utils/MyUtils.ts';
+import { getRealUrl } from '../../utils/NetworkUtil.ts';
 
 interface Props {
   /** 链接接口 **/
@@ -106,7 +107,7 @@ const onCheckboxChecked = (checked: boolean) => {
             <n-avatar
               class="shadow"
               v-if="link.logo !== null"
-              :src="link.logo"
+              :src="getRealUrl(link.logo)"
               circle
               size="large"
             >

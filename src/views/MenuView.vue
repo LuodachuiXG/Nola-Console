@@ -119,7 +119,7 @@ const formMenuItem: MenuItemRequest = reactive({
 });
 // 菜单项打开方式选择器选项
 const menuItemTargetOptions = [
-{
+  {
     label: '当前窗口',
     value: MenuItemTarget.SELF
   },
@@ -430,7 +430,10 @@ const onMenuItemDialogSubmit = () => {
               // 刷新菜单项目
               refreshMenuItems(currentSelectMenu.value!!);
             })
-            .catch((err) => errorMsg(err));
+            .catch((err) => {
+              isMenuItemDialogLoading.value = false;
+              errorMsg(err);
+            });
         }
       }
     })
@@ -562,9 +565,12 @@ const onMenuItemsDeleteClick = () => {
   currentSelectMenuItemIds.value.forEach((id) => {
     ids.push(id);
   });
-  confirmDialog(`确定要删除选择的 ${ids.length} 个菜单项吗？子菜单项将会一并删除。`, () => {
-    deleteMenuItems(ids);
-  });
+  confirmDialog(
+    `确定要删除选择的 ${ids.length} 个菜单项吗？子菜单项将会一并删除。`,
+    () => {
+      deleteMenuItems(ids);
+    }
+  );
 };
 
 /**
@@ -580,9 +586,11 @@ const onMenuItemChecked = (menuItem: MenuItem) => {
  * @param menuItem
  */
 const onMenuItemUnChecked = (menuItem: MenuItem) => {
-  currentSelectMenuItemIds.value = currentSelectMenuItemIds.value.filter((id) => {
-    return id !== menuItem.menuItemId;
-  });
+  currentSelectMenuItemIds.value = currentSelectMenuItemIds.value.filter(
+    (id) => {
+      return id !== menuItem.menuItemId;
+    }
+  );
 };
 </script>
 
@@ -686,7 +694,8 @@ const onMenuItemUnChecked = (menuItem: MenuItem) => {
       @on-checked="onMenuItemCheckedAll"
       @on-checkbox-cancel="onMenuItemCancelChecked"
       :is-checked="
-        currentSelectMenuItemIds.length === menuItems?.length && menuItems.length !== 0
+        currentSelectMenuItemIds.length === menuItems?.length &&
+        menuItems.length !== 0
       "
       :show-delete-button="currentSelectMenuItemIds.length > 0"
       @on-delete-button-click="onMenuItemsDeleteClick"
