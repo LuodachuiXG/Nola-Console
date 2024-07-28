@@ -16,6 +16,7 @@ import {
 import { inject } from 'vue';
 import { formatTimestamp } from '../../utils/MyUtils.ts';
 import { Diary } from '../../models/Diary.ts';
+import { useGlobalStore } from '../../stores/GlobalStore.ts';
 
 interface Props {
   /** 日常接口 **/
@@ -36,7 +37,7 @@ const emit = defineEmits<{
 }>();
 
 // 全局响应式变量
-const globalVars: GlobalVars = inject('globalVars')!!;
+const globalStore = useGlobalStore();
 
 /**
  * 编辑日常点击事件
@@ -91,7 +92,7 @@ const onCheckboxChecked = (checked: boolean) => {
                 <EditIcon />
               </n-icon>
             </template>
-            <span v-if="!globalVars.isSmallWindow">编辑</span>
+            <span v-if="!globalStore.isSmallWindow">编辑</span>
           </n-button>
           <n-button type="error" tertiary @click="onDeleteDiary(diary)">
             <template #icon>
@@ -99,7 +100,7 @@ const onCheckboxChecked = (checked: boolean) => {
                 <TrashIcon />
               </n-icon>
             </template>
-            <span v-if="!globalVars.isSmallWindow">删除</span>
+            <span v-if="!globalStore.isSmallWindow">删除</span>
           </n-button>
         </n-button-group>
       </template>

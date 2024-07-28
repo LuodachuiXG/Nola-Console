@@ -18,6 +18,7 @@ import {
 import { inject } from 'vue';
 import router from '../../router';
 import { RouterViews } from '../../router/RouterViews.ts';
+import { useGlobalStore } from '../../stores/GlobalStore.ts';
 
 interface Props {
   /** 分类接口 */
@@ -29,7 +30,7 @@ interface Props {
 const props = defineProps<Props>();
 
 // 全局响应式变量
-const globalVars: GlobalVars = inject('globalVars')!!;
+const globalStore = useGlobalStore();
 
 const emit = defineEmits<{
   (e: 'onEditCategory', category: Category): void;
@@ -108,7 +109,7 @@ const onPostCountBadgeClick = () => {
                 <SettingIcon />
               </n-icon>
             </template>
-            <span v-if="!globalVars.isSmallWindow">设置</span>
+            <span v-if="!globalStore.isSmallWindow">设置</span>
           </n-button>
           <n-button type="error" tertiary @click="onDeleteCategory(category)">
             <template #icon>
@@ -116,7 +117,7 @@ const onPostCountBadgeClick = () => {
                 <TrashIcon />
               </n-icon>
             </template>
-            <span v-if="!globalVars.isSmallWindow">删除</span>
+            <span v-if="!globalStore.isSmallWindow">删除</span>
           </n-button>
         </n-button-group>
       </template>

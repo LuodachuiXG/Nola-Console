@@ -71,6 +71,7 @@ import router from '../router';
 import { RouterViews } from '../router/RouterViews.ts';
 import MyFileSelectModal from '../components/component/MyFileSelectModal.vue';
 import { MFile } from '../models/MFile.ts';
+import { useGlobalStore } from '../stores/GlobalStore.ts';
 
 /**
  * 标记编辑器当前是添加 / 编辑文章
@@ -126,7 +127,7 @@ const mdEditToolbars: Array<ToolbarNames> = [
 ];
 
 // 全局响应式变量
-const globalVars: GlobalVars = inject('globalVars')!!;
+const globalStore = useGlobalStore();
 
 // 编辑器引用
 const editorRef = ref<ExposeParam>();
@@ -966,7 +967,7 @@ const onFileSelectConfirm = (files: Array<MFile>) => {
             </n-input-group>
 
             <n-select
-              v-if="!globalVars.isSmallWindow"
+              v-if="!globalStore.isSmallWindow"
               style="min-width: 130px"
               :options="postAutoSaveIntervalSelectOptions"
               :value="postAutoSaveIntervalSelectValue ?? 5000"
@@ -983,7 +984,7 @@ const onFileSelectConfirm = (files: Array<MFile>) => {
                   <SaveIcon />
                 </n-icon>
               </template>
-              <span v-if="!globalVars.isSmallWindow">保存内容</span>
+              <span v-if="!globalStore.isSmallWindow">保存内容</span>
             </n-button>
             <n-button
               v-if="currentMode === EditorMode.EDIT"
@@ -994,7 +995,7 @@ const onFileSelectConfirm = (files: Array<MFile>) => {
                   <DraftIcon />
                 </n-icon>
               </template>
-              <span v-if="!globalVars.isSmallWindow">另存为草稿</span>
+              <span v-if="!globalStore.isSmallWindow">另存为草稿</span>
             </n-button>
             <n-button type="primary" @click="onSubmitClick">
               <template #icon>
@@ -1002,7 +1003,7 @@ const onFileSelectConfirm = (files: Array<MFile>) => {
                   <PublishIcon />
                 </n-icon>
               </template>
-              <span v-if="!globalVars.isSmallWindow"
+              <span v-if="!globalStore.isSmallWindow"
                 >{{
                   currentMode === EditorMode.ADD ? '发布' : '保存'
                 }}文章</span

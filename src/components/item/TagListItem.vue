@@ -19,6 +19,7 @@ import TagComponent from '../component/MyTag.vue';
 import { inject } from 'vue';
 import router from '../../router';
 import { RouterViews } from '../../router/RouterViews.ts';
+import { useGlobalStore } from '../../stores/GlobalStore.ts';
 
 interface Props {
   /** 标签接口 **/
@@ -30,7 +31,7 @@ interface Props {
 const props = defineProps<Props>();
 
 // 全局响应式变量
-const globalVars: GlobalVars = inject('globalVars')!!;
+const globalStore = useGlobalStore();
 
 const emit = defineEmits<{
   (e: 'onEditTag', tag: Tag): void;
@@ -116,7 +117,7 @@ const onPostCountBadgeClick = () => {
                 <SettingIcon />
               </n-icon>
             </template>
-            <span v-if="!globalVars.isSmallWindow">设置</span>
+            <span v-if="!globalStore.isSmallWindow">设置</span>
           </n-button>
           <n-button type="error" tertiary @click="onDeleteTag(tag)">
             <template #icon>
@@ -124,7 +125,7 @@ const onPostCountBadgeClick = () => {
                 <TrashIcon />
               </n-icon>
             </template>
-            <span v-if="!globalVars.isSmallWindow">删除</span>
+            <span v-if="!globalStore.isSmallWindow">删除</span>
           </n-button>
         </n-button-group>
       </template>

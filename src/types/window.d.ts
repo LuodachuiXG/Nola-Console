@@ -17,11 +17,6 @@ declare global {
     $isLarge: boolean;
   }
 
-  interface GlobalVars {
-    /** 当前是否是小窗口 （宽度小于 768px） **/
-    isSmallWindow: boolean;
-  }
-
   /**
    * VueDraggable 组件 change 事件类型定义
    */

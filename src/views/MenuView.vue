@@ -41,8 +41,9 @@ import { MenuItemRequest } from '../models/request/MenuItemRequest.ts';
 import { DialogFormMode } from '../models/enum/DialogFormMode.ts';
 import { MenuItemTarget } from '../models/enum/MenuItemTarget.ts';
 import { renderIcon } from '../utils/MyUtils.ts';
+import { useGlobalStore } from '../stores/GlobalStore.ts';
 
-const globalVars: GlobalVars = inject('globalVars')!!;
+const globalStore = useGlobalStore();
 
 // 所有菜单
 const menus = ref<Array<Menu> | null>(null);
@@ -734,7 +735,7 @@ const onMenuItemUnChecked = (menuItem: MenuItem) => {
               <AddIcon />
             </n-icon>
           </template>
-          <span v-if="!globalVars.isSmallWindow">添加菜单项</span>
+          <span v-if="!globalStore.isSmallWindow">添加菜单项</span>
         </n-button>
       </template>
       <template #content>

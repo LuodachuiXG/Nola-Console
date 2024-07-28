@@ -19,8 +19,9 @@ import { FileTrayFullOutline as FileIcon } from '@vicons/ionicons5';
 import MyFileSelectModal from '../component/MyFileSelectModal.vue';
 import { MFile } from '../../models/MFile.ts';
 import { isImage } from '../../utils/MyUtils.ts';
+import { useGlobalStore } from '../../stores/GlobalStore.ts';
 
-const globalVars: GlobalVars = inject('globalVars')!!;
+const globalStore = useGlobalStore();
 
 const formRef = ref<FormInst | null>(null);
 
@@ -152,7 +153,7 @@ const onSubmit = () => {
       ref="formRef"
       class="form"
       :model="formBlogInfo"
-      :style="{ width: globalVars.isSmallWindow ? '95%' : '40vw' }"
+      :style="{ width: globalStore.isSmallWindow ? '95%' : '40vw' }"
     >
       <n-form-item
         label="站点标题"

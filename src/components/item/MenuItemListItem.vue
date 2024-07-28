@@ -16,6 +16,7 @@ import {
 } from '@vicons/ionicons5';
 import draggable from 'vuedraggable';
 import { inject } from 'vue';
+import { useGlobalStore } from '../../stores/GlobalStore.ts';
 
 interface Props {
   /** 菜单项层级 **/
@@ -35,7 +36,7 @@ const emit = defineEmits<{
 
 defineProps<Props>();
 
-const globalVars: GlobalVars = inject('globalVars')!!;
+const globalStore = useGlobalStore();
 
 const menuItems = defineModel('menuItems', {
   type: Array<MenuItem>,
@@ -120,7 +121,7 @@ const onCheckboxChecked = (checked: boolean, menuItem: MenuItem) => {
                       <SettingIcon />
                     </n-icon>
                   </template>
-                  <span v-if="!globalVars.isSmallWindow">设置</span>
+                  <span v-if="!globalStore.isSmallWindow">设置</span>
                 </n-button>
                 <n-button tertiary @click="emit('onAddSubMenuItem', element)">
                   <template #icon>
@@ -128,7 +129,7 @@ const onCheckboxChecked = (checked: boolean, menuItem: MenuItem) => {
                       <AddIcon />
                     </n-icon>
                   </template>
-                  <span v-if="!globalVars.isSmallWindow">添加</span>
+                  <span v-if="!globalStore.isSmallWindow">添加</span>
                 </n-button>
                 <n-button
                   tertiary
@@ -140,7 +141,7 @@ const onCheckboxChecked = (checked: boolean, menuItem: MenuItem) => {
                       <TrashIcon />
                     </n-icon>
                   </template>
-                  <span v-if="!globalVars.isSmallWindow">删除</span>
+                  <span v-if="!globalStore.isSmallWindow">删除</span>
                 </n-button>
               </n-button-group>
             </template>

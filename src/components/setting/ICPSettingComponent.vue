@@ -5,8 +5,9 @@ import { inject, onMounted, reactive, ref } from 'vue';
 import { getICP, updateICP } from '../../apis/icpApi.ts';
 import { errorMsg, successMsg } from '../../utils/Message.ts';
 import { ICP } from '../../models/ICP.ts';
+import { useGlobalStore } from '../../stores/GlobalStore.ts';
 
-const globalVars: GlobalVars = inject('globalVars')!!;
+const globalStore = useGlobalStore();
 
 const isLoading = ref(false);
 
@@ -56,7 +57,7 @@ const onSubmit = () => {
     <n-form
       class="form"
       :model="formICP"
-      :style="{ width: globalVars.isSmallWindow ? '95%' : '40vw' }"
+      :style="{ width: globalStore.isSmallWindow ? '95%' : '40vw' }"
     >
       <n-form-item label="ICP 备案号" path="icp">
         <n-input

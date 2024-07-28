@@ -13,7 +13,7 @@ import {
   NSpace,
   SelectOption
 } from 'naive-ui';
-import { h, inject, onMounted, ref } from 'vue';
+import { h, onMounted, ref } from 'vue';
 import { StoreKey } from '../stores/StoreKey.ts';
 import { Post } from '../models/Post.ts';
 import MyCard from '../components/component/MyCard.vue';
@@ -53,9 +53,10 @@ import { categories } from '../apis/categoryApi.ts';
 import { Category } from '../models/Category.ts';
 import MyPostSettingModal from '../components/component/MyPostSettingModal.vue';
 import { useRoute } from 'vue-router';
+import { useGlobalStore } from '../stores/GlobalStore.ts';
 
 // 全局响应式变量
-const globalVars: GlobalVars = inject('globalVars')!!;
+const globalStore = useGlobalStore();
 
 const route = useRoute();
 
@@ -823,7 +824,7 @@ const onPostItemUnChecked = (post: Post) => {
       <template #header-extra>
         <n-space>
           <n-select
-            v-if="queryPostStatus !== PostStatus.DELETED && !globalVars.isSmallWindow"
+            v-if="queryPostStatus !== PostStatus.DELETED && !globalStore.isSmallWindow"
             style="min-width: 140px"
             :options="queryPostSortSelectOptions"
             v-model:value="querySort"
@@ -843,7 +844,7 @@ const onPostItemUnChecked = (post: Post) => {
                   <FunnelIcon />
                 </n-icon>
               </template>
-              <span v-if="!globalVars.isSmallWindow">筛选条件</span>
+              <span v-if="!globalStore.isSmallWindow">筛选条件</span>
             </n-button>
             <n-button
               type="warning"
@@ -863,7 +864,7 @@ const onPostItemUnChecked = (post: Post) => {
                 <AddIcon />
               </n-icon>
             </template>
-            <span v-if="!globalVars.isSmallWindow">添加文章</span>
+            <span v-if="!globalStore.isSmallWindow">添加文章</span>
           </n-button>
         </n-space>
       </template>

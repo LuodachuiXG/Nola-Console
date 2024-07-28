@@ -59,9 +59,10 @@ import MyAdminInfoModal from './components/component/MyAdminInfoModal.vue';
 import MyAdminUpdatePasswordModal from './components/component/MyAdminUpdatePasswordModal.vue';
 import { getRealUrl } from './utils/NetworkUtil.ts';
 import { useUserStore } from './stores/UserStore.ts';
+import { useGlobalStore } from './stores/GlobalStore.ts';
 
 // 全局响应式变量
-const globalVars: GlobalVars = inject('globalVars')!!;
+const globalStore = useGlobalStore();
 
 // 鼠标是否进入 LOGO
 const isLogoEnter = ref(false);
@@ -253,7 +254,7 @@ const handlerWindowResize = () => {
   if (!isManualUpdateSider.value) {
     // 如果用户之前没有手动修改过侧边栏
     // 这里就根据窗口大小自动改变侧边栏状态
-    isSiderCollapsed.value = globalVars?.isSmallWindow;
+    isSiderCollapsed.value = globalStore.isSmallWindow;
   }
 };
 
@@ -570,7 +571,7 @@ const onAdminInfoModalClose = () => {
                             secondary
                             :style="
                               'padding-right: ' +
-                              (globalVars?.isSmallWindow ? '5px;' : '12px;')
+                              (globalStore.isSmallWindow ? '5px;' : '12px;')
                             "
                           >
                             <!-- 用户头像不为空显示头像 -->
@@ -583,7 +584,7 @@ const onAdminInfoModalClose = () => {
                               preview-disabled
                               :style="
                                 'margin-right: ' +
-                                (globalVars?.isSmallWindow ? '0px;' : '6px;')
+                                (globalStore.isSmallWindow ? '0px;' : '6px;')
                               "
                               object-fit="cover"
                             />
@@ -593,12 +594,12 @@ const onAdminInfoModalClose = () => {
                               class="avatar-text"
                               :style="
                                 'margin-right: ' +
-                                (globalVars?.isSmallWindow ? '0px;' : '6px;')
+                                (globalStore.isSmallWindow ? '0px;' : '6px;')
                               "
                             >
                               {{ userStore.user?.displayName[0] }}
                             </div>
-                            <span v-if="!globalVars?.isSmallWindow">{{
+                            <span v-if="!globalStore.isSmallWindow">{{
                               userStore.user?.displayName
                             }}</span>
                           </n-button>

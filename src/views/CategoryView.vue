@@ -37,9 +37,10 @@ import { FileTrayFullOutline as FileIcon } from '@vicons/ionicons5';
 import MyFileSelectModal from '../components/component/MyFileSelectModal.vue';
 import { MFile } from '../models/MFile.ts';
 import { getRealUrl } from '../utils/NetworkUtil.ts';
+import { useGlobalStore } from '../stores/GlobalStore.ts';
 
 // 全局响应式变量
-const globalVars: GlobalVars = inject('globalVars')!!;
+const globalStore = useGlobalStore();
 
 // 分类集合
 const categories = ref<Array<Category> | null>(null);
@@ -500,7 +501,7 @@ const onCoverFileSelectConfirm = (files: Array<MFile>) => {
               <AddIcon />
             </n-icon>
           </template>
-          <span v-if="!globalVars.isSmallWindow">添加分类</span>
+          <span v-if="!globalStore.isSmallWindow">添加分类</span>
         </n-button>
       </template>
       <template #content>

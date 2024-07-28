@@ -23,6 +23,7 @@ import { inject, ref } from 'vue';
 import { Link } from '../../models/Link.ts';
 import { formatTimestamp } from '../../utils/MyUtils.ts';
 import { getRealUrl } from '../../utils/NetworkUtil.ts';
+import { useGlobalStore } from '../../stores/GlobalStore.ts';
 
 interface Props {
   /** 链接接口 **/
@@ -32,7 +33,7 @@ interface Props {
 }
 
 // 全局响应式变量
-const globalVars: GlobalVars = inject('globalVars')!!;
+const globalStore = useGlobalStore();
 
 const props = defineProps<Props>();
 
@@ -142,7 +143,7 @@ const onCheckboxChecked = (checked: boolean) => {
       </template>
       <template #description>
         <n-row>
-          <n-col :span="globalVars.isSmallWindow ? 24 : 18">
+          <n-col :span="globalStore.isSmallWindow ? 24 : 18">
             <n-space vertical size="small" style="margin-top: -8px">
               <n-button
                 text
@@ -156,7 +157,7 @@ const onCheckboxChecked = (checked: boolean) => {
               <n-text depth="3">{{ link.description }}</n-text>
             </n-space>
           </n-col>
-          <n-col :span="6" v-if="!globalVars.isSmallWindow">
+          <n-col :span="6" v-if="!globalStore.isSmallWindow">
             <div class="link-time-div">
               <n-text
                 class="link-time-div-text"
@@ -176,7 +177,7 @@ const onCheckboxChecked = (checked: boolean) => {
                 <SettingIcon />
               </n-icon>
             </template>
-            <span v-if="!globalVars.isSmallWindow">设置</span>
+            <span v-if="!globalStore.isSmallWindow">设置</span>
           </n-button>
           <n-button type="error" tertiary @click="onDeleteLink(link)">
             <template #icon>
@@ -184,7 +185,7 @@ const onCheckboxChecked = (checked: boolean) => {
                 <TrashIcon />
               </n-icon>
             </template>
-            <span v-if="!globalVars.isSmallWindow">删除</span>
+            <span v-if="!globalStore.isSmallWindow">删除</span>
           </n-button>
         </n-button-group>
       </template>

@@ -42,9 +42,10 @@ import { useRoute } from 'vue-router';
 import router from '../router';
 import { RouterViews } from '../router/RouterViews.ts';
 import { TagMode } from '../models/enum/TagMode.ts';
+import { useGlobalStore } from '../stores/GlobalStore.ts';
 
 // 全局响应式变量
-const globalVars: GlobalVars = inject('globalVars')!!;
+const globalStore = useGlobalStore();
 
 // 当前标签显示模式
 const currentTagMode = ref<TagMode>(TagMode.BLOCK);
@@ -536,7 +537,7 @@ const onTagCancelChecked = () => {
               <AddIcon />
             </n-icon>
           </template>
-          <span v-if="!globalVars.isSmallWindow">添加标签</span>
+          <span v-if="!globalStore.isSmallWindow">添加标签</span>
         </n-button>
       </template>
       <template #content>

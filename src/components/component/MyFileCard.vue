@@ -54,8 +54,9 @@ import MyCard from './MyCard.vue';
 import { StoreKey } from '../../stores/StoreKey.ts';
 import MyFileUploadModal from './MyFileUploadModal.vue';
 import _ from 'lodash';
+import { useGlobalStore } from '../../stores/GlobalStore.ts';
 
-const globalVars: GlobalVars = inject('globalVars')!!;
+const globalStore = useGlobalStore();
 
 interface Props {
   // 文件是否支持多选（默认 true）
@@ -898,7 +899,7 @@ const onFileUploadModalClose = () => {
                 <UploadIcon />
               </n-icon>
             </template>
-            <span v-if="!globalVars.isSmallWindow">上传附件</span>
+            <span v-if="!globalStore.isSmallWindow">上传附件</span>
           </n-button>
         </n-space>
       </template>

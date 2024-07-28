@@ -32,8 +32,9 @@ import {
 import { Pager } from '../models/Pager.ts';
 import { DialogFormMode } from '../models/enum/DialogFormMode.ts';
 import { LinkRequest } from '../models/request/LinkRequest.ts';
+import { useGlobalStore } from '../stores/GlobalStore.ts';
 
-const globalVars: GlobalVars = inject('globalVars')!!;
+const globalStore = useGlobalStore();
 
 // 总链接数
 const totalLinks = ref(0);
@@ -458,7 +459,7 @@ const onLinkCancelChecked = () => {
                 <AddIcon />
               </n-icon>
             </template>
-            <span v-if="!globalVars.isSmallWindow">添加链接</span>
+            <span v-if="!globalStore.isSmallWindow">添加链接</span>
           </n-button>
         </n-space>
       </template>

@@ -13,7 +13,7 @@ import {
   FormInst
 } from 'naive-ui';
 import MyCard from '../components/component/MyCard.vue';
-import { inject, onMounted, reactive, ref } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
 import { DiarySort } from '../models/enum/DiarySort.ts';
 import { Diary } from '../models/Diary.ts';
 import { StoreKey } from '../stores/StoreKey.ts';
@@ -28,8 +28,9 @@ import { Pager } from '../models/Pager.ts';
 import { AddOutline as AddIcon } from '@vicons/ionicons5';
 import DiaryListItem from '../components/item/DiaryListItem.vue';
 import { DialogFormMode } from '../models/enum/DialogFormMode.ts';
+import { useGlobalStore } from '../stores/GlobalStore.ts';
 
-const globalVars: GlobalVars = inject('globalVars')!!;
+const globalStore = useGlobalStore();
 
 // 总日常数
 const totalDiaries = ref(0);
@@ -103,7 +104,7 @@ const loadSettings = () => {
   } else {
     pageSize.value = ps;
   }
-}
+};
 
 /**
  * 刷新日常
@@ -329,11 +330,7 @@ const onAddDiaryClick = () => {
     >
       <template #default>
         <n-scrollbar style="max-height: 65vh; padding-right: 12px">
-          <n-form
-            ref="diaryDialogRef"
-            :model="formDiary"
-            style="margin: 0 5px"
-          >
+          <n-form ref="diaryDialogRef" :model="formDiary" style="margin: 0 5px">
             <n-form-item
               path="content"
               :rule="{ required: true, message: '请输入日常内容' }"
@@ -383,7 +380,7 @@ const onAddDiaryClick = () => {
                 <AddIcon />
               </n-icon>
             </template>
-            <span v-if="!globalVars.isSmallWindow">添加日常</span>
+            <span v-if="!globalStore.isSmallWindow">添加日常</span>
           </n-button>
         </n-space>
       </template>

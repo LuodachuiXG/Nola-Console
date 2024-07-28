@@ -15,8 +15,9 @@ import {
 import MyPagination from './MyPagination.vue';
 import { inject } from 'vue';
 import { TrashOutline as TrashIcon } from '@vicons/ionicons5';
+import { useGlobalStore } from '../../stores/GlobalStore.ts';
 
-const globalVars: GlobalVars = inject('globalVars')!!;
+const globalStore = useGlobalStore();
 
 interface Props {
   /** 使用更深的背景色展现嵌入效果，只对亮色主题生效（默认 true） **/
@@ -133,7 +134,7 @@ const onDeleteBtnClick = () => {
         </slot>
 
         <slot name="header">
-          <div v-if="!globalVars.isSmallWindow" style="margin-top: 2px;">
+          <div v-if="!globalStore.isSmallWindow" style="margin-top: 2px;">
             <span v-if="showPagination ?? true">
               当前页
               <MyNumberAnimation :to="currentPageItemCount ?? 0" />
@@ -162,14 +163,14 @@ const onDeleteBtnClick = () => {
     </template>
     <template #action>
       <n-row :style="{marginBottom: showPagination ? '-4px' : '0px'}">
-        <n-col :span="6" v-if="!globalVars.isSmallWindow">
+        <n-col :span="6" v-if="!globalStore.isSmallWindow">
           <slot name="action-left">
             <n-text style="margin-top: 1px" tag="div">
               {{ '所有' + itemString }}
             </n-text>
           </slot>
         </n-col>
-        <n-col :span="globalVars.isSmallWindow ? 24 : 18">
+        <n-col :span="globalStore.isSmallWindow ? 24 : 18">
           <div class="pagination-div" v-if="showPagination ?? true">
             <MyPagination
               :current-page="currentPage ?? 1"

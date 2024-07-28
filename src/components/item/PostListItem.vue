@@ -34,6 +34,7 @@ import { Tag } from '../../models/Tag.ts';
 import { Category } from '../../models/Category.ts';
 import router from '../../router';
 import { RouterViews } from '../../router/RouterViews.ts';
+import { useGlobalStore } from '../../stores/GlobalStore.ts';
 
 interface Props {
   /** 文章接口 */
@@ -42,7 +43,7 @@ interface Props {
   isChecked: boolean;
 }
 
-const globalVars: GlobalVars = inject('globalVars')!!;
+const globalStore = useGlobalStore();
 
 const props = defineProps<Props>();
 
@@ -334,7 +335,7 @@ const onRestorePost = (status: PostStatus) => {
                 <EditIcon />
               </n-icon>
             </template>
-            <span v-if="!globalVars.isSmallWindow">编辑</span>
+            <span v-if="!globalStore.isSmallWindow">编辑</span>
           </n-button>
           <n-button
             type="default"
@@ -347,7 +348,7 @@ const onRestorePost = (status: PostStatus) => {
                 <SettingIcon />
               </n-icon>
             </template>
-            <span v-if="!globalVars.isSmallWindow">设置</span>
+            <span v-if="!globalStore.isSmallWindow">设置</span>
           </n-button>
 
           <n-button
@@ -361,7 +362,7 @@ const onRestorePost = (status: PostStatus) => {
                 <DraftIcon />
               </n-icon>
             </template>
-            <span v-if="!globalVars.isSmallWindow">转草稿</span>
+            <span v-if="!globalStore.isSmallWindow">转草稿</span>
           </n-button>
           <n-button
             type="default"
@@ -374,7 +375,7 @@ const onRestorePost = (status: PostStatus) => {
                 <PublishIcon />
               </n-icon>
             </template>
-            <span v-if="!globalVars.isSmallWindow">发布</span>
+            <span v-if="!globalStore.isSmallWindow">发布</span>
           </n-button>
 
           <n-button type="error" tertiary @click="onDeletePost(post)">
@@ -383,7 +384,7 @@ const onRestorePost = (status: PostStatus) => {
                 <TrashIcon />
               </n-icon>
             </template>
-            <span v-if="!globalVars.isSmallWindow">{{
+            <span v-if="!globalStore.isSmallWindow">{{
               post.status === PostStatus.DELETED ? '删除' : '回收'
             }}</span>
           </n-button>
