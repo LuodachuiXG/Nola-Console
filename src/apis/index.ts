@@ -1,6 +1,4 @@
 import axios, { AxiosRequestHeaders } from 'axios';
-import { StoreKey } from '../stores/StoreKey.ts';
-import { User } from '../models/User.ts';
 import bus from '../utils/EventBus.ts';
 import { BusEnum } from '../models/enum/BusEnum.ts';
 import { useUserStore } from '../stores/UserStore.ts';
@@ -8,7 +6,7 @@ import { useUserStore } from '../stores/UserStore.ts';
 // 创建 axios 实例
 const service = axios.create({
   baseURL: import.meta.env.VITE_BASE_URL,
-  timeout: 5000,
+  timeout: 10000,
   headers: {
     'Content-type': 'application/json',
     'Access-Control-Allow-Origin': '*'

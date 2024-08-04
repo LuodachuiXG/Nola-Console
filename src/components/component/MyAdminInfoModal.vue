@@ -151,7 +151,7 @@ const onSubmit = () => {
           // 修改成功
           optionSuccessMsg();
           // 同步修改用户信息地缓存
-          const user = userStore.user;
+          const user = userStore.getUser;
           user.avatar = form.avatar;
           user.description = form.description;
           user.displayName = form.displayName;
@@ -217,7 +217,7 @@ const onCoverFileSelectConfirm = (files: Array<MFile>) => {
         >
           <n-form-item
             path="username"
-            label="用户名"
+            label="用户名（登录用户名）"
             :rule="{ required: true, message: '请输入用户名' }"
           >
             <n-input

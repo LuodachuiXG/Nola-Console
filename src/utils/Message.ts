@@ -64,7 +64,7 @@ export function optionErrorMsg() {
  * @param msg 消息内容
  */
 export function infoMsg(msg: string) {
-  window.$message.info(msg);
+  window.$message.info(String(msg));
 }
 
 /**
@@ -72,7 +72,7 @@ export function infoMsg(msg: string) {
  * @param msg 消息内容
  */
 export function successMsg(msg: string) {
-  window.$message.success(msg);
+  window.$message.success(String(msg));
 }
 
 /**
@@ -80,5 +80,5 @@ export function successMsg(msg: string) {
  * @param msg 消息内容
  */
 export function errorMsg(msg: string) {
-  window.$message.error(msg);
+  window.$message.error(String(msg));
 }

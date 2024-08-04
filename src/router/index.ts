@@ -160,6 +160,7 @@ const handleBeforeunload = (event: BeforeUnloadEvent) =>{
  */
 router.beforeEach(async (to, from) => {
   const userStore = useUserStore();
+  console.log(userStore.isLogin);
   // 已登录就跳转到控制台主页
   if (to.name === RouterViews.LOGIN.name && userStore.isLogin) {
     return { name: RouterViews.MAIN.name };

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref, watch, reactive, onUnmounted, inject } from 'vue';
+import { onMounted, ref, watch, reactive, onUnmounted } from 'vue';
 import { RouteLocationNormalizedLoaded, useRoute } from 'vue-router';
 import { RouterViews } from './router/RouterViews.ts';
 import {
@@ -417,15 +417,6 @@ const onMouseClickLogo = () => {
     isLogoClick.value = false;
   }, 1500);
 };
-
-/**
- * 管理员模态框关闭事件
- */
-const onAdminInfoModalClose = () => {
-  // 因为用户信息可能更改，所以需要刷新当前登录用户
-  // 不然顶栏用户信息可能显示错误
-  refreshCurrentLoginUser();
-};
 </script>
 
 <template>
@@ -438,10 +429,7 @@ const onAdminInfoModalClose = () => {
   >
     <AppProvider>
       <!-- 管理员信息模态框 -->
-      <my-admin-info-modal
-        v-model:show="visibleUserInfoDialog"
-        @on-close="onAdminInfoModalClose"
-      />
+      <my-admin-info-modal v-model:show="visibleUserInfoDialog" />
 
       <!-- 修改密码模态框 -->
       <my-admin-update-password-modal
@@ -576,9 +564,9 @@ const onAdminInfoModalClose = () => {
                           >
                             <!-- 用户头像不为空显示头像 -->
                             <n-image
-                              v-if="userStore.user?.avatar"
+                              v-if="userStore.getUser?.avatar"
                               class="avatar"
-                              :src="getRealUrl(userStore.user?.avatar)"
+                              :src="getRealUrl(userStore.getUser?.avatar)"
                               width="22"
                               height="22"
                               preview-disabled
@@ -597,10 +585,10 @@ const onAdminInfoModalClose = () => {
                                 (globalStore.isSmallWindow ? '0px;' : '6px;')
                               "
                             >
-                              {{ userStore.user?.displayName[0] }}
+                              {{ userStore.getUser?.displayName[0] }}
                             </div>
                             <span v-if="!globalStore.isSmallWindow">{{
-                              userStore.user?.displayName
+                              userStore.getUser?.displayName
                             }}</span>
                           </n-button>
                         </div>

@@ -10,31 +10,34 @@ import { SecureLSStorage } from '../security/SecureLS.ts';
 export const useUserStore = defineStore(
   StoreKey.USER.toString(),
   () => {
-    const user = ref<User | null>(null);
+    const _user = ref<User | null>(null);
+
+    const getUser = computed(() => _user.value);
 
     /** 是否已经登录 **/
-    const isLogin = computed(() => !!user.value);
+    const isLogin = computed(() => _user.value != null);
 
     /** 登录 Token **/
-    const token = computed(() => user.value?.token ?? '');
+    const token = computed(() => _user.value?.token ?? '');
 
     /**
      * 登录（将用户信息存储）
      * @param user 用户接口
      */
     function login(user: User) {
-      this.user = user;
+      _user.value = user;
     }
 
     /**
      * 登出（清除用户信息）
      */
     function logout() {
-      this.user = null;
+      _user.value = null;
     }
 
     return {
-      user,
+      _user,
+      getUser,
       isLogin,
       token,
       login,

@@ -16,6 +16,7 @@ import {
 import { errorMsg, successMsg } from '../utils/Message.ts';
 import { formatTimestamp } from '../utils/MyUtils.ts';
 import { useUserStore } from '../stores/UserStore.ts';
+import { delay } from 'lodash';
 
 /**
  * 标记当前模式的枚举类
@@ -207,11 +208,15 @@ const onFormLoginSubmit = () => {
             // 登录成功
             // 将返回的用户信息和 Token 令牌存储
             userStore.login(res.data);
-            if (!userStore.user?.lastLoginDate) {
+            setTimeout(() => {
+              console.log(userStore.getUser);
+            }, 1000)
+
+            if (!userStore.getUser?.lastLoginDate) {
               successMsg('欢迎使用 Nola 博客 ^_^');
             } else {
               successMsg(
-                `上次登录时间：${formatTimestamp(userStore.user.lastLoginDate)}`
+                `上次登录时间：${formatTimestamp(userStore.getUser.lastLoginDate)}`
               );
             }
             // 跳转控制台页面
