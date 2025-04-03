@@ -142,9 +142,8 @@ const refreshLinks = () => {
       totalPages.value = pager.totalPages;
       links.value = pager.data;
     })
-    .catch((err) => {
+    .catch(() => {
       window.$loadingBar.error();
-      errorMsg(err);
     });
 };
 
@@ -220,7 +219,7 @@ const deleteLinks = (ids: Array<number>) => {
       successMsg('删除成功');
       refreshLinks();
     })
-    .catch((err) => errorMsg(err));
+    .catch(() => {});
 };
 
 /**
@@ -287,7 +286,7 @@ const onLinkDialogSubmit = () => {
             // 刷新链接
             refreshLinks();
           })
-          .catch((err) => errorMsg(err));
+          .catch(() => {});
       } else {
         // 修改链接
         updateLink(linkRequest)
@@ -297,7 +296,7 @@ const onLinkDialogSubmit = () => {
             // 刷新链接
             refreshLinks();
           })
-          .catch((err) => errorMsg(err));
+          .catch(() => {});
       }
     }
   });

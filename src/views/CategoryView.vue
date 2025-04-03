@@ -93,7 +93,7 @@ onMounted(() => {
         // 打开编辑分类页面
         onEditCategory(res.data as Category);
       })
-      .catch((err) => errorMsg(err));
+      .catch(() => {});
   }
 
   // 刷新分类数据
@@ -134,8 +134,7 @@ const refreshCategories = () => {
       totalPages.value = pager.totalPages;
       window.$loadingBar.finish();
     })
-    .catch((err) => {
-      errorMsg(err);
+    .catch(() => {
       window.$loadingBar.error();
     });
 };
@@ -185,9 +184,7 @@ const deleteCategories = (ids: Array<number>) => {
       // 刷新分类列表
       refreshCategories();
     })
-    .catch((err) => {
-      errorMsg(err);
-    });
+    .catch(() => {});
 };
 
 /**
@@ -246,9 +243,8 @@ const onAddEditDialogSubmit = () => {
               // 添加成功
               onAddEditDialogClose();
             })
-            .catch((err) => {
+            .catch(() => {
               // 添加失败
-              errorMsg(err);
               isAddEditDialogLoading.value = false;
             });
         } else {
@@ -259,8 +255,7 @@ const onAddEditDialogSubmit = () => {
               successMsg('修改成功');
               onAddEditDialogClose();
             })
-            .catch((err) => {
-              errorMsg(err);
+            .catch(() => {
               isAddEditDialogLoading.value = false;
             });
         }

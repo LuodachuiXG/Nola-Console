@@ -106,7 +106,9 @@ const loadSetting = () => {
     (localStorage.getItem(
       StoreKey.FILE_UPLOAD_STORAGE_MODE.toString()
     ) as FileStorageMode) ?? FileStorageMode.LOCAL;
-  const fileGroupId = localStorage.getItem(StoreKey.FILE_UPLOAD_FILE_GROUP.toString());
+  const fileGroupId = localStorage.getItem(
+    StoreKey.FILE_UPLOAD_FILE_GROUP.toString()
+  );
 
   if (fileGroupId && isNumber(fileGroupId)) {
     // 读取的文件组是数字，再判断当前文件组是否还存在
@@ -137,7 +139,7 @@ const refreshStorageMode = () => {
         });
       });
     })
-    .catch((err) => errorMsg(`获取存储策略失败：${err}`));
+    .catch(() => {});
 };
 
 /**
@@ -158,7 +160,7 @@ const refreshFileGroups = () => {
         });
       });
     })
-    .catch((err) => errorMsg(`获取文件组失败：${err}`));
+    .catch(() => {});
 };
 
 /**

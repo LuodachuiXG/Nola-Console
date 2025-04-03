@@ -186,7 +186,7 @@ const refreshMenus = (showMenuId: number | null = null) => {
         });
       });
     })
-    .catch((err) => errorMsg(err));
+    .catch(() => {});
 };
 
 /**
@@ -203,9 +203,8 @@ const refreshMenuItems = (menuId: number | null) => {
       // 刷新菜单项成功后清空选择的菜单项
       currentSelectMenuItemIds.value = [];
     })
-    .catch((err) => {
+    .catch(() => {
       window.$loadingBar.error();
-      errorMsg(err);
     });
 };
 
@@ -231,7 +230,7 @@ const updateMItem = (menuItem: MenuItem, onSuccess?: () => void) => {
       // 刷新菜单
       refreshMenuItems(currentSelectMenu.value!!);
     })
-    .catch((err) => errorMsg(err));
+    .catch(() => {});
 };
 
 /**
@@ -289,7 +288,7 @@ const onMenuManagerSelect = (value: string) => {
           // 更新成功，刷新菜单
           refreshMenus();
         })
-        .catch((err) => errorMsg(err));
+        .catch(() => {});
       break;
   }
 };
@@ -309,7 +308,7 @@ const deleteMenus = (ids: Array<number>) => {
       // 刷新菜单
       refreshMenus();
     })
-    .catch((err) => errorMsg(err));
+    .catch(() => {});
 };
 
 /**
@@ -352,9 +351,8 @@ const onMenuDialogSubmit = () => {
               // 刷新菜单
               refreshMenus(newMenu.menuId);
             })
-            .catch((err) => {
+            .catch(() => {
               isMenuDialogLoading.value = false;
-              errorMsg(err);
             });
         } else {
           // 修改菜单
@@ -366,9 +364,8 @@ const onMenuDialogSubmit = () => {
               // 刷新菜单
               refreshMenus(formMenu.menuId);
             })
-            .catch((err) => {
+            .catch(() => {
               isMenuDialogLoading.value = false;
-              errorMsg(err);
             });
         }
       }
@@ -417,9 +414,8 @@ const onMenuItemDialogSubmit = () => {
               // 刷新菜单项目
               refreshMenuItems(currentSelectMenu.value!!);
             })
-            .catch((err) => {
+            .catch(() => {
               isMenuItemDialogLoading.value = false;
-              errorMsg(err);
             });
         } else {
           // 当前是修改菜单项模式
@@ -431,9 +427,8 @@ const onMenuItemDialogSubmit = () => {
               // 刷新菜单项目
               refreshMenuItems(currentSelectMenu.value!!);
             })
-            .catch((err) => {
+            .catch(() => {
               isMenuItemDialogLoading.value = false;
-              errorMsg(err);
             });
         }
       }
@@ -538,7 +533,7 @@ const deleteMenuItems = (ids: Array<number>) => {
       // 刷新菜单项
       refreshMenuItems(currentSelectMenu.value!!);
     })
-    .catch((err) => errorMsg(err));
+    .catch(() => {});
 };
 
 /**

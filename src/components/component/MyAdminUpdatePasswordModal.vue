@@ -79,9 +79,8 @@ const onSubmit = () => {
             isLoading.value = false;
             onClose();
           })
-          .catch((err) => {
+          .catch(() => {
             isLoading.value = false;
-            errorMsg(err);
           });
       }
     })

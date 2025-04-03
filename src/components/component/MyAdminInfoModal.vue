@@ -88,9 +88,8 @@ const refreshUserInfo = () => {
       // 显示对话框
       _show.value = true;
     })
-    .catch((err) => {
+    .catch(() => {
       show.value = false;
-      errorMsg(err);
     });
 };
 
@@ -160,9 +159,8 @@ const onSubmit = () => {
           // 关闭模态框
           onClose();
         })
-        .catch((err) => {
+        .catch(() => {
           isLoading.value = false;
-          errorMsg(err);
         });
     }
   });

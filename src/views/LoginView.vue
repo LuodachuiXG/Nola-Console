@@ -130,9 +130,7 @@ const refreshBlogInfo = () => {
         currentMode.value = Mode.LOGIN;
       }
     })
-    .catch((err) => {
-      errorMsg('获取博客信息失败，' + err);
-    });
+    .catch(() => {});
 };
 
 /**
@@ -152,8 +150,7 @@ const onFormCreateBlogSubmit = () => {
             refreshBlogInfo();
             isCreateBlog.value = false;
           })
-          .catch((err) => {
-            errorMsg(err);
+          .catch(() => {
             isCreateBlog.value = false;
           });
       }
@@ -187,8 +184,7 @@ const onFormCreateAdminSubmit = () => {
             }
             isCreateAdmin.value = false;
           })
-          .catch((err) => {
-            errorMsg(err);
+          .catch(() => {
             isCreateAdmin.value = false;
           });
       }
@@ -222,9 +218,8 @@ const onFormLoginSubmit = () => {
             router.push(RouterViews.MAIN.name);
             isLogin.value = false;
           })
-          .catch((err) => {
+          .catch(() => {
             // 登录失败
-            errorMsg(err);
             isLogin.value = false;
           });
       }

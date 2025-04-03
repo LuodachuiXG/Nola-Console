@@ -193,13 +193,15 @@ onMounted(() => {
  */
 const loadSettings = () => {
   // 读取以前是否设置过每页大小
-  let ps = Number(localStorage.getItem(StoreKey.POST_PAGE_SIZE.toString()) ?? 10);
+  let ps = Number(
+    localStorage.getItem(StoreKey.POST_PAGE_SIZE.toString()) ?? 10
+  );
   if (isNaN(ps) || ps < 10 || ps > 120) {
     pageSize.value = 10;
   } else {
     pageSize.value = ps;
   }
-}
+};
 
 /**
  * 获取标签
@@ -212,7 +214,7 @@ const refreshTag = () => {
       // 将标签封装到标签选择器列表中
       tags2SelectOptions(tagsList.value);
     })
-    .catch((err) => errorMsg('标签获取失败：' + err));
+    .catch(() => {});
 };
 
 /**
@@ -226,7 +228,7 @@ const refreshCategory = () => {
       // 将分类封装到分类选择器列表中
       categories2SelectOptions(categoriesList.value);
     })
-    .catch((err) => errorMsg('分类获取失败：' + err));
+    .catch(() => {});
 };
 
 /**
@@ -311,8 +313,7 @@ const refreshPosts = () => {
       totalPages.value = pager.totalPages;
       window.$loadingBar.finish();
     })
-    .catch((err) => {
-      errorMsg(err);
+    .catch(() => {
       window.$loadingBar.error();
     });
 };
@@ -422,7 +423,7 @@ const deletePost = (ids: Array<number>) => {
       // 刷新文章
       refreshPosts();
     })
-    .catch((err) => errorMsg(err));
+    .catch(() => {});
 };
 
 /**
@@ -438,7 +439,7 @@ const recyclePost = (ids: Array<number>) => {
       // 刷新文章
       refreshPosts();
     })
-    .catch((err) => errorMsg(err));
+    .catch(() => {});
 };
 
 /**
@@ -477,7 +478,7 @@ const restorePost = (ids: Array<number>, status: PostStatus) => {
       optionSuccessMsg();
       refreshPosts();
     })
-    .catch((err) => errorMsg(err));
+    .catch(() => {});
 };
 
 /**
@@ -535,7 +536,7 @@ const onUpdatePostStatus = (
       // 刷新文章
       refreshPosts();
     })
-    .catch((err) => errorMsg(err));
+    .catch(() => {});
 };
 /**
  * 文章状态 badge 点击事件
@@ -824,7 +825,10 @@ const onPostItemUnChecked = (post: Post) => {
       <template #header-extra>
         <n-space>
           <n-select
-            v-if="queryPostStatus !== PostStatus.DELETED && !globalStore.isSmallWindow"
+            v-if="
+              queryPostStatus !== PostStatus.DELETED &&
+              !globalStore.isSmallWindow
+            "
             style="min-width: 140px"
             :options="queryPostSortSelectOptions"
             v-model:value="querySort"

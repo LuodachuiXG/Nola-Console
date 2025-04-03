@@ -340,7 +340,7 @@ const refreshPost = () => {
     .then((res) => {
       currentPost.value = res.data as Post;
     })
-    .catch((err) => errorMsg(err));
+    .catch(() => {});
 };
 
 /**
@@ -357,9 +357,8 @@ const refreshPostPublish = () => {
       // 设置当前文章编辑器现实的是文章正文
       currentContentStatus.value = PostContentStatus.PUBLISHED;
     })
-    .catch((err) => {
+    .catch(() => {
       window.$loadingBar.error();
-      errorMsg(err);
     });
 };
 
@@ -383,7 +382,7 @@ const refreshPostDrafts = () => {
         }
       });
     })
-    .catch((err) => errorMsg(err));
+    .catch(() => {});
 };
 
 /**
@@ -398,7 +397,7 @@ const switchToDraft = (draftName: string) => {
       // 设置当前文章编辑器显示的是草稿;
       currentContentStatus.value = PostContentStatus.DRAFT;
     })
-    .catch((err) => errorMsg(err));
+    .catch(() => {});
 };
 
 /**
@@ -446,7 +445,6 @@ const postContentSave = (
         })
         .catch((err) => {
           window.$loadingBar.error();
-          errorMsg('文章内容保存失败：' + err);
           onFail?.(err);
         });
     } else {
@@ -465,7 +463,6 @@ const postContentSave = (
         })
         .catch((err) => {
           window.$loadingBar.error();
-          errorMsg(`草稿 [${draftName}] 保存失败：` + err);
           onFail?.(err);
         });
     }
@@ -560,7 +557,7 @@ const onPostDraftManagerSelect = (key: string) => {
               // 清空草稿选择器数据
               postDraftSelectValue.value = null;
             })
-            .catch((err) => errorMsg(err));
+            .catch(() => {});
         }
       );
       break;
@@ -630,8 +627,7 @@ const onDraftRenameSubmit = () => {
               // 停止加载状态
               isDraftNameDialogLoading.value = false;
             })
-            .catch((err) => {
-              errorMsg(err);
+            .catch(() => {
               // 停止加载状态
               isDraftNameDialogLoading.value = false;
             });
@@ -648,8 +644,7 @@ const onDraftRenameSubmit = () => {
               // 停止加载状态
               isDraftNameDialogLoading.value = false;
             })
-            .catch((err) => {
-              errorMsg(`草稿创建失败：` + err);
+            .catch(() => {
               // 停止加载状态
               isDraftNameDialogLoading.value = false;
             });
@@ -710,9 +705,8 @@ const onDraft2PublishSubmit = () => {
       // 清空草稿选择器数据
       postDraftSelectValue.value = null;
     })
-    .catch((err) => {
+    .catch(() => {
       // 操作失败
-      errorMsg('操作失败：' + err);
       isDraft2PublishDialogLoading.value = false;
     });
 };
@@ -778,9 +772,8 @@ const onSaveContentClick = (
       currentMode.value = EditorMode.EDIT;
       successMsg('保存成功');
     })
-    .catch((err) => {
+    .catch(() => {
       window.$loadingBar.error();
-      errorMsg('保存失败：' + err);
       onFail?.(err);
     });
 };

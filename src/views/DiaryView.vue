@@ -125,9 +125,8 @@ const refreshDiaries = () => {
       totalPages.value = pager.totalPages;
       diaries.value = pager.data;
     })
-    .catch((err) => {
+    .catch(() => {
       window.$loadingBar.error();
-      errorMsg(`获取日常失败：${err}`);
     });
 };
 
@@ -254,7 +253,7 @@ const deleteDiaries = (ids: Array<number>) => {
       // 刷新日常
       refreshDiaries();
     })
-    .catch((err) => errorMsg(err));
+    .catch(() => {});
 };
 
 /**
@@ -277,9 +276,8 @@ const onDiaryDialogSubmit = () => {
             visibleDiaryDialog.value = false;
             isDiaryDialogLoading.value = false;
           })
-          .catch((err) => {
+          .catch(() => {
             isDiaryDialogLoading.value = false;
-            errorMsg(err);
           });
       } else {
         // 编辑日常
@@ -293,9 +291,8 @@ const onDiaryDialogSubmit = () => {
             visibleDiaryDialog.value = false;
             isDiaryDialogLoading.value = false;
           })
-          .catch((err) => {
+          .catch(() => {
             isDiaryDialogLoading.value = false;
-            errorMsg(err);
           });
       }
     }

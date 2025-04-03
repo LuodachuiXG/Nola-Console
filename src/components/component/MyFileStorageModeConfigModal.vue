@@ -104,9 +104,8 @@ const refreshTencentCOSConfig = () => {
       }
       isLoading.value = false;
     })
-    .catch((err) => {
+    .catch(() => {
       isLoading.value = false;
-      errorMsg(`获取配置失败：${err}`);
     });
 };
 
@@ -159,9 +158,7 @@ const onSaveClick = () => {
                 emit('onSaveFinish');
                 show.value = false;
               })
-              .catch((err) => {
-                errorMsg(err);
-              });
+              .catch(() => {});
           }
         })
         .catch(() => {});

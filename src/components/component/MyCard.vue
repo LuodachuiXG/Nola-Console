@@ -110,7 +110,7 @@ const onDeleteBtnClick = () => {
     header-style="padding: 10px;height:50px;"
   >
     <template #header>
-      <n-space style="display: flex;align-items: center">
+      <n-space style="display: flex; align-items: center; flex-wrap: nowrap;" class="text-ellipsis">
         <n-checkbox
           v-if="showCheckbox ?? true"
           :checked="isChecked"

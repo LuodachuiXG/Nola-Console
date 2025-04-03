@@ -4,7 +4,7 @@ import { NForm, NFormItem, NModal, NInput, FormInst } from 'naive-ui';
 import { confirmDialog, errorMsg, successMsg } from '../../utils/Message';
 import { reactive, ref } from 'vue';
 import { login } from '../../apis/userApi';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '../../stores/UserStore';
 import { RouterViews } from '../../router/RouterViews';
 
@@ -69,10 +69,12 @@ function onReLoginDialogLoginClick() {
             // 清空重新登录对话框表单
             clearReLoginForm();
             successMsg('登录成功');
+
+            // 刷新一下当前页面
+
           })
-          .catch((err) => {
+          .catch(() => {
             // 登录失败
-            errorMsg(err);
             isReLoginLoading.value = false;
           });
       }

@@ -120,7 +120,7 @@ onMounted(() => {
         // 打开编辑标签页面
         onEditTag(res.data as Tag);
       })
-      .catch((err) => errorMsg(err));
+      .catch(() => {});
   }
   // 刷新标签数据
   refreshTags();
@@ -143,13 +143,15 @@ const loadSettings = () => {
   }
 
   // 读取以前是否设置过每页大小
-  let ps = Number(localStorage.getItem(StoreKey.TAG_PAGE_SIZE.toString()) ?? 10);
+  let ps = Number(
+    localStorage.getItem(StoreKey.TAG_PAGE_SIZE.toString()) ?? 10
+  );
   if (isNaN(ps) || ps < 10 || ps > 120) {
     pageSize.value = 10;
   } else {
     pageSize.value = ps;
   }
-}
+};
 
 /**
  * 刷新标签数据
@@ -165,8 +167,7 @@ const refreshTags = () => {
         totalTags.value = tags.value?.length ?? 0;
         window.$loadingBar.finish();
       })
-      .catch((err) => {
-        errorMsg(err);
+      .catch(() => {
         window.$loadingBar.error();
       });
   } else {
@@ -194,8 +195,7 @@ const getTagsByPage = () => {
       totalPages.value = pager.totalPages;
       window.$loadingBar.finish();
     })
-    .catch((err) => {
-      errorMsg(err);
+    .catch(() => {
       window.$loadingBar.error();
     });
 };
@@ -222,7 +222,7 @@ const onTagMenuSelect = (key: string) => {
         query: {
           tagId: currentTag.tagId
         }
-      })
+      });
       break;
   }
 };
@@ -270,9 +270,7 @@ const deleteTags = (ids: Array<number>) => {
       // 刷新标签列表
       refreshTags();
     })
-    .catch((err) => {
-      errorMsg(err);
-    });
+    .catch(() => {});
 };
 
 /**
@@ -329,9 +327,8 @@ const onAddEditDialogSubmit = () => {
               // 添加成功
               onAddEditDialogClose();
             })
-            .catch((err) => {
+            .catch(() => {
               // 添加失败
-              errorMsg(err);
               isAddEditDialogLoading.value = false;
             });
         } else {
@@ -342,8 +339,7 @@ const onAddEditDialogSubmit = () => {
               successMsg('修改成功');
               onAddEditDialogClose();
             })
-            .catch((err) => {
-              errorMsg(err);
+            .catch(() => {
               isAddEditDialogLoading.value = false;
             });
         }
@@ -518,7 +514,7 @@ const onTagCancelChecked = () => {
       :page-count="totalPages"
       :current-page-item-count="tags?.length ?? 0"
       :show-pagination="currentTagMode == TagMode.LIST"
-      item-string= "标签"
+      item-string="标签"
       @on-page-update="onPageUpdate"
       @on-page-size-update="onPageSizeUpdate"
       show-checkbox

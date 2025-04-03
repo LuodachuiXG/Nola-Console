@@ -64,7 +64,7 @@ const initBlogInfo = () => {
         formBlogInfo.createDate = blogInfo.value?.createDate;
       }
     })
-    .catch((err) => errorMsg(err));
+    .catch(() => {});
 };
 
 /**
@@ -130,8 +130,7 @@ const onSubmit = () => {
           successMsg('保存成功');
           isLoading.value = false;
         })
-        .catch((err) => {
-          errorMsg(err);
+        .catch(() => {
           isLoading.value = false;
         });
     }

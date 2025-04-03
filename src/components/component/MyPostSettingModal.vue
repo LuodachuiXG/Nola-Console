@@ -162,7 +162,7 @@ const refreshTag = () => {
       // 将标签封装到标签选择器列表中
       tags2SelectOptions(tagsList.value);
     })
-    .catch((err) => errorMsg('标签获取失败：' + err));
+    .catch(() => {});
 };
 
 /**
@@ -200,7 +200,7 @@ const refreshCategory = () => {
       // 将分类封装到分类选择器列表中
       categories2SelectOptions(categoriesList.value);
     })
-    .catch((err) => errorMsg('分类获取失败：' + err));
+    .catch(() => {});
 };
 
 /**
@@ -298,7 +298,7 @@ const onFormSettingPostCategoryUpdate = (value: number | string | null) => {
       // 刷新分类
       refreshCategory();
     })
-    .catch((err) => errorMsg('添加分类失败：' + err));
+    .catch(() => {});
 };
 
 /**
@@ -363,7 +363,7 @@ const onFormSettingPostTagUpdate = (value: Array<number> | Array<string>) => {
           // 刷新标签
           refreshTag();
         })
-        .catch((err) => errorMsg('添加标签失败：' + err));
+        .catch(() => {});
     }
   });
   formSettingPostTagIds.value = selectedTagIds;
@@ -519,9 +519,8 @@ const onSettingPostDialogSubmit = () => {
             optionSuccessMsg();
             onSettingPostDialogClose();
           })
-          .catch((err) => {
+          .catch(() => {
             isSettingPostDialogLoading.value = false;
-            errorMsg(err);
           });
       }
     })

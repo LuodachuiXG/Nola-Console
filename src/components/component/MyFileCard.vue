@@ -214,7 +214,9 @@ onMounted(() => {
  */
 const loadSettings = () => {
   // 读取以前是否设置过每页大小
-  let ps = Number(localStorage.getItem(StoreKey.FILE_PAGE_SIZE.toString()) ?? 10);
+  let ps = Number(
+    localStorage.getItem(StoreKey.FILE_PAGE_SIZE.toString()) ?? 10
+  );
   if (isNaN(ps) || ps < 10 || ps > 120) {
     pageSize.value = 10;
   } else {
@@ -246,9 +248,8 @@ const refreshFiles = () => {
       totalPages.value = pager.totalPages;
       files.value = pager.data;
     })
-    .catch((err) => {
+    .catch(() => {
       window.$loadingBar.error();
-      errorMsg(err);
     });
 };
 
@@ -269,7 +270,7 @@ const refreshFileStorageMode = () => {
         });
       });
     })
-    .catch((err) => errorMsg(err));
+    .catch(() => {});
 };
 
 /**
@@ -297,7 +298,7 @@ const refreshFileGroups = () => {
         });
       });
     })
-    .catch((err) => errorMsg(err));
+    .catch(() => {});
 };
 
 /**
@@ -474,7 +475,7 @@ const onStorageModeManagerSelect = (value: string) => {
               refreshFileStorageMode();
               refreshFileGroups();
             })
-            .catch((err) => errorMsg(err));
+            .catch(() => {});
         }
       );
       break;
@@ -558,7 +559,7 @@ const onFileGroupManagerSelect = (value: string) => {
               // 刷新文件
               refreshFiles();
             })
-            .catch((err) => errorMsg(err));
+            .catch(() => {});
         }
       );
       break;
@@ -581,7 +582,7 @@ const refreshAvailableStorageModes2SelectOptions = () => {
         });
       });
     })
-    .catch((err) => errorMsg(`获取可用存储策略失败：${err}`));
+    .catch(() => {});
 };
 
 /**
@@ -608,9 +609,8 @@ const onFileGroupModalSubmit = () => {
             visibleFileGroupModal.value = false;
             formFileGroupIsLoading.value = false;
           })
-          .catch((err) => {
+          .catch(() => {
             formFileGroupIsLoading.value = false;
-            errorMsg(`添加失败：${err}`);
           });
       } else {
         // 修改模式
@@ -626,9 +626,8 @@ const onFileGroupModalSubmit = () => {
             visibleFileGroupModal.value = false;
             formFileGroupIsLoading.value = false;
           })
-          .catch((err) => {
+          .catch(() => {
             formFileGroupIsLoading.value = false;
-            errorMsg(`修改失败：${err}`);
           });
       }
     }
@@ -650,7 +649,7 @@ const onDeleteFilesClick = () => {
           // 刷新文件
           refreshFiles();
         })
-        .catch((err) => errorMsg(`删除失败：${err}`));
+        .catch(() => {});
     }
   );
 };
@@ -690,7 +689,7 @@ const onMoveFilesClick = () => {
         });
       });
     })
-    .catch((err) => errorMsg(`获取文件组失败：${err}`));
+    .catch(() => {});
 
   formFileMove.targetFileGroupId = null;
   // 显示文件移动模态框
@@ -715,10 +714,9 @@ const onFileMoveModalSubmit = () => {
           // 关闭模态框
           visibleFileMoveModal.value = false;
         })
-        .catch((err) => {
+        .catch(() => {
           // 停止模态框加载状态
           formFileMoveIsLoading.value = false;
-          errorMsg(`移动失败：${err}`);
         });
     }
   });

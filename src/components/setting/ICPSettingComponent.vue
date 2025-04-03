@@ -32,7 +32,7 @@ const initICP = () => {
       formICP.icp = icp?.icp ?? '';
       formICP.public = icp?.public ?? '';
     })
-    .catch((err) => errorMsg(err));
+    .catch(() => {});
 };
 
 /**
@@ -45,8 +45,7 @@ const onSubmit = () => {
       successMsg('保存成功');
       isLoading.value = false;
     })
-    .catch((err) => {
-      errorMsg(err);
+    .catch(() => {
       isLoading.value = false;
     });
 };
