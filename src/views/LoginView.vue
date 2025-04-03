@@ -211,10 +211,6 @@ const onFormLoginSubmit = () => {
             // 登录成功
             // 将返回的用户信息和 Token 令牌存储
             userStore.login(res.data);
-            setTimeout(() => {
-              console.log(userStore.getUser);
-            }, 1000)
-
             if (!userStore.getUser?.lastLoginDate) {
               successMsg('欢迎使用 Nola 博客 ^_^');
             } else {

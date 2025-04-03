@@ -639,6 +639,7 @@ const onMenuItemUnChecked = (menuItem: MenuItem) => {
         menuItemDialogMode == DialogFormMode.ADD ? '添加' : '保存'
       "
       negative-text="取消"
+      draggable
       :loading="isMenuItemDialogLoading"
       @positiveClick="onMenuItemDialogSubmit"
       @keydown.enter="onMenuItemDialogSubmit"
