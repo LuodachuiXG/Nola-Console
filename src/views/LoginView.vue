@@ -16,7 +16,6 @@ import {
 import { errorMsg, successMsg } from '../utils/Message.ts';
 import { formatTimestamp } from '../utils/MyUtils.ts';
 import { useUserStore } from '../stores/UserStore.ts';
-import { delay } from 'lodash';
 
 /**
  * 标记当前模式的枚举类
@@ -72,6 +71,8 @@ const formCreateAdmin = reactive({
 // 是否正在请求创建管理员
 const isCreateAdmin = ref(false);
 
+
+
 onMounted(() => {
   // 刷新博客信息
   refreshBlogInfo();
@@ -82,7 +83,9 @@ onMounted(() => {
 onUnmounted(() => {
   // 移除键盘监听器
   document.removeEventListener('keydown', handleKeyDown);
+  
 });
+
 
 /**
  * 按键监听事件

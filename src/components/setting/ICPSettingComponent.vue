@@ -1,7 +1,7 @@
 <!-- 备案设置组件 -->
 <script setup lang="ts">
 import { NButton, NForm, NFormItem, NInput, NScrollbar } from 'naive-ui';
-import { inject, onMounted, reactive, ref } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
 import { getICP, updateICP } from '../../apis/icpApi.ts';
 import { errorMsg, successMsg } from '../../utils/Message.ts';
 import { ICP } from '../../models/ICP.ts';

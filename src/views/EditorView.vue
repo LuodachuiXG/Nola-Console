@@ -6,7 +6,7 @@ import {
   NormalToolbar,
   ToolbarNames
 } from 'md-editor-v3';
-import { inject, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
+import { onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import {
   confirmDialog,
   errorMsg,
@@ -328,7 +328,7 @@ const loadSetting = () => {
 
   // 获取之前是否设置过文章自动保存时间间隔
   postAutoSaveIntervalSelectValue.value =
-    Number(localStorage.getItem(StoreKey.POST_AUTO_SAVE_INTERVAL) ?? 5000) ||
+    Number(localStorage.getItem(StoreKey.POST_AUTO_SAVE_INTERVAL.toString()) ?? 5000) ||
     5000;
 };
 
@@ -792,7 +792,7 @@ const onSaveContentClick = (
 const onPostAutoSaveIntervalSelectUpdate = (value: number) => {
   postAutoSaveIntervalSelectValue.value = value;
   // 将设置保存到本地
-  localStorage.setItem(StoreKey.POST_AUTO_SAVE_INTERVAL, value.toString());
+  localStorage.setItem(StoreKey.POST_AUTO_SAVE_INTERVAL.toString(), value.toString());
 };
 
 /**

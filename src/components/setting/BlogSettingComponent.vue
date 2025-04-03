@@ -1,6 +1,6 @@
 <!-- 博客设置组件-->
 <script setup lang="ts">
-import { inject, onMounted, reactive, ref } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
 import { getBlogInfo, updateBlogInfo } from '../../apis/blogApi.ts';
 import { errorMsg, successMsg } from '../../utils/Message.ts';
 import { BlogInfo } from '../../models/BlogInfo.ts';

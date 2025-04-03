@@ -16,6 +16,8 @@ export interface Link {
   priority: number;
   /** 友链备注 **/
   remark: string | null;
+  /** 是否失联 **/
+  isLost: boolean;
   /** 创建时间 **/
   createTime: number;
   /** 最后更新时间 **/

@@ -16,7 +16,6 @@ import {
 } from '@vicons/ionicons5';
 import { Tag } from '../../models/Tag.ts';
 import TagComponent from '../component/MyTag.vue';
-import { inject } from 'vue';
 import router from '../../router';
 import { RouterViews } from '../../router/RouterViews.ts';
 import { useGlobalStore } from '../../stores/GlobalStore.ts';

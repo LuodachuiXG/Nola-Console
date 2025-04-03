@@ -16,4 +16,6 @@ export interface LinkRequest {
   priority: number | null;
   /** 链接备注 **/
   remark: string | null;
+  /** 是否失联 **/
+  isLost: boolean;
 }

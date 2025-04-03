@@ -15,7 +15,6 @@ import {
   SettingsOutline as SettingIcon,
   TrashOutline as TrashIcon
 } from '@vicons/ionicons5';
-import { inject } from 'vue';
 import router from '../../router';
 import { RouterViews } from '../../router/RouterViews.ts';
 import { useGlobalStore } from '../../stores/GlobalStore.ts';

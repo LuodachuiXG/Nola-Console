@@ -19,7 +19,7 @@ import {
   TrashOutline as TrashIcon,
   SettingsOutline as SettingIcon
 } from '@vicons/ionicons5';
-import { inject, ref } from 'vue';
+import { ref } from 'vue';
 import { Link } from '../../models/Link.ts';
 import { formatTimestamp } from '../../utils/MyUtils.ts';
 import { getRealUrl } from '../../utils/NetworkUtil.ts';

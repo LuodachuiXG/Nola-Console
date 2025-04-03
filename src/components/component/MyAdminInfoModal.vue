@@ -19,7 +19,6 @@ import { User } from '../../models/User.ts';
 import { formatTimestamp, isImage } from '../../utils/MyUtils.ts';
 import { getUserInfo, updateUserInfo } from '../../apis/userApi.ts';
 import { errorMsg, optionSuccessMsg } from '../../utils/Message.ts';
-import { StoreKey } from '../../stores/StoreKey.ts';
 import { FileTrayFullOutline as FileIcon } from '@vicons/ionicons5';
 import MyFileSelectModal from './MyFileSelectModal.vue';
 import { MFile } from '../../models/MFile.ts';
@@ -151,7 +150,7 @@ const onSubmit = () => {
           // 修改成功
           optionSuccessMsg();
           // 同步修改用户信息地缓存
-          const user = userStore.getUser;
+          const user = userStore.getUser ?? {} as User;
           user.avatar = form.avatar;
           user.description = form.description;
           user.displayName = form.displayName;

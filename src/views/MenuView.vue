@@ -22,7 +22,7 @@ import {
   SettingsOutline as SettingIcon,
   MenuOutline as MenuIcon
 } from '@vicons/ionicons5';
-import { inject, onMounted, reactive, ref } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
 import { MenuItem } from '../models/MenuItem.ts';
 import { Menu } from '../models/Menu.ts';
 import {

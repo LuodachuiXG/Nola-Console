@@ -13,7 +13,6 @@ import {
   TrashOutline as TrashIcon,
   BrushOutline as EditIcon
 } from '@vicons/ionicons5';
-import { inject } from 'vue';
 import { formatTimestamp } from '../../utils/MyUtils.ts';
 import { Diary } from '../../models/Diary.ts';
 import { useGlobalStore } from '../../stores/GlobalStore.ts';

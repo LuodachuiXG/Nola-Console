@@ -13,7 +13,6 @@ import {
   NIcon
 } from 'naive-ui';
 import MyPagination from './MyPagination.vue';
-import { inject } from 'vue';
 import { TrashOutline as TrashIcon } from '@vicons/ionicons5';
 import { useGlobalStore } from '../../stores/GlobalStore.ts';
 

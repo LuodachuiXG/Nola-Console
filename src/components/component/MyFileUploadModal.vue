@@ -26,7 +26,6 @@ import {
   UploadFileInfo
 } from 'naive-ui';
 import { ArchiveOutline as ArchiveIcon } from '@vicons/ionicons5';
-import { User } from '../../models/User.ts';
 import { useUserStore } from '../../stores/UserStore.ts';
 
 const show = defineModel('show', {
@@ -105,9 +104,9 @@ const loadSetting = () => {
   // 读取文件存储策略，默认本地存储
   storageModeValue.value =
     (localStorage.getItem(
-      StoreKey.FILE_UPLOAD_STORAGE_MODE
+      StoreKey.FILE_UPLOAD_STORAGE_MODE.toString()
     ) as FileStorageMode) ?? FileStorageMode.LOCAL;
-  const fileGroupId = localStorage.getItem(StoreKey.FILE_UPLOAD_FILE_GROUP);
+  const fileGroupId = localStorage.getItem(StoreKey.FILE_UPLOAD_FILE_GROUP.toString());
 
   if (fileGroupId && isNumber(fileGroupId)) {
     // 读取的文件组是数字，再判断当前文件组是否还存在

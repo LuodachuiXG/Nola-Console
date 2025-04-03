@@ -21,7 +21,7 @@ import {
   ListOutline as ListIcon,
   AddOutline as AddIcon
 } from '@vicons/ionicons5';
-import { inject, onMounted, reactive, ref } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
 import {
   addTag,
   delTagsByIds,
@@ -132,7 +132,7 @@ onMounted(() => {
 const loadSettings = () => {
   // 读取以前是否设置过标签显示模式
   let mode = Number(
-    localStorage.getItem(StoreKey.TAG_MODE) ?? TagMode.BLOCK
+    localStorage.getItem(StoreKey.TAG_MODE.toString()) ?? TagMode.BLOCK
   );
 
   if (!Object.values(TagMode).includes(mode)) {
@@ -143,7 +143,7 @@ const loadSettings = () => {
   }
 
   // 读取以前是否设置过每页大小
-  let ps = Number(localStorage.getItem(StoreKey.TAG_PAGE_SIZE) ?? 10);
+  let ps = Number(localStorage.getItem(StoreKey.TAG_PAGE_SIZE.toString()) ?? 10);
   if (isNaN(ps) || ps < 10 || ps > 120) {
     pageSize.value = 10;
   } else {
@@ -399,7 +399,7 @@ const onTagModeChange = (mode: TagMode) => {
   // 刷新标签
   refreshTags();
   // 将标签模式存储
-  localStorage.setItem(StoreKey.TAG_MODE, mode.toString());
+  localStorage.setItem(StoreKey.TAG_MODE.toString(), mode.toString());
 };
 
 /**
@@ -419,7 +419,7 @@ const onPageUpdate = (page: number) => {
 const onPageSizeUpdate = (size: number) => {
   pageSize.value = size;
   // 将每页大小存储
-  localStorage.setItem(StoreKey.TAG_PAGE_SIZE, size.toString());
+  localStorage.setItem(StoreKey.TAG_PAGE_SIZE.toString(), size.toString());
   // 刷新标签
   refreshTags();
 };

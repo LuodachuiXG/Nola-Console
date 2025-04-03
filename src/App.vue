@@ -202,7 +202,7 @@ onMounted(() => {
   currentTheme.value = getCurrentTheme() === 'dark' ? darkTheme : undefined;
   // 获取之前侧边栏折叠状态
   isSiderCollapsed.value =
-    localStorage.getItem(StoreKey.SIDER_COLLAPSED) === 'true';
+    localStorage.getItem(StoreKey.SIDER_COLLAPSED.toString()) === 'true';
 
   // 监听路由变化
   watch(route, (e: RouteLocationNormalizedLoaded) => {
@@ -254,7 +254,7 @@ const handlerWindowResize = () => {
   if (!isManualUpdateSider.value) {
     // 如果用户之前没有手动修改过侧边栏
     // 这里就根据窗口大小自动改变侧边栏状态
-    isSiderCollapsed.value = globalStore.isSmallWindow;
+    isSiderCollapsed.value = globalStore.isSmallWindow as boolean;
   }
 };
 
@@ -299,7 +299,7 @@ const onSiderCollapsed = (collapsed: boolean) => {
   isSiderCollapsed.value = collapsed;
   // 将侧边栏折叠状态存储到本地
   localStorage.setItem(
-    StoreKey.SIDER_COLLAPSED,
+    StoreKey.SIDER_COLLAPSED.toString(),
     String(isSiderCollapsed.value)
   );
 };

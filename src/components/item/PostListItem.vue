@@ -28,7 +28,7 @@ import { Post } from '../../models/Post.ts';
 import { formatTimestamp } from '../../utils/MyUtils.ts';
 import MyTag from '../component/MyTag.vue';
 import { PostStatus } from '../../models/enum/PostStatus.ts';
-import { inject, onMounted, ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { PostVisible } from '../../models/enum/PostVisible.ts';
 import { Tag } from '../../models/Tag.ts';
 import { Category } from '../../models/Category.ts';

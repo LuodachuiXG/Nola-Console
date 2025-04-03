@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import MyCard from '../components/component/MyCard.vue';
-import { inject, onMounted, reactive, ref } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
 import { Link } from '../models/Link.ts';
 import { StoreKey } from '../stores/StoreKey.ts';
 import {
@@ -69,6 +69,7 @@ const formLink: Link = reactive({
   description: '',
   priority: 0,
   remark: '',
+  isLost: false,
   // 下面两个字段仅用于满足接口，无其他用处
   createTime: 0,
   lastModifyTime: null
@@ -114,7 +115,7 @@ onMounted(() => {
  */
 const loadSettings = () => {
   // 读取以前是否设置过每页大小
-  let ps = Number(localStorage.getItem(StoreKey.LINK_PAGE_SIZE) ?? 10);
+  let ps = Number(localStorage.getItem(StoreKey.LINK_PAGE_SIZE.toString()) ?? 10);
   if (isNaN(ps) || ps < 10 || ps > 120) {
     pageSize.value = 10;
   } else {
@@ -164,7 +165,7 @@ const onPageUpdate = (page: number) => {
 const onPageSizeUpdate = (size: number) => {
   pageSize.value = size;
   // 将每页大小存储
-  localStorage.setItem(StoreKey.LINK_PAGE_SIZE, size.toString());
+  localStorage.setItem(StoreKey.LINK_PAGE_SIZE.toString(), size.toString());
   // 刷新友情链链接
   refreshLinks();
 };
@@ -273,7 +274,8 @@ const onLinkDialogSubmit = () => {
         description:
           formLink.description?.length === 0 ? null : formLink.description,
         priority: formLink.priority,
-        remark: formLink.remark?.length === 0 ? null : formLink.remark
+        remark: formLink.remark?.length === 0 ? null : formLink.remark,
+        isLost: formLink.isLost
       };
 
       if (dialogMode.value === DialogFormMode.ADD) {

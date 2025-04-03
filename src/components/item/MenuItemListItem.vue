@@ -15,7 +15,6 @@ import {
   AddOutline as AddIcon
 } from '@vicons/ionicons5';
 import draggable from 'vuedraggable';
-import { inject } from 'vue';
 import { useGlobalStore } from '../../stores/GlobalStore.ts';
 
 interface Props {
