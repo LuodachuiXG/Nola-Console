@@ -30,7 +30,7 @@ import {
   updateTag
 } from '../apis/tagApi.ts';
 import { Tag } from '../models/Tag.ts';
-import { confirmDialog, errorMsg, successMsg } from '../utils/Message.ts';
+import { confirmDialog, successMsg } from '../utils/Message.ts';
 import { DialogFormMode } from '../models/enum/DialogFormMode.ts';
 import { StoreKey } from '../stores/StoreKey.ts';
 import { Pager } from '../models/Pager.ts';

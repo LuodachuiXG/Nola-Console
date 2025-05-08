@@ -10,7 +10,7 @@ import {
   FormItemRule
 } from 'naive-ui';
 import { updateUserPassword } from '../../apis/userApi.ts';
-import { errorMsg, optionSuccessMsg } from '../../utils/Message.ts';
+import { optionSuccessMsg } from '../../utils/Message.ts';
 
 // 组件参数。是否显示对话框
 const show = defineModel('show', {

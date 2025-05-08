@@ -3,7 +3,7 @@
 import { NButton, NForm, NFormItem, NInput, NScrollbar } from 'naive-ui';
 import { onMounted, reactive, ref } from 'vue';
 import { getICP, updateICP } from '../../apis/icpApi.ts';
-import { errorMsg, successMsg } from '../../utils/Message.ts';
+import { successMsg } from '../../utils/Message.ts';
 import { ICP } from '../../models/ICP.ts';
 import { useGlobalStore } from '../../stores/GlobalStore.ts';
 

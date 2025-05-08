@@ -21,7 +21,7 @@ import {
 } from '../../models/enum/FileStorageMode.ts';
 import { TencentCOSConfig } from '../../models/TencentCOSConfig.ts';
 import { getTencentCOS, setTencentCOS } from '../../apis/fileApi.ts';
-import { errorMsg, successMsg } from '../../utils/Message.ts';
+import { successMsg } from '../../utils/Message.ts';
 
 // 是否显示模态框
 const show = defineModel('show', {

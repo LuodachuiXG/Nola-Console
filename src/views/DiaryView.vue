@@ -17,7 +17,7 @@ import { onMounted, reactive, ref } from 'vue';
 import { DiarySort } from '../models/enum/DiarySort.ts';
 import { Diary } from '../models/Diary.ts';
 import { StoreKey } from '../stores/StoreKey.ts';
-import { confirmDialog, errorMsg, successMsg } from '../utils/Message.ts';
+import { confirmDialog, successMsg } from '../utils/Message.ts';
 import {
   addDiary,
   delDiaries,

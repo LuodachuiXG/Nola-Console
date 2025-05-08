@@ -9,7 +9,6 @@ import {
 import { onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import {
   confirmDialog,
-  errorMsg,
   optionSuccessMsg,
   successMsg
 } from '../utils/Message.ts';
@@ -772,7 +771,7 @@ const onSaveContentClick = (
       currentMode.value = EditorMode.EDIT;
       successMsg('保存成功');
     })
-    .catch(() => {
+    .catch((err) => {
       window.$loadingBar.error();
       onFail?.(err);
     });

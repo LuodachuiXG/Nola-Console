@@ -1,10 +1,10 @@
 <!-- 重新登录对话框 -->
 <script lang="ts" setup>
 import { NForm, NFormItem, NModal, NInput, FormInst } from 'naive-ui';
-import { confirmDialog, errorMsg, successMsg } from '../../utils/Message';
+import { confirmDialog, successMsg } from '../../utils/Message';
 import { reactive, ref } from 'vue';
 import { login } from '../../apis/userApi';
-import { useRoute, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
 import { useUserStore } from '../../stores/UserStore';
 import { RouterViews } from '../../router/RouterViews';
 
@@ -71,7 +71,6 @@ function onReLoginDialogLoginClick() {
             successMsg('登录成功');
 
             // 刷新一下当前页面
-
           })
           .catch(() => {
             // 登录失败

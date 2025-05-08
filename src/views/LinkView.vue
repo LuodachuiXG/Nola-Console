@@ -25,7 +25,6 @@ import { addLink, delLink, getLinks, updateLink } from '../apis/linkApi.ts';
 import { LinkSort } from '../models/enum/LinkSort.ts';
 import {
   confirmDialog,
-  errorMsg,
   optionSuccessMsg,
   successMsg
 } from '../utils/Message.ts';

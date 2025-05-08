@@ -30,7 +30,6 @@ import { PostVisible } from '../models/enum/PostVisible.ts';
 import { PostSort } from '../models/enum/PostSort.ts';
 import {
   confirmDialog,
-  errorMsg,
   optionSuccessMsg,
   successMsg
 } from '../utils/Message.ts';
