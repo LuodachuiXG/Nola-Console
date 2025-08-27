@@ -15,7 +15,7 @@ const formICP = reactive({
   // 工业和信息化部网站备案号
   icp: '',
   // 公网安备号
-  public: ''
+  police: ''
 });
 
 onMounted(() => {
@@ -30,7 +30,7 @@ const initICP = () => {
     .then((res) => {
       let icp: ICP | null = res.data;
       formICP.icp = icp?.icp ?? '';
-      formICP.public = icp?.public ?? '';
+      formICP.police = icp?.police ?? '';
     })
     .catch(() => {});
 };
@@ -40,7 +40,7 @@ const initICP = () => {
  */
 const onSubmit = () => {
   isLoading.value = true;
-  updateICP(formICP.icp, formICP.public)
+  updateICP(formICP.icp, formICP.police)
     .then(() => {
       successMsg('保存成功');
       isLoading.value = false;
@@ -65,9 +65,9 @@ const onSubmit = () => {
           placeholder="苏ICP备XXXXXXXXXX号"
         />
       </n-form-item>
-      <n-form-item label="公网安备号" path="public">
+      <n-form-item label="公网安备号" path="police">
         <n-input
-          v-model:value="formICP.public"
+          v-model:value="formICP.police"
           clearable
           placeholder="苏公网安备XXXXXXXXXXXXXX号"
         />
