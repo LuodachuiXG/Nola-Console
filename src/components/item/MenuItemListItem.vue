@@ -37,10 +37,9 @@ defineProps<Props>();
 
 const globalStore = useGlobalStore();
 
-const menuItems = defineModel('menuItems', {
-  type: Array<MenuItem>,
+const menuItems = defineModel<MenuItem[]>('menuItems', {
   required: true,
-  default: []
+  default: () => []
 });
 
 /**

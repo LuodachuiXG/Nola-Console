@@ -11,12 +11,10 @@
   "dependencies": {
     "animate.css": "^4.1.1",
     "axios": "^1.8.4",
-    "install": "^0.13.0",
     "js-pinyin": "^0.2.7",
     "lodash": "^4.17.21",
-    "md-editor-v3": "^5.8.1",
+    "md-editor-v3": "^7.1.0",
     "mitt": "^3.0.1",
-    "npm": "^11.2.0",
     "pinia": "^3.0.1",
     "pinia-plugin-persistedstate": "^4.2.0",
     "secure-ls": "^2.0.0",
@@ -26,13 +24,13 @@
   },
   "devDependencies": {
     "@vicons/ionicons5": "^0.13.0",
-    "@vitejs/plugin-vue": "^5.2.3",
+    "@vitejs/plugin-vue": "^6.0.11",
     "naive-ui": "^2.41.0",
     "prettier": "3.5.3",
     "sass": "^1.86.2",
     "typescript": "^5.9.2",
     "vfonts": "^0.0.3",
-    "vite": "6.3.4",
-    "vue-tsc": "^2.2.8"
+    "vite": "^8.3.8",
+    "vue-tsc": "^3.3.14"
   }
 }
