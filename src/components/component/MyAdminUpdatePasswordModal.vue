@@ -10,7 +10,10 @@ import {
   FormItemRule
 } from 'naive-ui';
 import { updateUserPassword } from '../../apis/userApi.ts';
-import { optionSuccessMsg } from '../../utils/Message.ts';
+import { successMsg } from '../../utils/Message.ts';
+import { useRouter } from 'vue-router';
+import { RouterViews } from '../../router/RouterViews.ts';
+import { useUserStore } from '../../stores/UserStore.ts';
 
 // 组件参数。是否显示对话框
 const show = defineModel('show', {
@@ -20,6 +23,9 @@ const show = defineModel('show', {
 });
 
 const formRef = ref<FormInst | null>(null);
+
+const router = useRouter();
+const userStore = useUserStore();
 
 // 控制模态框是否显示
 const _show = ref(false);
@@ -73,11 +79,12 @@ const onSubmit = () => {
         isLoading.value = true;
         updateUserPassword(form.password)
           .then(() => {
-            // 密码修改成功
-            // 关闭模态框
-            optionSuccessMsg();
+            // 密码修改成功，后端会删除当前 Token，需要重新登录
             isLoading.value = false;
             onClose();
+            userStore.logout();
+            successMsg('密码已修改，请重新登录');
+            router.push(RouterViews.LOGIN.name);
           })
           .catch(() => {
             isLoading.value = false;

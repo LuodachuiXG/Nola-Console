@@ -27,5 +27,11 @@ export enum StoreKey {
   /** 文件上传存储策略 **/
   FILE_UPLOAD_STORAGE_MODE,
   /** 文件上传文件组 **/
-  FILE_UPLOAD_FILE_GROUP
+  FILE_UPLOAD_FILE_GROUP,
+  /** 评论页每页大小 **/
+  COMMENT_PAGE_SIZE,
+  /** 操作记录页每页大小 **/
+  OPERATION_PAGE_SIZE,
+  /** 访问日志页每页大小 **/
+  ACCESS_LOG_PAGE_SIZE
 }

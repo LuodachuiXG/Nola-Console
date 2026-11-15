@@ -53,6 +53,7 @@ import { DialogFormMode } from '../../models/enum/DialogFormMode.ts';
 import MyCard from './MyCard.vue';
 import { StoreKey } from '../../stores/StoreKey.ts';
 import MyFileUploadModal from './MyFileUploadModal.vue';
+import MyFileRecordModal from './MyFileRecordModal.vue';
 import _ from 'lodash';
 import { useGlobalStore } from '../../stores/GlobalStore.ts';
 
@@ -199,6 +200,9 @@ const formFileMoveFileGroupSelectOptions = ref<Array<SelectOption>>([]);
 
 // 是否显示文件上传模态框
 const visibleFileUploadModal = ref(false);
+
+// 是否显示文件登记模态框
+const visibleFileRecordModal = ref(false);
 
 onMounted(() => {
   // 读取以前的设置
@@ -372,8 +376,8 @@ const onFileUnChecked = (file: MFile) => {
   currentSelectFileIds.value = currentSelectFileIds.value.filter((id) => {
     return id !== file.fileId;
   });
-  currentSelectFiles.value = currentSelectFiles.value.filter((file) => {
-    return file.fileId != file.fileId;
+  currentSelectFiles.value = currentSelectFiles.value.filter((selectedFile) => {
+    return selectedFile.fileId !== file.fileId;
   });
   emit('onFileSelected', currentSelectFiles.value);
 };
@@ -732,6 +736,14 @@ const onUploadClick = () => {
 };
 
 /**
+ * 登记附件按钮点击事件
+ */
+const onRecordClick = () => {
+  // 显示文件登记模态框
+  visibleFileRecordModal.value = true;
+};
+
+/**
  * 上传文件模态框关闭事件
  */
 const onFileUploadModalClose = () => {
@@ -746,6 +758,12 @@ const onFileUploadModalClose = () => {
     <my-file-upload-modal
       v-model:show="visibleFileUploadModal"
       @on-close="onFileUploadModalClose"
+    />
+
+    <!-- 登记文件模态框 -->
+    <my-file-record-modal
+      v-model:show="visibleFileRecordModal"
+      @on-saved="refreshFiles"
     />
 
     <!-- 存储策略配置模态框 -->
@@ -891,6 +909,14 @@ const onFileUploadModalClose = () => {
       </template>
       <template #header-extra>
         <n-space>
+          <n-button @click="onRecordClick">
+            <template #icon>
+              <n-icon>
+                <AddIcon />
+              </n-icon>
+            </template>
+            <span v-if="!globalStore.isSmallWindow">登记附件</span>
+          </n-button>
           <n-button type="primary" @click="onUploadClick">
             <template #icon>
               <n-icon>
@@ -992,7 +1018,7 @@ const onFileUploadModalClose = () => {
               v-if="files.length === 0"
             >
               <template #footer>
-                <n-button>
+                <n-button @click="onUploadClick">
                   <template #icon>
                     <n-icon>
                       <UploadIcon />

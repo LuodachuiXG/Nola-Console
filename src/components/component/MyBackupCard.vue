@@ -85,4 +85,10 @@ const onCardHover = (hover: boolean) => {
     }
   }
 }
+
+@media (max-width: 767px) {
+  .card-div {
+    width: 100%;
+  }
+}
 </style>

@@ -37,6 +37,10 @@ service.interceptors.request.use(
   (config) => {
     // 确保 headers 对象已初始化
     config.headers = config.headers || ({} as AxiosRequestHeaders);
+    // FormData 交给浏览器生成 multipart boundary，避免被默认 JSON Content-Type 序列化
+    if (config.data instanceof FormData) {
+      config.headers.delete('Content-Type');
+    }
     // 检查用户是否已登录
     const userStore = useUserStore();
     if (userStore.isLogin) {

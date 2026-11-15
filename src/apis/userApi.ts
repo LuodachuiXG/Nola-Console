@@ -15,6 +15,16 @@ export function login(username: string, password: string) {
 }
 
 /**
+ * 验证登录是否过期
+ */
+export function validateLogin() {
+  return service({
+    url: '/admin/user/validate',
+    method: 'GET'
+  });
+}
+
+/**
  * 获取当前登录的管理员信息
  */
 export function getUserInfo() {
@@ -66,5 +76,15 @@ export function updateUserPassword(
     data: {
       password: password
     }
+  });
+}
+
+/**
+ * 注销登录
+ */
+export function logout() {
+  return service({
+    url: '/admin/user/logout',
+    method: 'POST'
   });
 }

@@ -112,6 +112,31 @@ export function getFileGroups(fileStorageMode: FileStorageMode | null) {
 }
 
 /**
+ * 添加文件记录（登记已存在于存储中的文件）
+ * @param name 文件名（含后缀）
+ * @param size 文件大小（字节）
+ * @param storageMode 文件存储策略
+ * @param fileGroupId 文件组 ID
+ */
+export function addFileRecord(
+  name: string,
+  size: number,
+  storageMode: FileStorageMode,
+  fileGroupId: number | null
+) {
+  return service({
+    url: '/admin/file/record',
+    method: 'POST',
+    data: {
+      name: name,
+      size: size,
+      storageMode: storageMode,
+      fileGroupId: fileGroupId
+    }
+  });
+}
+
+/**
  * 根据文件 ID 删除文件
  * @param ids 文件 ID 数组
  */

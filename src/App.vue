@@ -55,6 +55,7 @@ import { getRealUrl } from './utils/NetworkUtil.ts';
 import { useUserStore } from './stores/UserStore.ts';
 import { useGlobalStore } from './stores/GlobalStore.ts';
 import ReloginModal from './components/component/ReloginModal.vue'
+import { logout as logoutRequest, validateLogin } from './apis/userApi.ts';
 
 // 全局响应式变量
 const globalStore = useGlobalStore();
@@ -225,6 +226,11 @@ onMounted(() => {
   bus.on(BusEnum.VISIBLE_SIDER, () => {
     hideSider.value = false;
   });
+
+  // 启动时校验登录态，提前发现失效的 Token
+  if (userStore.isLogin) {
+    validateLogin().catch(() => {});
+  }
 });
 
 onUnmounted(() => {
@@ -314,10 +320,14 @@ const onAvatarSelect = (key: string | number) => {
     case 'logout':
       // 弹出确认对话框
       confirmDialog('确定要注销登录吗？', () => {
-        // 删除登录用户信息
-        userStore.logout();
-        // 跳转登录页
-        router.push(RouterViews.LOGIN.name);
+        // 通知后端注销 Token，完成后清除本地登录信息并跳转登录页
+        logoutRequest()
+          .catch(() => {})
+          .finally(() => {
+            visibleReLoginDialog.value = false;
+            userStore.logout();
+            router.push(RouterViews.LOGIN.name);
+          });
       });
       break;
   }
